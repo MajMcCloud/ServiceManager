@@ -3,7 +3,9 @@ A tool for managing mostly console applications like Cronjobs.
 
 Developed with C# and make use of Telerik WinForms controls.
 
-The network communication is done via WCF.
+The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
+
+Authentication is not integrated yet. => Todo List
 
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)
@@ -20,7 +22,7 @@ The network communication is done via WCF.
 
 ## Network Settings
 
-Choose between Named Pipes and TCP connection for your Service Manager.
+Choose between Net Pipes and TCP connection for your Service Manager.
 
 <img src="Screens/Settings.png" />
 
