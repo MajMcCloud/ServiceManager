@@ -182,13 +182,12 @@
       <Project>{f7e25e80-2ddf-4928-a4fa-0f235d353a16}</Project>
       <Name>ServiceManager.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceManager\ServiceManager.csproj">
+    <ProjectReference Include="..\ServiceManager.Service\ServiceManager.Service.csproj">
       <Project>{4cd4c58b-ad13-4755-af13-2a82b4f8f262}</Project>
-      <Name>ServiceManager</Name>
+      <Name>ServiceManager.Service</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="iconfinder_config_264845_DMP_icon.ico" />
     <Content Include="iconfinder_mixer_2001872__1__qg2_icon.ico" />
     <None Include="Resources\antenne_24px.png" />
     <None Include="Resources\space-ship_24px.png" />

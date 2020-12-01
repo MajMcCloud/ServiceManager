@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InputExample", "Examples\In
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ENTERTest", "Examples\ENTERTest\ENTERTest.csproj", "{4FAA365C-C3BF-4948-B5D9-88D04B25C6EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager", "ServiceManager\ServiceManager.csproj", "{4CD4C58B-AD13-4755-AF13-2A82B4F8F262}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Service", "ServiceManager.Service\ServiceManager.Service.csproj", "{4CD4C58B-AD13-4755-AF13-2A82B4F8F262}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Base", "ServiceManager.Base\ServiceManager.Base.csproj", "{F7E25E80-2DDF-4928-A4FA-0F235D353A16}"
 EndProject
