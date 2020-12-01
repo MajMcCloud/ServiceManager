@@ -31,3 +31,10 @@ Good for console applications allow pressing ENTER before running Timeout.
 After the timeout it will get killed.
 
 <img src="Screens/Settings_2.png" />
+
+
+## Live Console In and Output
+
+Get directly output from your console applications and send back informations over the network.
+
+<img src="Screens/Live Console Out and Input.png" />
