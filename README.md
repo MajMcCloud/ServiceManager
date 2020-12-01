@@ -5,6 +5,14 @@ Developed with C# and make use of Telerik WinForms controls.
 
 The network communication is done via WCF.
 
+- [Main Window](#mainwindow)
+- [Network Settings](#network-settings)
+- [Service Settings - Start](#service-settings---start)
+- [Service Settings - Shutdown](#service-settings---shutdown)
+- [Live Console In and Output](#live-console-in-and-output)
+
+
+
 ## MainWindow
 
 <img src="Screens/Mainwindow.png" />
