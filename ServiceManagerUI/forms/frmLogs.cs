@@ -91,9 +91,6 @@ namespace ServiceManagerUI.forms
                 this.Connection.ClientCallback.ServiceChanged += ClientCallback_ServiceChanged;
 
                 this.Connection.Client.BeginLiveLogs(serviceId);
-
-                txtInput.Focus();
-                txtInput.Select();
             }
             else
             {
@@ -193,6 +190,9 @@ namespace ServiceManagerUI.forms
             this.Connection.Client.RestartService(this.serviceId);
         }
 
-
+        private void frmLogs_Activated(object sender, EventArgs e)
+        {
+            txtInput.Select();
+        }
     }
 }

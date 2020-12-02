@@ -38,6 +38,7 @@
             this.txtInput = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
             // txtContent
@@ -86,7 +87,7 @@
             this.tsmiService_Shutdown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.tsmiService_Shutdown.ForeColor = System.Drawing.Color.White;
             this.tsmiService_Shutdown.Name = "tsmiService_Shutdown";
-            this.tsmiService_Shutdown.Size = new System.Drawing.Size(180, 22);
+            this.tsmiService_Shutdown.Size = new System.Drawing.Size(128, 22);
             this.tsmiService_Shutdown.Text = "Shutdown";
             this.tsmiService_Shutdown.Click += new System.EventHandler(this.tsmiService_Shutdown_Click);
             // 
@@ -95,7 +96,7 @@
             this.tsmiService_Restart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.tsmiService_Restart.ForeColor = System.Drawing.Color.White;
             this.tsmiService_Restart.Name = "tsmiService_Restart";
-            this.tsmiService_Restart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiService_Restart.Size = new System.Drawing.Size(128, 22);
             this.tsmiService_Restart.Text = "Restart";
             this.tsmiService_Restart.Click += new System.EventHandler(this.tsmiService_Restart_Click);
             // 
@@ -116,7 +117,7 @@
             this.tsmiLogs_Autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsmiLogs_Autoscroll.ForeColor = System.Drawing.Color.White;
             this.tsmiLogs_Autoscroll.Name = "tsmiLogs_Autoscroll";
-            this.tsmiLogs_Autoscroll.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLogs_Autoscroll.Size = new System.Drawing.Size(128, 22);
             this.tsmiLogs_Autoscroll.Text = "Autoscroll";
             this.tsmiLogs_Autoscroll.Click += new System.EventHandler(this.tsmiLogs_Autoscroll_Click);
             // 
@@ -159,13 +160,19 @@
             this.Controls.Add(this.label1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "frmLogs";
+            // 
+            // 
+            // 
+            this.RootElement.ApplyShapeToControl = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Service logs";
+            this.Activated += new System.EventHandler(this.frmLogs_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmLogs_FormClosing);
             this.Load += new System.EventHandler(this.frmLogs_Load);
             this.Shown += new System.EventHandler(this.frmLogs_Shown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
