@@ -145,6 +145,8 @@ namespace ServiceManager.Base
                 return;
             }
 
+            RunningProcesses.Remove(proc);
+
             if (proc.HasExited)
             {
                 return;
