@@ -132,6 +132,8 @@ namespace ServiceManager.Base
             }
             catch
             {
+                RunningProcesses.Remove(proc);
+
                 item.ForceRestart = false;
                 sa.Error += "SERVICE MANAGER: START FAILED\r\n";
                 sa.ProcessID = 0;
