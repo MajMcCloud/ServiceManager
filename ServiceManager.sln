@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManagerUI", "ServiceManagerUI\ServiceManagerUI.csproj", "{E1921317-2E79-4715-AF44-483B610CF7B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.UI", "ServiceManagerUI\ServiceManager.UI.csproj", "{E1921317-2E79-4715-AF44-483B610CF7B7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{67D74CA9-7973-470E-AB9F-07E891FA9A2C}"
 EndProject

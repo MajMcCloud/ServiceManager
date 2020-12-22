@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E1921317-2E79-4715-AF44-483B610CF7B7}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ServiceManagerUI</RootNamespace>
-    <AssemblyName>ServiceManagerUI</AssemblyName>
+    <RootNamespace>ServiceManager.UI</RootNamespace>
+    <AssemblyName>ServiceManager.UI</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

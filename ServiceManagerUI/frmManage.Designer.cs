@@ -1,4 +1,4 @@
-﻿namespace ServiceManagerUI
+﻿namespace ServiceManager.UI
 {
     partial class frmManage
     {

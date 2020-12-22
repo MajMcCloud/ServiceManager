@@ -1,4 +1,4 @@
-﻿namespace ServiceManagerUI
+﻿namespace ServiceManager.UI
 {
     partial class frmMain
     {
@@ -198,8 +198,8 @@
             // 
             // lsvServices
             // 
-            this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             listViewDetailColumn1.HeaderText = "Activity";
             listViewDetailColumn1.Width = 60F;
@@ -346,7 +346,7 @@
             // 
             // rmiInstances_ConnectTo
             // 
-            this.rmiInstances_ConnectTo.Image = global::ServiceManagerUI.Properties.Resources.space_ship_24px;
+            this.rmiInstances_ConnectTo.Image = global::ServiceManager.UI.Properties.Resources.space_ship_24px;
             this.rmiInstances_ConnectTo.Name = "rmiInstances_ConnectTo";
             this.rmiInstances_ConnectTo.Text = "Connect to";
             this.rmiInstances_ConnectTo.Click += new System.EventHandler(this.rmiInstances_ConnectTo_Click);

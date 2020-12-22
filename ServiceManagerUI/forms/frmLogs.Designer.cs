@@ -1,4 +1,4 @@
-﻿namespace ServiceManagerUI.forms
+﻿namespace ServiceManager.UI.forms
 {
     partial class frmLogs
     {
@@ -44,8 +44,8 @@
             // txtContent
             // 
             this.txtContent.AllowDrop = true;
-            this.txtContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtContent.BackColor = System.Drawing.Color.Black;
             this.txtContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -77,7 +77,7 @@
             this.tsmiService_Shutdown,
             this.tsmiService_Restart});
             this.tsmiStatus.ForeColor = System.Drawing.Color.White;
-            this.tsmiStatus.Image = global::ServiceManagerUI.Properties.Resources.led_on;
+            this.tsmiStatus.Image = global::ServiceManager.UI.Properties.Resources.led_on;
             this.tsmiStatus.Name = "tsmiStatus";
             this.tsmiStatus.Size = new System.Drawing.Size(128, 20);
             this.tsmiStatus.Text = "Service is running";
@@ -123,7 +123,7 @@
             // 
             // txtInput
             // 
-            this.txtInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtInput.BackColor = System.Drawing.Color.Black;
             this.txtInput.BorderStyle = System.Windows.Forms.BorderStyle.None;

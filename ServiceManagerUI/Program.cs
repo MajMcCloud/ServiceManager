@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Telerik.WinControls.Themes;
 
-namespace ServiceManagerUI
+namespace ServiceManager.UI
 {
     static class Program
     {

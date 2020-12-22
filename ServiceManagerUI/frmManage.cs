@@ -1,5 +1,5 @@
 ﻿using ServiceManager.Base.data;
-using ServiceManagerUI.forms;
+using ServiceManager.UI.forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Telerik.WinControls.UI;
 using static ServiceManager.Base.data.settings.Runtime;
 
-namespace ServiceManagerUI
+namespace ServiceManager.UI
 {
     public partial class frmManage : RadForm
     {

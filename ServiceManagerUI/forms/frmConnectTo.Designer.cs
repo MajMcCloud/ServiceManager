@@ -1,4 +1,4 @@
-﻿namespace ServiceManagerUI.forms
+﻿namespace ServiceManager.UI.forms
 {
     partial class frmConnectTo
     {

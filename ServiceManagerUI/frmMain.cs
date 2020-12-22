@@ -2,7 +2,7 @@
 using ServiceManager.Base.data;
 using ServiceManager.Base.wcf;
 using ServiceManager.Base.wcf.models;
-using ServiceManagerUI.forms;
+using ServiceManager.UI.forms;
 using System;
 using System.Collections.Generic;
 using System.Configuration.Install;
@@ -19,7 +19,7 @@ using System.Windows.Forms;
 using Telerik.WinControls.UI;
 using Verifide.ServiceUtils;
 
-namespace ServiceManagerUI
+namespace ServiceManager.UI
 {
     public partial class frmMain : RadForm
     {

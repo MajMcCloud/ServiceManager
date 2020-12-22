@@ -1,6 +1,6 @@
 ﻿using Telerik.WinControls.UI;
 
-namespace ServiceManagerUI.forms
+namespace ServiceManager.UI.forms
 {
     partial class frmNewService
     {

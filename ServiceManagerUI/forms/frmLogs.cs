@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Telerik.WinControls.UI;
 
-namespace ServiceManagerUI.forms
+namespace ServiceManager.UI.forms
 {
     public partial class frmLogs : RadForm
     {
