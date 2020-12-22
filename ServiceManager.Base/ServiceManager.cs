@@ -348,9 +348,9 @@ namespace ServiceManager.Base
             List<Task> Exits = new List<Task>();
 
 
-            foreach (var c in this.Config.ServiceList)
+            foreach (var service in this.Config.ServiceList)
             {
-                var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == c.ID);
+                var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == service.ID);
                 if (sa == null || !sa.IsRunning)
                     continue;
 
@@ -364,15 +364,15 @@ namespace ServiceManager.Base
 
                     var start = DateTime.Now;
 
-                    this.Connection?.Try(a => a.ServiceExiting(c.ID, c, sa));
+                    this.Connection?.Try(a => a.ServiceExiting(service.ID, service, sa));
 
-                    if (c.Shutdown_ENTER_Send)
+                    if (service.Shutdown_ENTER_Send)
                     {
                         proc.StandardInput.WriteLine("\r\n");
 
-                        if (c.Shutdown_ENTER_Timeout > 0)
+                        if (service.Shutdown_ENTER_Timeout > 0)
                         {
-                            Wait(c.Shutdown_ENTER_Timeout, a => proc.HasExited);
+                            Wait(service.Shutdown_ENTER_Timeout, a => proc.HasExited);
                         }
                     }
 
@@ -382,9 +382,9 @@ namespace ServiceManager.Base
                     {
                         proc.CloseMainWindow();
 
-                        if (c.Shutdown_Timeout > 0)
+                        if (service.Shutdown_Timeout > 0)
                         {
-                            Wait(c.Shutdown_Timeout, a => proc.HasExited);
+                            Wait(service.Shutdown_Timeout, a => proc.HasExited);
                         }
                         else
                         {
@@ -395,7 +395,7 @@ namespace ServiceManager.Base
                     if (!proc.HasExited)
                         proc.Kill();
 
-                    Connection?.Try(a => a.ServiceExited(c.ID, c, sa));
+                    Connection?.Try(a => a.ServiceExited(service.ID, service, sa));
 
                     sa.Exited = DateTime.Now;
 
