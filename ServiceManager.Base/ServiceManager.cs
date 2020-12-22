@@ -101,7 +101,7 @@ namespace ServiceManager.Base
             Process proc = new Process();
 
 
-            RunningProcesses.Add(proc);
+
 
             proc.StartInfo.UseShellExecute = false;
             proc.StartInfo.FileName = item.Path;
@@ -132,8 +132,6 @@ namespace ServiceManager.Base
             }
             catch
             {
-                RunningProcesses.Remove(proc);
-
                 item.ForceRestart = false;
                 sa.Error += "SERVICE MANAGER: START FAILED\r\n";
                 sa.ProcessID = 0;
@@ -143,6 +141,8 @@ namespace ServiceManager.Base
 
                 return;
             }
+
+            RunningProcesses.Add(proc);
 
             sa.ProcessID = proc.Id;
             sa.Started = DateTime.Now;
