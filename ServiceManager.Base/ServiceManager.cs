@@ -85,6 +85,11 @@ namespace ServiceManager.Base
 
         public void ProcessStart(ServiceItem item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
 
             if (!Analytics.Services.Contains(sa))
@@ -94,10 +99,7 @@ namespace ServiceManager.Base
             }
 
             Process proc = new Process();
-            if (proc == null)
-            {
-                return;
-            }
+
 
             RunningProcesses.Add(proc);
 
@@ -122,10 +124,23 @@ namespace ServiceManager.Base
             proc.OutputDataReceived += Proc_OutputDataReceived;
             proc.ErrorDataReceived += Proc_ErrorDataReceived;
 
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
+            try
+            {
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
+            }
+            catch
+            {
+                item.ForceRestart = false;
+                sa.Error += "SERVICE MANAGER: START FAILED\r\n";
+                sa.ProcessID = 0;
+                sa.Started = null;
+                sa.Exited = DateTime.Now;
+                sa.Exiting = null;
 
+                return;
+            }
 
             sa.ProcessID = proc.Id;
             sa.Started = DateTime.Now;
