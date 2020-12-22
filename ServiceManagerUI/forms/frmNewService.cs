@@ -34,9 +34,12 @@ namespace ServiceManagerUI.forms
             Item.Title = txtTitle.Text;
             Item.Path = txtPath.Text;
             Item.ForceRestart = chkAutoRestart.Checked;
+
             Item.Shutdown_Timeout = (int)nudShutdown_Timeout.Value;
             Item.Shutdown_ENTER_Send = chkShutdown_SendENTER.Checked;
             Item.Shutdown_ENTER_Timeout = (int)nudShutdown_ENTER_Timeout.Value;
+
+            Item.LogConsoleOutput = chkLogs_Enabled.Checked;
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -59,6 +62,9 @@ namespace ServiceManagerUI.forms
             chkShutdown_SendENTER.Checked = this.Item.Shutdown_ENTER_Send;
 
             nudShutdown_ENTER_Timeout.Value = this.Item.Shutdown_ENTER_Timeout;
+
+
+            chkLogs_Enabled.Checked = this.Item.LogConsoleOutput;
 
         }
 

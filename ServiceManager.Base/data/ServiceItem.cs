@@ -27,6 +27,8 @@ namespace ServiceManager.Base.data
 
         public int Shutdown_ENTER_Timeout { get; set; }
 
+        public bool LogConsoleOutput { get; set; }
+
         public ServiceItem()
         {
 

@@ -242,7 +242,7 @@ namespace ServiceManager.Base
             if (sa.LastSaved.Date != DateTime.Today)
             {
                 var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
-                if (SaveToLogs(service, sa.Output))
+                if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
                 {
                     sa.Output = "";
                     sa.LastSaved = DateTime.Now;
@@ -308,7 +308,7 @@ namespace ServiceManager.Base
             }
 
             //Save to harddrive
-            if (SaveToLogs(service, sa.Output))
+            if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
             {
                 sa.Output = "";
                 sa.LastSaved = DateTime.Now;
@@ -400,7 +400,7 @@ namespace ServiceManager.Base
                     //Save to harddrive
                     if (sa.LastSaved.Date != DateTime.Today)
                     {
-                        if (SaveToLogs(c, sa.Output))
+                        if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
                         {
                             sa.Output = "";
                             sa.LastSaved = DateTime.Now;

@@ -49,14 +49,17 @@ namespace ServiceManagerUI.forms
             this.chkAutoRestart = new Telerik.WinControls.UI.RadCheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.rpvShutdown = new Telerik.WinControls.UI.RadPageViewPage();
-            this.label7 = new System.Windows.Forms.Label();
-            this.nudShutdown_Timeout = new System.Windows.Forms.NumericUpDown();
-            this.label8 = new System.Windows.Forms.Label();
             this.chkShutdown_SendENTER = new Telerik.WinControls.UI.RadCheckBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             this.nudShutdown_ENTER_Timeout = new System.Windows.Forms.NumericUpDown();
+            this.label11 = new System.Windows.Forms.Label();
+            this.nudShutdown_Timeout = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.radPageViewPage1 = new Telerik.WinControls.UI.RadPageViewPage();
+            this.chkLogs_Enabled = new Telerik.WinControls.UI.RadCheckBox();
+            this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.bnSave)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bnSelectPath)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radPageView1)).BeginInit();
@@ -66,9 +69,12 @@ namespace ServiceManagerUI.forms
             ((System.ComponentModel.ISupportInitialize)(this.chkEnabled)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chkAutoRestart)).BeginInit();
             this.rpvShutdown.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chkShutdown_SendENTER)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
+            this.radPageViewPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_Enabled)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
             // bnSave
@@ -169,10 +175,11 @@ namespace ServiceManagerUI.forms
             this.radPageView1.Controls.Add(this.rpvBasic);
             this.radPageView1.Controls.Add(this.rpbStart);
             this.radPageView1.Controls.Add(this.rpvShutdown);
+            this.radPageView1.Controls.Add(this.radPageViewPage1);
             this.radPageView1.DefaultPage = this.rpvBasic;
             this.radPageView1.Location = new System.Drawing.Point(12, 12);
             this.radPageView1.Name = "radPageView1";
-            this.radPageView1.SelectedPage = this.rpvShutdown;
+            this.radPageView1.SelectedPage = this.radPageViewPage1;
             this.radPageView1.Size = new System.Drawing.Size(691, 419);
             this.radPageView1.TabIndex = 6;
             ((Telerik.WinControls.UI.RadPageViewStripElement)(this.radPageView1.GetChildAt(0))).StripButtons = Telerik.WinControls.UI.StripViewButtons.None;
@@ -259,36 +266,6 @@ namespace ServiceManagerUI.forms
             this.rpvShutdown.Size = new System.Drawing.Size(670, 371);
             this.rpvShutdown.Text = "Shutdown";
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(22, 38);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(49, 13);
-            this.label7.TabIndex = 9;
-            this.label7.Text = "Timeout";
-            // 
-            // nudShutdown_Timeout
-            // 
-            this.nudShutdown_Timeout.Location = new System.Drawing.Point(285, 36);
-            this.nudShutdown_Timeout.Name = "nudShutdown_Timeout";
-            this.nudShutdown_Timeout.Size = new System.Drawing.Size(120, 20);
-            this.nudShutdown_Timeout.TabIndex = 11;
-            this.nudShutdown_Timeout.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(411, 38);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(49, 13);
-            this.label8.TabIndex = 9;
-            this.label8.Text = "seconds";
-            // 
             // chkShutdown_SendENTER
             // 
             this.chkShutdown_SendENTER.Location = new System.Drawing.Point(285, 82);
@@ -305,24 +282,6 @@ namespace ServiceManagerUI.forms
             this.label9.TabIndex = 12;
             this.label9.Text = "Send ENTER to close the application";
             // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(22, 114);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(49, 13);
-            this.label10.TabIndex = 9;
-            this.label10.Text = "Timeout";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(411, 114);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(49, 13);
-            this.label11.TabIndex = 9;
-            this.label11.Text = "seconds";
-            // 
             // nudShutdown_ENTER_Timeout
             // 
             this.nudShutdown_ENTER_Timeout.Location = new System.Drawing.Point(285, 112);
@@ -334,6 +293,80 @@ namespace ServiceManagerUI.forms
             0,
             0,
             0});
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(411, 114);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(49, 13);
+            this.label11.TabIndex = 9;
+            this.label11.Text = "seconds";
+            // 
+            // nudShutdown_Timeout
+            // 
+            this.nudShutdown_Timeout.Location = new System.Drawing.Point(285, 36);
+            this.nudShutdown_Timeout.Name = "nudShutdown_Timeout";
+            this.nudShutdown_Timeout.Size = new System.Drawing.Size(120, 20);
+            this.nudShutdown_Timeout.TabIndex = 11;
+            this.nudShutdown_Timeout.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(22, 114);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(49, 13);
+            this.label10.TabIndex = 9;
+            this.label10.Text = "Timeout";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(411, 38);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 13);
+            this.label8.TabIndex = 9;
+            this.label8.Text = "seconds";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(22, 38);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(49, 13);
+            this.label7.TabIndex = 9;
+            this.label7.Text = "Timeout";
+            // 
+            // radPageViewPage1
+            // 
+            this.radPageViewPage1.Controls.Add(this.chkLogs_Enabled);
+            this.radPageViewPage1.Controls.Add(this.label12);
+            this.radPageViewPage1.ItemSize = new System.Drawing.SizeF(57F, 28F);
+            this.radPageViewPage1.Location = new System.Drawing.Point(10, 37);
+            this.radPageViewPage1.Name = "radPageViewPage1";
+            this.radPageViewPage1.Size = new System.Drawing.Size(670, 371);
+            this.radPageViewPage1.Text = "Logging";
+            // 
+            // chkLogs_Enabled
+            // 
+            this.chkLogs_Enabled.Location = new System.Drawing.Point(285, 37);
+            this.chkLogs_Enabled.Name = "chkLogs_Enabled";
+            this.chkLogs_Enabled.Size = new System.Drawing.Size(15, 15);
+            this.chkLogs_Enabled.TabIndex = 11;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(22, 38);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(153, 13);
+            this.label12.TabIndex = 10;
+            this.label12.Text = "Log Console outputs to disk";
             // 
             // frmNewService
             // 
@@ -347,6 +380,10 @@ namespace ServiceManagerUI.forms
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmNewService";
+            // 
+            // 
+            // 
+            this.RootElement.ApplyShapeToControl = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "New Service";
             this.Load += new System.EventHandler(this.frmNewService_Load);
@@ -364,9 +401,13 @@ namespace ServiceManagerUI.forms
             ((System.ComponentModel.ISupportInitialize)(this.chkAutoRestart)).EndInit();
             this.rpvShutdown.ResumeLayout(false);
             this.rpvShutdown.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chkShutdown_SendENTER)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).EndInit();
+            this.radPageViewPage1.ResumeLayout(false);
+            this.radPageViewPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_Enabled)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -400,5 +441,8 @@ namespace ServiceManagerUI.forms
         private System.Windows.Forms.NumericUpDown nudShutdown_ENTER_Timeout;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label10;
+        private RadPageViewPage radPageViewPage1;
+        private RadCheckBox chkLogs_Enabled;
+        private System.Windows.Forms.Label label12;
     }
 }
