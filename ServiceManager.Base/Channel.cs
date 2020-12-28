@@ -232,7 +232,7 @@ namespace ServiceManager.Base
 
                 try
                 {
-                    this?.Try(a => a.ShutdownStarted());
+                    //this?.Try(a => a.ShutdownStarted());
 
                     host.Abort();
                     //host.Close(new TimeSpan(0, 0, 5));
