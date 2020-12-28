@@ -3,22 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ServiceManager.Base.data.ServiceAnalytics;
 
 namespace ServiceManager.Base.wcf.args
 {
     public class ServiceChangedEventArgs
     {
-        public enum eState
-        {
-            started = 0,
-            exited = 1,
-            updated = 2,
-            exiting = 3
-        }
 
         public Guid ServiceId { get; set; }
-
-        public eState State { get; set; }
 
         public int PID { get; set; }
 
@@ -26,6 +18,7 @@ namespace ServiceManager.Base.wcf.args
 
         public bool AutoRestart { get; set; } = false;
 
+        public eStatus Status { get; set; }
 
     }
 }

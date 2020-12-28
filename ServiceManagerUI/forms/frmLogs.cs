@@ -81,7 +81,7 @@ namespace ServiceManager.UI.forms
 
             var service = services.Analytics.FirstOrDefault(a => a.ServiceID == serviceId);
 
-            ClientCallback_ServiceChanged(null, new ServiceManager.Base.wcf.args.ServiceChangedEventArgs() { State = (service.IsRunning ? ServiceManager.Base.wcf.args.ServiceChangedEventArgs.eState.started : ServiceManager.Base.wcf.args.ServiceChangedEventArgs.eState.exited) });
+            ClientCallback_ServiceChanged(null, new Base.wcf.args.ServiceChangedEventArgs() { Status = service.Status, ServiceId = service.ServiceID });
 
             if (LiveLogs)
             {
@@ -98,31 +98,34 @@ namespace ServiceManager.UI.forms
             }
         }
 
-        private void ClientCallback_ServiceChanged(object sender, ServiceManager.Base.wcf.args.ServiceChangedEventArgs e)
+        private void ClientCallback_ServiceChanged(object sender, Base.wcf.args.ServiceChangedEventArgs e)
         {
 
             if (e.ServiceId != serviceId)
                 return;
 
-            switch (e.State)
+            switch (e.Status)
             {
-                case ServiceManager.Base.wcf.args.ServiceChangedEventArgs.eState.started:
+                case Base.data.ServiceAnalytics.eStatus.running:
 
                     tsmiStatus.Image = Properties.Resources.led_on;
                     tsmiStatus.Text = "Service is running.";
 
                     break;
-                case ServiceManager.Base.wcf.args.ServiceChangedEventArgs.eState.exited:
+                case Base.data.ServiceAnalytics.eStatus.offline:
+                case Base.data.ServiceAnalytics.eStatus.start_failed:
+                case Base.data.ServiceAnalytics.eStatus.failed:
 
                     tsmiStatus.Image = Properties.Resources.led_off;
                     tsmiStatus.Text = "Service is offline.";
 
                     break;
+                
             }
 
         }
 
-        private void ClientCallback_LiveLogs(object sender, ServiceManager.Base.wcf.args.LiveLogsEventArgs e)
+        private void ClientCallback_LiveLogs(object sender, Base.wcf.args.LiveLogsEventArgs e)
         {
             if (e.ServiceId != serviceId)
                 return;
@@ -182,7 +185,7 @@ namespace ServiceManager.UI.forms
 
         private void tsmiService_Shutdown_Click(object sender, EventArgs e)
         {
-            this.Connection.Client.ShutdownService(this.serviceId, false);
+            this.Connection.Client.ShutdownService(this.serviceId);
         }
 
         private void tsmiService_Restart_Click(object sender, EventArgs e)

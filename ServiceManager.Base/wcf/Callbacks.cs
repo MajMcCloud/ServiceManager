@@ -65,22 +65,22 @@ namespace ServiceManager.Base.wcf
 
         public void ServiceExited(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)
         {
-            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, State = ServiceChangedEventArgs.eState.exited, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
+            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
         }
 
         public void ServiceExiting(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)
         {
-            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, State = ServiceChangedEventArgs.eState.exiting, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
+            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status,  PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
         }
 
         public void ServiceStarted(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)
         {
-            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, State = ServiceChangedEventArgs.eState.started, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
+            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
         }
 
         public void ServiceUpdated(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)
         {
-            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, State = ServiceChangedEventArgs.eState.updated, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
+            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
         }
 
         public void ActivityPing(Guid serviceId)

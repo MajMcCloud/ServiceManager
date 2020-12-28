@@ -29,21 +29,18 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn1 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 0", "Activity");
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn2 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 1", "PID");
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn3 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 2", "Title");
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn4 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 3", "Status");
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn5 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 4", "Restarts");
             Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn6 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 5", "Auto Restart");
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.tmRefresh = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.cmsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.tsmiManage_Disable = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_Restart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMenu_Shutdown_Force = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_Logs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Livelogs = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,6 +75,7 @@
             this.radLabelElement3 = new Telerik.WinControls.UI.RadLabelElement();
             this.radLabelElement2 = new Telerik.WinControls.UI.RadLabelElement();
             this.lblActiveServiceCount = new Telerik.WinControls.UI.RadLabelElement();
+            this.rmServiceRefresh = new System.Windows.Forms.Timer(this.components);
             this.cmsMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lsvServices)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radMenu1)).BeginInit();
@@ -87,7 +85,6 @@
             // 
             // tmRefresh
             // 
-            this.tmRefresh.Enabled = true;
             this.tmRefresh.Interval = 10000;
             this.tmRefresh.Tick += new System.EventHandler(this.tmRefresh_Tick);
             // 
@@ -104,8 +101,6 @@
             // cmsMenu
             // 
             this.cmsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiManage_Disable,
-            this.toolStripSeparator3,
             this.tsmiMenu_Restart,
             this.tsmiMenu_Shutdown,
             this.toolStripSeparator4,
@@ -116,19 +111,7 @@
             this.toolStripSeparator6,
             this.tsmiMenu_OpenLogs});
             this.cmsMenu.Name = "cmsMenu";
-            this.cmsMenu.Size = new System.Drawing.Size(178, 182);
-            // 
-            // tsmiManage_Disable
-            // 
-            this.tsmiManage_Disable.Name = "tsmiManage_Disable";
-            this.tsmiManage_Disable.Size = new System.Drawing.Size(177, 22);
-            this.tsmiManage_Disable.Text = "Toggle service";
-            this.tsmiManage_Disable.Click += new System.EventHandler(this.tsmiManage_Disable_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(174, 6);
+            this.cmsMenu.Size = new System.Drawing.Size(178, 154);
             // 
             // tsmiMenu_Restart
             // 
@@ -140,20 +123,11 @@
             // 
             // tsmiMenu_Shutdown
             // 
-            this.tsmiMenu_Shutdown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiMenu_Shutdown_Force});
             this.tsmiMenu_Shutdown.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMenu_Shutdown.Image")));
             this.tsmiMenu_Shutdown.Name = "tsmiMenu_Shutdown";
             this.tsmiMenu_Shutdown.Size = new System.Drawing.Size(177, 22);
             this.tsmiMenu_Shutdown.Text = "Shutdown service";
             this.tsmiMenu_Shutdown.Click += new System.EventHandler(this.tsmiMenu_Shutdown_Click);
-            // 
-            // tsmiMenu_Shutdown_Force
-            // 
-            this.tsmiMenu_Shutdown_Force.Name = "tsmiMenu_Shutdown_Force";
-            this.tsmiMenu_Shutdown_Force.Size = new System.Drawing.Size(160, 22);
-            this.tsmiMenu_Shutdown_Force.Text = "Force Shutdown";
-            this.tsmiMenu_Shutdown_Force.Click += new System.EventHandler(this.tsmiMenu_Shutdown_Force_Click);
             // 
             // toolStripSeparator4
             // 
@@ -200,8 +174,8 @@
             // 
             // lsvServices
             // 
-            this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             listViewDetailColumn1.HeaderText = "Activity";
             listViewDetailColumn1.Width = 60F;
@@ -223,6 +197,7 @@
             listViewDetailColumn6});
             this.lsvServices.ItemSpacing = -1;
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
+            this.lsvServices.MultiSelect = true;
             this.lsvServices.Name = "lsvServices";
             this.lsvServices.Size = new System.Drawing.Size(789, 371);
             this.lsvServices.TabIndex = 5;
@@ -428,6 +403,12 @@
             this.lblActiveServiceCount.Text = "0";
             this.lblActiveServiceCount.TextWrap = true;
             // 
+            // rmServiceRefresh
+            // 
+            this.rmServiceRefresh.Enabled = true;
+            this.rmServiceRefresh.Interval = 10000;
+            this.rmServiceRefresh.Tick += new System.EventHandler(this.rmServiceRefresh_Tick);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -464,9 +445,6 @@
         private System.Windows.Forms.ContextMenuStrip cmsMenu;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Restart;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Shutdown;
-        private System.Windows.Forms.ToolStripMenuItem tsmiManage_Disable;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Shutdown_Force;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Logs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Livelogs;
@@ -501,6 +479,7 @@
         private Telerik.WinControls.UI.RadLabelElement radLabelElement3;
         private Telerik.WinControls.UI.RadLabelElement radLabelElement2;
         private Telerik.WinControls.UI.RadLabelElement lblActiveServiceCount;
+        private System.Windows.Forms.Timer rmServiceRefresh;
     }
 }
 

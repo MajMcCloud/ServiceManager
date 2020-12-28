@@ -32,7 +32,7 @@ namespace ServiceManager.Base.wcf
 
 
         [OperationContract(IsOneWay = true)]
-        void ShutdownService(Guid serviceId, bool ForceShutdown);
+        void ShutdownService(Guid serviceId);
 
         [OperationContract(IsOneWay = true)]
         void ToggleEnable(Guid serviceId);
@@ -128,7 +128,7 @@ namespace ServiceManager.Base.wcf
             ServiceLog(serviceId, "Service has been restarted.");
         }
 
-        public void ShutdownService(Guid serviceId, bool ForceShutdown)
+        public void ShutdownService(Guid serviceId)
         {
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
@@ -141,10 +141,9 @@ namespace ServiceManager.Base.wcf
 
             ServiceLog(serviceId, "Service will be ended.");
 
-            if (ForceShutdown && service.ForceRestart)
-            {
-                service.ForceRestart = false;
-            }
+
+            service.ForceRestart = false;
+
 
             if (analytics.IsRunning)
             {

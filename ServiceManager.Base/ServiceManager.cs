@@ -100,7 +100,7 @@ namespace ServiceManager.Base
 
             Process proc = new Process();
 
-
+            sa.Status = ServiceAnalytics.eStatus.starting;
 
 
             proc.StartInfo.UseShellExecute = false;
@@ -113,10 +113,12 @@ namespace ServiceManager.Base
 
             proc.Exited += (s, en) =>
             {
-                if (IsRunning)
-                {
-                    Connection?.Try(a => a.ServiceExited(item.ID, item, sa));
-                }
+
+                sa.Status = ServiceAnalytics.eStatus.offline;
+
+                Connection?.Try(a => a.ServiceExited(item.ID, item, sa));
+
+                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
 
                 Process_Exited(item, proc);
             };
@@ -139,6 +141,10 @@ namespace ServiceManager.Base
                 sa.Exited = DateTime.Now;
                 sa.Exiting = null;
 
+                sa.Status = ServiceAnalytics.eStatus.start_failed;
+
+                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+
                 return;
             }
 
@@ -148,6 +154,8 @@ namespace ServiceManager.Base
             sa.Started = DateTime.Now;
             sa.Exited = null;
             sa.Exiting = null;
+
+            sa.Status = ServiceAnalytics.eStatus.running;
 
             Connection?.Try(a => a.ServiceStarted(item.ID, item, sa));
         }
@@ -161,6 +169,8 @@ namespace ServiceManager.Base
             {
                 return;
             }
+
+            sa.Status = ServiceAnalytics.eStatus.shutting_down;
 
             RunningProcesses.Remove(proc);
 
@@ -203,6 +213,7 @@ namespace ServiceManager.Base
                 proc.Kill();
             }
 
+            sa.Status = ServiceAnalytics.eStatus.offline;
         }
 
         public void SendInput(ServiceItem item, String input)
@@ -326,6 +337,10 @@ namespace ServiceManager.Base
 
             }
 
+            sa.Status = ServiceAnalytics.eStatus.offline;
+
+
+
             //Save to harddrive
             if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
             {
@@ -379,6 +394,7 @@ namespace ServiceManager.Base
                     if (proc == null)
                         return;
 
+                    sa.Status = ServiceAnalytics.eStatus.shutting_down;
                     var start = DateTime.Now;
 
                     this.Connection?.Try(a => a.ServiceExiting(service.ID, service, sa));
@@ -411,6 +427,8 @@ namespace ServiceManager.Base
 
                     if (!proc.HasExited)
                         proc.Kill();
+
+                    sa.Status = ServiceAnalytics.eStatus.offline;
 
                     Connection?.Try(a => a.ServiceExited(service.ID, service, sa));
 

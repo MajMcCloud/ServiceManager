@@ -57,5 +57,20 @@ namespace ServiceManager.Base.data
 
         public DateTime LastPing { get; set; }
 
+        public eStatus Status { get; set; }
+
+        public enum eStatus
+        {
+            unknown = -1,
+            starting = 1,
+            started = 2,
+            running = 3,
+            shutting_down = 4,
+            offline = 5,
+            start_failed = 6,
+            failed = 7,
+            updated = 8
+        }
+
     }
 }
