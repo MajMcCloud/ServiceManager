@@ -132,6 +132,7 @@
             // 
             // tsmiMenu_Restart
             // 
+            this.tsmiMenu_Restart.Image = global::ServiceManager.UI.Properties.Resources.play;
             this.tsmiMenu_Restart.Name = "tsmiMenu_Restart";
             this.tsmiMenu_Restart.Size = new System.Drawing.Size(177, 22);
             this.tsmiMenu_Restart.Text = "Start service";
@@ -141,6 +142,7 @@
             // 
             this.tsmiMenu_Shutdown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiMenu_Shutdown_Force});
+            this.tsmiMenu_Shutdown.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMenu_Shutdown.Image")));
             this.tsmiMenu_Shutdown.Name = "tsmiMenu_Shutdown";
             this.tsmiMenu_Shutdown.Size = new System.Drawing.Size(177, 22);
             this.tsmiMenu_Shutdown.Text = "Shutdown service";

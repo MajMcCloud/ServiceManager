@@ -189,6 +189,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="iconfinder_mixer_2001872__1__qg2_icon.ico" />
+    <None Include="Resources\stop1.png" />
+    <None Include="Resources\play.png" />
     <None Include="Resources\antenne_24px.png" />
     <None Include="Resources\space-ship_24px.png" />
     <None Include="Resources\telescope_24px.png" />
