@@ -60,28 +60,30 @@ namespace ServiceManager.UI.forms
 
         private void StartLogging()
         {
-            try
-            {
-                var logs = this.Connection.Client.GetServiceLogs(serviceId);
 
+            var logs = this.Connection.TryCatch(a => a.GetServiceLogs(serviceId));
+
+            if (logs != null)
+            {
                 txtContent.Text = "";
 
                 txtContent.AppendText(logs.Logs);
             }
-            catch
-            {
 
-            }
 
             txtContent.SelectionStart = txtContent.Text.Length;
 
             txtContent.ScrollToCaret();
 
-            var services = this.Connection.Client.GetServicesAnalytics();
+            this.Connection.Async(a => a.GetServicesAnalytics(), b =>
+            {
+                Invoke((Action)(() =>
+                {
+                    var service = b.Analytics.FirstOrDefault(a => a.ServiceID == serviceId);
 
-            var service = services.Analytics.FirstOrDefault(a => a.ServiceID == serviceId);
-
-            ClientCallback_ServiceChanged(null, new Base.wcf.args.ServiceChangedEventArgs() { Status = service.Status, ServiceId = service.ServiceID });
+                    ClientCallback_ServiceChanged(null, new Base.wcf.args.ServiceChangedEventArgs() { Status = service.Status, ServiceId = service.ServiceID });
+                }));
+            });
 
             if (LiveLogs)
             {
@@ -90,7 +92,7 @@ namespace ServiceManager.UI.forms
                 this.Connection.ClientCallback.LiveLogs += ClientCallback_LiveLogs;
                 this.Connection.ClientCallback.ServiceChanged += ClientCallback_ServiceChanged;
 
-                this.Connection.Client.BeginLiveLogs(serviceId);
+                this.Connection.Async(a => a.BeginLiveLogs(serviceId));
             }
             else
             {
@@ -111,6 +113,9 @@ namespace ServiceManager.UI.forms
                     tsmiStatus.Image = Properties.Resources.led_on;
                     tsmiStatus.Text = "Service is running.";
 
+                    tsmiService_Restart.Text = "Restart service";
+                    tsmiService_Shutdown.Enabled = true;
+
                     break;
                 case Base.data.ServiceAnalytics.eStatus.offline:
                 case Base.data.ServiceAnalytics.eStatus.start_failed:
@@ -118,6 +123,9 @@ namespace ServiceManager.UI.forms
 
                     tsmiStatus.Image = Properties.Resources.led_off;
                     tsmiStatus.Text = "Service is offline.";
+
+                    tsmiService_Restart.Text = "Start service";
+                    tsmiService_Shutdown.Enabled = false;
 
                     break;
 
