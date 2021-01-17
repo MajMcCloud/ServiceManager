@@ -41,7 +41,7 @@ namespace ServiceManager.Base.wcf
         void ActivityPing(Guid serviceId);
     }
 
-    [ServiceBehavior(UseSynchronizationContext = false, AutomaticSessionShutdown = true, InstanceContextMode = InstanceContextMode.Single)]
+    [ServiceBehavior(UseSynchronizationContext = false, AutomaticSessionShutdown = true, ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.Single)]
     public class Callbacks : ICallbacks
     {
         EventHandlerList _Events { get; set; } = new EventHandlerList();
@@ -70,7 +70,7 @@ namespace ServiceManager.Base.wcf
 
         public void ServiceExiting(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)
         {
-            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status,  PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
+            OnServiceChanged(new ServiceChangedEventArgs() { ServiceId = serviceId, Status = analytics.Status, PID = analytics.ProcessID, AutoRestart = service.ForceRestart, Restarts = analytics.Restarts });
         }
 
         public void ServiceStarted(Guid serviceId, ServiceItem service, ServiceAnalytics analytics)

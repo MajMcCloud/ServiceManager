@@ -54,7 +54,7 @@ namespace ServiceManager.Base.wcf
 
     }
 
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = true, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = false, UseSynchronizationContext = false)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = false, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = true, UseSynchronizationContext = false)]
     public class ManagerService : IManagerService
     {
         public ICallbacks CallbackChannel { get; set; }
@@ -166,7 +166,6 @@ namespace ServiceManager.Base.wcf
         {
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
-
 
             GetServiceLogsResponse logs = new GetServiceLogsResponse();
 

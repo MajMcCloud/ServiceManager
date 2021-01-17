@@ -80,20 +80,21 @@ namespace ServiceManager.Base
 
                         host = new ServiceHost(m_serverInstance, new Uri[] { new Uri($"net.pipe://{this.Hostname}") });
 
-                        host.OpenTimeout = new TimeSpan(0, 0, 10);
-                        host.CloseTimeout = new TimeSpan(0, 0, 10);
+                        host.OpenTimeout = new TimeSpan(0, 0, 15);
+                        host.CloseTimeout = new TimeSpan(0, 0, 15);
+                        
 
-                        var endpoint = host.AddServiceEndpoint(typeof(IManagerService), new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = new TimeSpan(0, 0, 10), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, this.PipeName);
+                        var endpoint = host.AddServiceEndpoint(typeof(IManagerService), new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue, MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, this.PipeName);
 
                         break;
                     case eMode.Tcp:
 
                         host = new ServiceHost(m_serverInstance);
 
-                        host.OpenTimeout = new TimeSpan(0, 0, 10);
-                        host.CloseTimeout = new TimeSpan(0, 0, 10);
+                        host.OpenTimeout = new TimeSpan(0, 0, 15);
+                        host.CloseTimeout = new TimeSpan(0, 0, 15);
 
-                        var endpoint2 = host.AddServiceEndpoint(typeof(IManagerService), new NetTcpBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = new TimeSpan(0, 0, 10), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, $"net.tcp://{this.Hostname}:{this.Port}/servicemanager");
+                        var endpoint2 = host.AddServiceEndpoint(typeof(IManagerService), new NetTcpBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue, MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, $"net.tcp://{this.Hostname}:{this.Port}/servicemanager");
 
                         break;
                     default:
@@ -327,6 +328,39 @@ namespace ServiceManager.Base
                     OnException(client, ex);
             }
             return output;
+        }
+
+        public void Async(Action<IManagerService> func, Action<IManagerService, Exception> OnException = null)
+        {
+            IManagerService client = Client;
+
+            if (this.channelFactory.State != CommunicationState.Opened)
+            {
+                return;
+            }
+
+            try
+            {
+                Task t = new Task(delegate
+                {
+                    try
+                    {
+                        func(client);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (OnException != null)
+                            OnException(Client, ex);
+                    }
+
+                });
+
+                t.Start();
+            }
+            catch
+            {
+
+            }
         }
 
         public void Async<TResult>(Func<IManagerService, TResult> func, Action<TResult> OnResult = null, Action<IManagerService, Exception> OnException = null)
