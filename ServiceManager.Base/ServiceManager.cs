@@ -148,7 +148,10 @@ namespace ServiceManager.Base
                 return;
             }
 
-            RunningProcesses.Add(proc);
+            lock (RunningProcesses)
+            {
+                RunningProcesses.Add(proc);
+            }
 
             sa.ProcessID = proc.Id;
             sa.Started = DateTime.Now;
@@ -164,15 +167,23 @@ namespace ServiceManager.Base
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
 
-            var proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
-            if (proc == null)
+            Process proc;
+
+            lock (RunningProcesses)
             {
-                return;
+
+                proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
+                if (proc == null)
+                {
+                    return;
+                }
+
+                sa.Status = ServiceAnalytics.eStatus.shutting_down;
+
+                if (RunningProcesses.Contains(proc))
+                    RunningProcesses.Remove(proc);
+
             }
-
-            sa.Status = ServiceAnalytics.eStatus.shutting_down;
-
-            RunningProcesses.Remove(proc);
 
             if (proc.HasExited)
             {
