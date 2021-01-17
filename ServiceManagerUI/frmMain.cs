@@ -147,18 +147,11 @@ namespace ServiceManager.UI
 
         private void tmRefresh_Tick(object sender, EventArgs e)
         {
-
             //Continue when watching
             if (this.WatchConnection == null)
                 return;
 
             WatchConnection.Async(a => a.GetServicesAnalytics(), b => UpdateServiceList(b));
-
-            //foreach (ListViewDataItem lvi in lsvServices.Items)
-            //{
-
-
-            //}
         }
 
         private void UpdateServiceList(GetServiceAnalyticsResponse analytics)
@@ -488,7 +481,7 @@ namespace ServiceManager.UI
                 lblActiveServiceCount.Text = "0";
                 //tmRefresh.Enabled = false;
 
-                rmiManager_Refresh.Enabled = false;
+                rmiServices.Enabled = false;
 
                 tmRefresh.Enabled = false;
             };
@@ -502,7 +495,7 @@ namespace ServiceManager.UI
                 lblStatus.ForeColor = Color.Red;
                 lblActiveServiceCount.Text = "0";
 
-                rmiManager_Refresh.Enabled = false;
+                rmiServices.Enabled = false;
                 tmRefresh.Enabled = false;
 
                 MessageBox.Show("Connection failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -617,7 +610,7 @@ namespace ServiceManager.UI
 
             };
 
-            rmiManager_Refresh.Enabled = true;
+            rmiServices.Enabled = true;
 
             tmRefresh_Tick(null, null);
         }
@@ -649,138 +642,6 @@ namespace ServiceManager.UI
             };
 
             PrepareWatcher();
-
-            //WatchConnection.Disconnected += (s, en) =>
-            //{
-            //    WatchConnection = null;
-            //    WatchingProcessID = 0;
-
-            //    lblStatus.Text = "Disconnected";
-            //    lblStatus.ForeColor = Color.Black;
-            //    lblActiveServiceCount.Text = "0";
-            //    //tmRefresh.Enabled = false;
-
-            //    rmiManager_Refresh.Enabled = false;
-            //};
-
-            //WatchConnection.Faulted += (s, en) =>
-            //{
-            //    WatchConnection = null;
-            //    WatchingProcessID = 0;
-
-            //    lblStatus.Text = "Failed";
-            //    lblStatus.ForeColor = Color.Red;
-            //    lblActiveServiceCount.Text = "0";
-            //    //tmRefresh.Enabled = false;
-
-            //    rmiManager_Refresh.Enabled = false;
-
-            //    MessageBox.Show("Connection failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //};
-
-            //WatchConnection.Start();
-
-            //if (WatchConnection == null)
-            //{
-            //    return;
-            //}
-
-            //WatchConnection.ClientCallback.ServerShutdownStarted += (s, en) =>
-            //{
-
-            //    //tmRefresh.Enabled = false;
-
-            //};
-
-            //WatchConnection.ClientCallback.ServerShutdownCompleted += (s, en) =>
-            //{
-            //    if (this.WatchConnection != null)
-            //    {
-            //        this.WatchConnection.Stop();
-            //        this.WatchConnection = null;
-            //    }
-
-            //    this.WatchingProcessID = 0;
-
-            //    this.Manager = null;
-
-            //    lsvServices.BeginUpdate();
-            //    lsvServices.Items.Clear();
-            //    lsvServices.EndUpdate();
-            //};
-
-            //WatchConnection.ClientCallback.ServiceChanged += (s, en) =>
-            //{
-            //    var item = lsvServices.Items.Cast<ListViewDataItem>().FirstOrDefault(a => (Guid)a.Tag == en.ServiceId);
-            //    if (item == null)
-            //        return;
-
-            //    if (en.Status == eStatus.offline)
-            //    {
-            //        item.Image = null;
-            //    }
-
-            //    switch (en.Status)
-            //    {
-            //        case eStatus.offline:
-
-            //            item[1] = "-";
-            //            item[3] = "offline";
-
-            //            break;
-            //        case eStatus.shutting_down:
-
-            //            //item[1] = en.PID.ToString();
-            //            item[3] = "shutting down";
-
-            //            break;
-            //        case eStatus.running:
-
-            //            item[1] = en.PID.ToString();
-            //            item[3] = "running";
-
-            //            break;
-            //        case eStatus.updated:
-
-
-            //            break;
-            //        default:
-
-            //            item[3] = en.Status.ToString();
-
-            //            break;
-
-            //    }
-
-            //    item[4] = en.Restarts.ToString();
-            //    item[5] = (en.AutoRestart ? "yes" : "no");
-
-            //};
-
-            //WatchConnection.ClientCallback.ServiceActivityPing += (s, en) =>
-            //{
-
-            //    lsvServices.BeginUpdate();
-
-            //    foreach (ListViewDataItem lvi in lsvServices.Items)
-            //    {
-            //        if (lvi.Tag.ToString() != en.ServiceId.ToString())
-            //            continue;
-
-            //        var bmp = new Bitmap(Properties.Resources.led_on, 16, 16);
-            //        //Graphics.FromImage(bmp).FillRectangle(Brushes.Black, 0, 0, 16, 16);
-
-            //        lvi.Image = bmp;
-
-            //    }
-
-            //    lsvServices.EndUpdate();
-
-            //};
-
-            //rmiManager_Refresh.Enabled = true;
-
-            //tmRefresh_Tick(null, null);
         }
 
         private void rmiTesting_Start_Click(object sender, EventArgs e)
@@ -851,16 +712,17 @@ namespace ServiceManager.UI
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (this.Manager != null)
-            {
-                if (MessageBox.Show("Test is still runnning. Close anyway?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                {
-                    e.Cancel = true;
-                    return;
-                }
+            if (this.Manager == null)
+                return;
 
-                rmiTesting_End_Click(sender, e);
+            if (MessageBox.Show("Test is still runnning. Close anyway?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                e.Cancel = true;
+                return;
             }
+
+            rmiTesting_End_Click(sender, e);
+
         }
 
         #region "Service"
@@ -1113,11 +975,11 @@ namespace ServiceManager.UI
         {
             cmsMenu.Close();
 
+            if (this.WatchConnection == null)
+                return;
+
             lock (_sync)
             {
-                if (this.WatchConnection == null)
-                    return;
-
                 foreach (var i in lsvServices.SelectedItems)
                 {
                     var item = i as ListViewDataItem;
@@ -1128,17 +990,8 @@ namespace ServiceManager.UI
                         if (MessageBox.Show($"Restart service {item[1]} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                             return;
                     }
-                    try
-                    {
-                        this.WatchConnection.Client.RestartService(id);
 
-                        //item[3] = "restarting";
-
-                    }
-                    catch
-                    {
-
-                    }
+                    this.WatchConnection.TryCatch(a => a.RestartService(id));
                 }
             }
         }
@@ -1147,28 +1000,20 @@ namespace ServiceManager.UI
         {
             cmsMenu.Close();
 
+            if (this.WatchConnection == null)
+                return;
+
+            if (MessageBox.Show("Shutdown service?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
             lock (_sync)
             {
-                if (this.WatchConnection == null)
-                    return;
-
-                if (MessageBox.Show("Shutdown service?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                    return;
-
                 foreach (var i in lsvServices.SelectedItems)
                 {
                     var item = i as ListViewDataItem;
                     var id = (Guid)item.Tag;
 
-                    try
-                    {
-                        this.WatchConnection.Client.ShutdownService(id);
-                        //item[3] = "shutting down";
-                    }
-                    catch
-                    {
-
-                    }
+                    this.WatchConnection.TryCatch(a => a.ShutdownService(id));
                 }
 
             }
@@ -1177,14 +1022,14 @@ namespace ServiceManager.UI
 
         private void tsmiMenu_Logs_Click(object sender, EventArgs e)
         {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.SelectedItems.Count == 0)
+                return;
+
             lock (_sync)
             {
-                if (lsvServices.SelectedItems.Count == 0)
-                    return;
-
-                if (this.WatchConnection == null)
-                    return;
-
                 foreach (var i in lsvServices.SelectedItems)
                 {
                     var item = i as ListViewDataItem;
@@ -1203,14 +1048,14 @@ namespace ServiceManager.UI
 
         private void tsmiMenu_Livelogs_Click(object sender, EventArgs e)
         {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.SelectedItems.Count == 0)
+                return;
+
             lock (_sync)
             {
-                if (lsvServices.SelectedItems.Count == 0)
-                    return;
-
-                if (this.WatchConnection == null)
-                    return;
-
                 foreach (var i in lsvServices.SelectedItems)
                 {
                     var item = i as ListViewDataItem;
@@ -1228,35 +1073,26 @@ namespace ServiceManager.UI
 
         private void tsmiMenu_ToggleAutoRestart_Click(object sender, EventArgs e)
         {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.SelectedItems.Count == 0)
+                return;
 
             lock (_sync)
             {
-                if (lsvServices.SelectedItems.Count == 0)
-                    return;
-
-                if (this.WatchConnection == null)
-                    return;
-
                 foreach (var i in lsvServices.SelectedItems)
                 {
                     var item = i as ListViewDataItem;
                     var id = (Guid)item.Tag;
 
-                    this.WatchConnection.Client.ToggleAutoRestart(id);
+                    this.WatchConnection.TryCatch(a => a.ToggleAutoRestart(id));
                 }
 
             }
 
         }
 
-
-        private void rmiManager_Refresh_Click(object sender, EventArgs e)
-        {
-            if (this.WatchConnection == null)
-                return;
-
-            WatchConnection.Async(a => a.GetServicesAnalytics(), b => UpdateServiceList(b));
-        }
 
         private void tsmiMenu_OpenLogs_Click(object sender, EventArgs e)
         {
@@ -1276,6 +1112,104 @@ namespace ServiceManager.UI
 
         }
 
+        private void rmiServices_RefreshAll_Click(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
 
+            WatchConnection.Async(a => a.GetServicesAnalytics(), b => UpdateServiceList(b));
+        }
+
+        private void tsmiMenu_OpenExplorer_Click(object sender, EventArgs e)
+        {
+
+            if (this.WatchConnection == null)
+                return;
+
+            if (WatchConnection.Mode == Base.data.settings.Runtime.eMode.Tcp)
+                return;
+
+            foreach (var i in lsvServices.SelectedItems)
+            {
+                var item = i as ListViewDataItem;
+                var id = (Guid)item.Tag;
+
+                var sv = Services.FirstOrDefault(a => a.ID == id);
+                if (sv == null)
+                    continue;
+
+                var path = System.IO.Path.GetDirectoryName(sv.Path);
+
+                Process.Start("explorer.exe", path);
+            }
+
+        }
+
+        private void rmiServices_StartAll_Click(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.Items.Count == 0)
+                return;
+
+            lock (_sync)
+            {
+                foreach (var i in lsvServices.Items)
+                {
+                    var item = i as ListViewDataItem;
+                    var id = (Guid)item.Tag;
+
+                    this.WatchConnection.TryCatch(a => a.StartService(id));
+                }
+
+            }
+        }
+
+        private void rmiServices_StopAll_Click(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.Items.Count == 0)
+                return;
+
+            lock (_sync)
+            {
+                foreach (var i in lsvServices.Items)
+                {
+                    var item = i as ListViewDataItem;
+                    var id = (Guid)item.Tag;
+
+                    this.WatchConnection.TryCatch(a => a.ShutdownService(id));
+                }
+
+            }
+        }
+
+        private void rmiServices_OpenAllLiveLogs_Click(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.Items.Count == 0)
+                return;
+
+            lock (_sync)
+            {
+                foreach (var i in lsvServices.Items)
+                {
+                    var item = i as ListViewDataItem;
+                    var id = (Guid)item.Tag;
+
+                    frmLogs frm = new frmLogs();
+                    frm.LiveLogs = true;
+                    frm.serviceId = id;
+                    frm.Connection = this.WatchConnection;
+                    frm.Show();
+                }
+
+            }
+        }
     }
 }
