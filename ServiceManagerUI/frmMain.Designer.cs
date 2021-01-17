@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn7 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 0", "Activity");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn8 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 1", "PID");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn9 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 2", "Title");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn10 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 3", "Status");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn11 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 4", "Restarts");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn12 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 5", "Auto Restart");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn1 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 0", "Activity");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn2 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 1", "PID");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn3 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 2", "Title");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn4 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 3", "Status");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn5 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 4", "Restarts");
+            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn6 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 5", "Auto Restart");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.tmRefresh = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -72,17 +72,17 @@
             this.rmServiceRefresh = new System.Windows.Forms.Timer(this.components);
             this.rmiServices = new Telerik.WinControls.UI.RadMenuItem();
             this.rmiServices_RefreshAll = new Telerik.WinControls.UI.RadMenuItem();
+            this.radMenuSeparatorItem4 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
+            this.rmiServices_StartAll = new Telerik.WinControls.UI.RadMenuItem();
+            this.rmiServices_StopAll = new Telerik.WinControls.UI.RadMenuItem();
+            this.radMenuSeparatorItem5 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
+            this.rmiServices_OpenAllLiveLogs = new Telerik.WinControls.UI.RadMenuItem();
             this.radMenu1 = new Telerik.WinControls.UI.RadMenu();
+            this.rmiManager_OpenConfig = new Telerik.WinControls.UI.RadMenuItem();
+            this.rmiInstances_ConnectTo = new Telerik.WinControls.UI.RadMenuItem();
             this.tsmiMenu_Restart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_OpenExplorer = new System.Windows.Forms.ToolStripMenuItem();
-            this.rmiManager_OpenConfig = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiInstances_ConnectTo = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem4 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiServices_StopAll = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiServices_StartAll = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem5 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiServices_OpenAllLiveLogs = new Telerik.WinControls.UI.RadMenuItem();
             this.cmsMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lsvServices)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radStatusStrip1)).BeginInit();
@@ -169,24 +169,24 @@
             this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            listViewDetailColumn7.HeaderText = "Activity";
-            listViewDetailColumn7.Width = 60F;
-            listViewDetailColumn8.HeaderText = "PID";
-            listViewDetailColumn8.Width = 60F;
-            listViewDetailColumn9.HeaderText = "Title";
-            listViewDetailColumn10.HeaderText = "Status";
-            listViewDetailColumn10.Width = 150F;
-            listViewDetailColumn11.HeaderText = "Restarts";
-            listViewDetailColumn11.Width = 60F;
-            listViewDetailColumn12.HeaderText = "Auto Restart";
-            listViewDetailColumn12.Width = 80F;
+            listViewDetailColumn1.HeaderText = "Activity";
+            listViewDetailColumn1.Width = 60F;
+            listViewDetailColumn2.HeaderText = "PID";
+            listViewDetailColumn2.Width = 60F;
+            listViewDetailColumn3.HeaderText = "Title";
+            listViewDetailColumn4.HeaderText = "Status";
+            listViewDetailColumn4.Width = 150F;
+            listViewDetailColumn5.HeaderText = "Restarts";
+            listViewDetailColumn5.Width = 60F;
+            listViewDetailColumn6.HeaderText = "Auto Restart";
+            listViewDetailColumn6.Width = 80F;
             this.lsvServices.Columns.AddRange(new Telerik.WinControls.UI.ListViewDetailColumn[] {
-            listViewDetailColumn7,
-            listViewDetailColumn8,
-            listViewDetailColumn9,
-            listViewDetailColumn10,
-            listViewDetailColumn11,
-            listViewDetailColumn12});
+            listViewDetailColumn1,
+            listViewDetailColumn2,
+            listViewDetailColumn3,
+            listViewDetailColumn4,
+            listViewDetailColumn5,
+            listViewDetailColumn6});
             this.lsvServices.ItemSpacing = -1;
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
             this.lsvServices.MultiSelect = true;
@@ -387,6 +387,38 @@
             this.rmiServices_RefreshAll.Text = "Refresh list";
             this.rmiServices_RefreshAll.Click += new System.EventHandler(this.rmiServices_RefreshAll_Click);
             // 
+            // radMenuSeparatorItem4
+            // 
+            this.radMenuSeparatorItem4.Name = "radMenuSeparatorItem4";
+            this.radMenuSeparatorItem4.Text = "radMenuSeparatorItem4";
+            this.radMenuSeparatorItem4.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // rmiServices_StartAll
+            // 
+            this.rmiServices_StartAll.Image = global::ServiceManager.UI.Properties.Resources.play;
+            this.rmiServices_StartAll.Name = "rmiServices_StartAll";
+            this.rmiServices_StartAll.Text = "Start all services";
+            this.rmiServices_StartAll.Click += new System.EventHandler(this.rmiServices_StartAll_Click);
+            // 
+            // rmiServices_StopAll
+            // 
+            this.rmiServices_StopAll.Image = global::ServiceManager.UI.Properties.Resources.stop;
+            this.rmiServices_StopAll.Name = "rmiServices_StopAll";
+            this.rmiServices_StopAll.Text = "Stop all services";
+            this.rmiServices_StopAll.Click += new System.EventHandler(this.rmiServices_StopAll_Click);
+            // 
+            // radMenuSeparatorItem5
+            // 
+            this.radMenuSeparatorItem5.Name = "radMenuSeparatorItem5";
+            this.radMenuSeparatorItem5.Text = "radMenuSeparatorItem5";
+            this.radMenuSeparatorItem5.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // rmiServices_OpenAllLiveLogs
+            // 
+            this.rmiServices_OpenAllLiveLogs.Name = "rmiServices_OpenAllLiveLogs";
+            this.rmiServices_OpenAllLiveLogs.Text = "Open all Live Logs";
+            this.rmiServices_OpenAllLiveLogs.Click += new System.EventHandler(this.rmiServices_OpenAllLiveLogs_Click);
+            // 
             // radMenu1
             // 
             this.radMenu1.Items.AddRange(new Telerik.WinControls.RadItem[] {
@@ -399,6 +431,20 @@
             this.radMenu1.Name = "radMenu1";
             this.radMenu1.Size = new System.Drawing.Size(814, 20);
             this.radMenu1.TabIndex = 6;
+            // 
+            // rmiManager_OpenConfig
+            // 
+            this.rmiManager_OpenConfig.Image = global::ServiceManager.UI.Properties.Resources.settings;
+            this.rmiManager_OpenConfig.Name = "rmiManager_OpenConfig";
+            this.rmiManager_OpenConfig.Text = "Open config";
+            this.rmiManager_OpenConfig.Click += new System.EventHandler(this.rmiManager_OpenConfig_Click);
+            // 
+            // rmiInstances_ConnectTo
+            // 
+            this.rmiInstances_ConnectTo.Image = global::ServiceManager.UI.Properties.Resources.connect;
+            this.rmiInstances_ConnectTo.Name = "rmiInstances_ConnectTo";
+            this.rmiInstances_ConnectTo.Text = "Connect to";
+            this.rmiInstances_ConnectTo.Click += new System.EventHandler(this.rmiInstances_ConnectTo_Click);
             // 
             // tsmiMenu_Restart
             // 
@@ -423,50 +469,6 @@
             this.tsmiMenu_OpenExplorer.Size = new System.Drawing.Size(177, 22);
             this.tsmiMenu_OpenExplorer.Text = "Show in explorer";
             this.tsmiMenu_OpenExplorer.Click += new System.EventHandler(this.tsmiMenu_OpenExplorer_Click);
-            // 
-            // rmiManager_OpenConfig
-            // 
-            this.rmiManager_OpenConfig.Image = global::ServiceManager.UI.Properties.Resources.settings;
-            this.rmiManager_OpenConfig.Name = "rmiManager_OpenConfig";
-            this.rmiManager_OpenConfig.Text = "Open config";
-            this.rmiManager_OpenConfig.Click += new System.EventHandler(this.rmiManager_OpenConfig_Click);
-            // 
-            // rmiInstances_ConnectTo
-            // 
-            this.rmiInstances_ConnectTo.Image = global::ServiceManager.UI.Properties.Resources.connect;
-            this.rmiInstances_ConnectTo.Name = "rmiInstances_ConnectTo";
-            this.rmiInstances_ConnectTo.Text = "Connect to";
-            this.rmiInstances_ConnectTo.Click += new System.EventHandler(this.rmiInstances_ConnectTo_Click);
-            // 
-            // radMenuSeparatorItem4
-            // 
-            this.radMenuSeparatorItem4.Name = "radMenuSeparatorItem4";
-            this.radMenuSeparatorItem4.Text = "radMenuSeparatorItem4";
-            this.radMenuSeparatorItem4.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // rmiServices_StopAll
-            // 
-            this.rmiServices_StopAll.Name = "rmiServices_StopAll";
-            this.rmiServices_StopAll.Text = "Stop all services";
-            this.rmiServices_StopAll.Click += new System.EventHandler(this.rmiServices_StopAll_Click);
-            // 
-            // rmiServices_StartAll
-            // 
-            this.rmiServices_StartAll.Name = "rmiServices_StartAll";
-            this.rmiServices_StartAll.Text = "Start all services";
-            this.rmiServices_StartAll.Click += new System.EventHandler(this.rmiServices_StartAll_Click);
-            // 
-            // radMenuSeparatorItem5
-            // 
-            this.radMenuSeparatorItem5.Name = "radMenuSeparatorItem5";
-            this.radMenuSeparatorItem5.Text = "radMenuSeparatorItem5";
-            this.radMenuSeparatorItem5.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // rmiServices_OpenAllLiveLogs
-            // 
-            this.rmiServices_OpenAllLiveLogs.Name = "rmiServices_OpenAllLiveLogs";
-            this.rmiServices_OpenAllLiveLogs.Text = "Open all Live Logs";
-            this.rmiServices_OpenAllLiveLogs.Click += new System.EventHandler(this.rmiServices_OpenAllLiveLogs_Click);
             // 
             // frmMain
             // 
