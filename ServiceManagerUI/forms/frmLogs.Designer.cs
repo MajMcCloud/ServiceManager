@@ -28,13 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.txtContent = new System.Windows.Forms.TextBox();
+            this.txtContent = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.tsmiStatus = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiService_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiService_Restart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLogs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLogs_Autoscroll = new System.Windows.Forms.ToolStripMenuItem();
+            this.txtSearch = new System.Windows.Forms.ToolStripTextBox();
             this.txtInput = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
@@ -44,30 +45,30 @@
             // txtContent
             // 
             this.txtContent.AllowDrop = true;
-            this.txtContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.txtContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtContent.BackColor = System.Drawing.Color.Black;
             this.txtContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtContent.Font = new System.Drawing.Font("Consolas", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
             this.txtContent.ForeColor = System.Drawing.Color.Silver;
             this.txtContent.Location = new System.Drawing.Point(0, 24);
-            this.txtContent.Multiline = true;
             this.txtContent.Name = "txtContent";
             this.txtContent.ReadOnly = true;
-            this.txtContent.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtContent.Size = new System.Drawing.Size(800, 400);
             this.txtContent.TabIndex = 0;
+            this.txtContent.Text = "";
             // 
             // menuStrip1
             // 
             this.menuStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiStatus,
-            this.tsmiLogs});
+            this.tsmiLogs,
+            this.txtSearch});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 27);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -79,7 +80,7 @@
             this.tsmiStatus.ForeColor = System.Drawing.Color.White;
             this.tsmiStatus.Image = global::ServiceManager.UI.Properties.Resources.led_on;
             this.tsmiStatus.Name = "tsmiStatus";
-            this.tsmiStatus.Size = new System.Drawing.Size(128, 20);
+            this.tsmiStatus.Size = new System.Drawing.Size(128, 23);
             this.tsmiStatus.Text = "Service is running";
             // 
             // tsmiService_Shutdown
@@ -106,7 +107,7 @@
             this.tsmiLogs_Autoscroll});
             this.tsmiLogs.ForeColor = System.Drawing.Color.White;
             this.tsmiLogs.Name = "tsmiLogs";
-            this.tsmiLogs.Size = new System.Drawing.Size(44, 20);
+            this.tsmiLogs.Size = new System.Drawing.Size(44, 23);
             this.tsmiLogs.Text = "Logs";
             // 
             // tsmiLogs_Autoscroll
@@ -121,9 +122,17 @@
             this.tsmiLogs_Autoscroll.Text = "Autoscroll";
             this.tsmiLogs_Autoscroll.Click += new System.EventHandler(this.tsmiLogs_Autoscroll_Click);
             // 
+            // txtSearch
+            // 
+            this.txtSearch.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtSearch.Name = "txtSearch";
+            this.txtSearch.Size = new System.Drawing.Size(150, 23);
+            this.txtSearch.KeyUp += new System.Windows.Forms.KeyEventHandler(this.txtSearch_KeyUp);
+            // 
             // txtInput
             // 
-            this.txtInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.txtInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtInput.BackColor = System.Drawing.Color.Black;
             this.txtInput.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -164,7 +173,6 @@
             // 
             // 
             this.RootElement.ApplyShapeToControl = true;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Service logs";
             this.Activated += new System.EventHandler(this.frmLogs_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmLogs_FormClosing);
@@ -180,7 +188,7 @@
 
         #endregion
 
-        public System.Windows.Forms.TextBox txtContent;
+        public System.Windows.Forms.RichTextBox txtContent;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs_Autoscroll;
@@ -189,5 +197,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiService_Shutdown;
         private System.Windows.Forms.ToolStripMenuItem tsmiService_Restart;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ToolStripTextBox txtSearch;
     }
 }

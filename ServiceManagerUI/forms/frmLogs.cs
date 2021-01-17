@@ -33,7 +33,7 @@ namespace ServiceManager.UI.forms
 
         public bool LiveLogs = false;
 
-
+        public int SelectionCursor = 0;
 
 
         public Channel Connection { get; set; }
@@ -120,7 +120,7 @@ namespace ServiceManager.UI.forms
                     tsmiStatus.Text = "Service is offline.";
 
                     break;
-                
+
             }
 
         }
@@ -158,7 +158,7 @@ namespace ServiceManager.UI.forms
                 {
                     this.Connection.TryCatch(a => a.EndLiveLogs(serviceId));
                 });
-              
+
             }
 
         }
@@ -196,6 +196,58 @@ namespace ServiceManager.UI.forms
         private void frmLogs_Activated(object sender, EventArgs e)
         {
             txtInput.Select();
+        }
+
+        private void txtSearch_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter && e.KeyCode != Keys.Return)
+            {
+                SelectionCursor = 0;
+                return;
+            }
+
+
+            int index = 0;
+
+            int currentIndex = 0;
+
+            txtContent.SelectAll();
+            txtContent.SelectionBackColor = Color.Black;
+
+            if (txtSearch.Text.Trim() == "")
+                return;
+
+            int lastIndex = txtContent.Text.LastIndexOf(txtSearch.Text);
+
+            while (index < lastIndex)
+            {
+                txtContent.Find(txtSearch.Text, index, txtContent.TextLength, RichTextBoxFinds.None);
+
+                txtContent.SelectionBackColor = Color.Red;
+
+
+                index = txtContent.Text.IndexOf(txtSearch.Text, index) + 1;
+
+                if (currentIndex == 0 && index >= SelectionCursor)
+                {
+                    if (index > SelectionCursor)
+                    {
+                        txtContent.SelectionStart = index;
+                        txtContent.ScrollToCaret();
+                        currentIndex = index;
+                        SelectionCursor = index;
+                    }
+
+                    if (index == lastIndex + 1) //Reset
+                    {
+                        SelectionCursor = txtContent.Text.IndexOf(txtSearch.Text, 0);
+                    }
+
+
+                }
+            }
+
+
         }
     }
 }
