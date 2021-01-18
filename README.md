@@ -52,3 +52,7 @@ Get directly output from your console applications and send back informations ov
 Example:
 
 <img src="Screens/livelogs_example.gif" />
+
+
+Icons where used from:
+https://www.iconfinder.com/iconsets/ui-basic-glyph
