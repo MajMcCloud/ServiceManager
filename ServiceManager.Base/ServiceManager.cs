@@ -300,7 +300,8 @@ namespace ServiceManager.Base
             if (Connection.ServerChannel == null || Connection.Failed)
                 return;
 
-            try
+
+            var t = new Task(() =>
             {
                 if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 5)
                 {
@@ -313,11 +314,10 @@ namespace ServiceManager.Base
                 {
                     Connection?.Try(a => a.LiveLogsUpdate(sa.ServiceID, e.Data));
                 }
-            }
-            catch
-            {
 
-            }
+            });
+
+            t.Start();
         }
 
         public bool SaveToLogs(ServiceItem service, String content)
