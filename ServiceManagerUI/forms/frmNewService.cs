@@ -40,6 +40,7 @@ namespace ServiceManager.UI.forms
             Item.Shutdown_ENTER_Timeout = (int)nudShutdown_ENTER_Timeout.Value;
 
             Item.LogConsoleOutput = chkLogs_Enabled.Checked;
+            Item.ResetConsoleOutputDaily = chkLogs_ResetDaily.Checked;
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -65,6 +66,7 @@ namespace ServiceManager.UI.forms
 
 
             chkLogs_Enabled.Checked = this.Item.LogConsoleOutput;
+            chkLogs_ResetDaily.Checked = this.Item.ResetConsoleOutputDaily;
 
         }
 

@@ -288,6 +288,11 @@ namespace ServiceManager.Base
                     sa.Output = "";
                     sa.LastSaved = DateTime.Now;
                 }
+                else if (service.ResetConsoleOutputDaily)
+                {
+                    sa.Output = "";
+                    sa.LastSaved = DateTime.Now;
+                }
             }
 
             sa.Output += e.Data + "\r\n";
@@ -478,10 +483,9 @@ namespace ServiceManager.Base
 
             Thread.Sleep(1000);
 
-            if (this.Connection != null)
-            {
-                this.Connection.Stop();
-            }
+
+            this.Connection?.Stop();
+
 
         }
 

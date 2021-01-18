@@ -29,6 +29,8 @@ namespace ServiceManager.Base.data
 
         public bool LogConsoleOutput { get; set; }
 
+        public bool ResetConsoleOutputDaily { get; set; } = true;
+
         public ServiceItem()
         {
 
