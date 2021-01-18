@@ -363,6 +363,41 @@ namespace ServiceManager.Base
             }
         }
 
+        public void Async(Action<IManagerService> func, Action OnResult, Action<IManagerService, Exception> OnException = null)
+        {
+            IManagerService client = Client;
+
+            if (this.channelFactory.State != CommunicationState.Opened)
+            {
+                return;
+            }
+
+            try
+            {
+                Task t = new Task(delegate
+                {
+                    try
+                    {
+                        func(client);
+
+                        OnResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (OnException != null)
+                            OnException(Client, ex);
+                    }
+
+                });
+
+                t.Start();
+            }
+            catch
+            {
+
+            }
+        }
+
         public void Async<TResult>(Func<IManagerService, TResult> func, Action<TResult> OnResult = null, Action<IManagerService, Exception> OnException = null)
         {
             IManagerService client = Client;
