@@ -60,7 +60,7 @@ namespace ServiceManager.UI.forms
 
         private void StartLogging()
         {
-
+            
             var logs = this.Connection.TryCatch(a => a.GetServiceLogs(serviceId));
 
             if (logs != null)
@@ -69,7 +69,7 @@ namespace ServiceManager.UI.forms
 
                 txtContent.AppendText(logs.Logs);
             }
-
+            
 
             txtContent.SelectionStart = txtContent.Text.Length;
 
@@ -92,7 +92,13 @@ namespace ServiceManager.UI.forms
                 this.Connection.ClientCallback.LiveLogs += ClientCallback_LiveLogs;
                 this.Connection.ClientCallback.ServiceChanged += ClientCallback_ServiceChanged;
 
-                this.Connection.Async(a => a.BeginLiveLogs(serviceId));
+                this.Connection.Async(a => a.BeginLiveLogs(serviceId), () =>
+                 {
+                     tsmiLogs_Live.Checked = true;
+                 }, (a, b) =>
+                 {
+                     tsmiLogs_Live.Checked = false;
+                 });
             }
             else
             {
@@ -143,13 +149,16 @@ namespace ServiceManager.UI.forms
             if (tsmiLogs_Autoscroll.Checked)
             {
                 txtContent.AppendText(e.Logs + "\r\n");
+
+                txtContent.SelectionStart = txtContent.TextLength;
+                txtContent.ScrollToCaret();
             }
             else
             {
                 txtContent.Text += (e.Logs + "\r\n");
 
-                SetScrollPos(txtContent.Handle, 1, scroll, true);
-                SendMessage(txtContent.Handle, EM_LINESCROLL, 0, scroll);
+                //SetScrollPos(txtContent.Handle, 1, scroll, true);
+                //SendMessage(txtContent.Handle, EM_LINESCROLL, 0, scroll);
             }
 
         }
@@ -253,6 +262,22 @@ namespace ServiceManager.UI.forms
 
 
                 }
+            }
+
+
+        }
+
+        private void tsmiLogs_Live_CheckedChanged(object sender, EventArgs e)
+        {
+            if (tsmiLogs_Live.Checked)
+            {
+                this.Connection.Async(a => a.BeginLiveLogs(serviceId));
+
+            }
+            else
+            {
+                this.Connection.Async(a => a.EndLiveLogs(serviceId));
+
             }
 
 

@@ -31,9 +31,10 @@
             this.txtContent = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.tsmiStatus = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiService_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiService_Restart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiService_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLogs = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiLogs_Live = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLogs_Autoscroll = new System.Windows.Forms.ToolStripMenuItem();
             this.txtSearch = new System.Windows.Forms.ToolStripTextBox();
             this.txtInput = new System.Windows.Forms.TextBox();
@@ -83,34 +84,43 @@
             this.tsmiStatus.Size = new System.Drawing.Size(128, 20);
             this.tsmiStatus.Text = "Service is running";
             // 
-            // tsmiService_Shutdown
-            // 
-            this.tsmiService_Shutdown.BackColor = System.Drawing.SystemColors.Control;
-            this.tsmiService_Shutdown.ForeColor = System.Drawing.Color.Black;
-            this.tsmiService_Shutdown.Image = global::ServiceManager.UI.Properties.Resources.stop;
-            this.tsmiService_Shutdown.Name = "tsmiService_Shutdown";
-            this.tsmiService_Shutdown.Size = new System.Drawing.Size(180, 22);
-            this.tsmiService_Shutdown.Text = "Shutdown";
-            this.tsmiService_Shutdown.Click += new System.EventHandler(this.tsmiService_Shutdown_Click);
-            // 
             // tsmiService_Restart
             // 
             this.tsmiService_Restart.BackColor = System.Drawing.Color.White;
             this.tsmiService_Restart.ForeColor = System.Drawing.Color.Black;
             this.tsmiService_Restart.Image = global::ServiceManager.UI.Properties.Resources.play;
             this.tsmiService_Restart.Name = "tsmiService_Restart";
-            this.tsmiService_Restart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiService_Restart.Size = new System.Drawing.Size(128, 22);
             this.tsmiService_Restart.Text = "Restart";
             this.tsmiService_Restart.Click += new System.EventHandler(this.tsmiService_Restart_Click);
+            // 
+            // tsmiService_Shutdown
+            // 
+            this.tsmiService_Shutdown.BackColor = System.Drawing.SystemColors.Control;
+            this.tsmiService_Shutdown.ForeColor = System.Drawing.Color.Black;
+            this.tsmiService_Shutdown.Image = global::ServiceManager.UI.Properties.Resources.stop;
+            this.tsmiService_Shutdown.Name = "tsmiService_Shutdown";
+            this.tsmiService_Shutdown.Size = new System.Drawing.Size(128, 22);
+            this.tsmiService_Shutdown.Text = "Shutdown";
+            this.tsmiService_Shutdown.Click += new System.EventHandler(this.tsmiService_Shutdown_Click);
             // 
             // tsmiLogs
             // 
             this.tsmiLogs.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiLogs_Live,
             this.tsmiLogs_Autoscroll});
             this.tsmiLogs.ForeColor = System.Drawing.Color.White;
             this.tsmiLogs.Name = "tsmiLogs";
             this.tsmiLogs.Size = new System.Drawing.Size(44, 20);
             this.tsmiLogs.Text = "Logs";
+            // 
+            // tsmiLogs_Live
+            // 
+            this.tsmiLogs_Live.CheckOnClick = true;
+            this.tsmiLogs_Live.Name = "tsmiLogs_Live";
+            this.tsmiLogs_Live.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLogs_Live.Text = "Live";
+            this.tsmiLogs_Live.CheckedChanged += new System.EventHandler(this.tsmiLogs_Live_CheckedChanged);
             // 
             // tsmiLogs_Autoscroll
             // 
@@ -129,6 +139,7 @@
             this.txtSearch.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.txtSearch.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
             this.txtSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtSearch.ForeColor = System.Drawing.Color.White;
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(150, 20);
@@ -202,5 +213,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiService_Restart;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripTextBox txtSearch;
+        private System.Windows.Forms.ToolStripMenuItem tsmiLogs_Live;
     }
 }
