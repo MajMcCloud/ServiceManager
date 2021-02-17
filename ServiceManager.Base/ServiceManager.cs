@@ -81,7 +81,6 @@ namespace ServiceManager.Base
                 if (!c.Enabled)
                     continue;
 
-                ProcessStart(c);
                 StartService(c);
             }
 
