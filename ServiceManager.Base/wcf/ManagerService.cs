@@ -100,7 +100,7 @@ namespace ServiceManager.Base.wcf
                 return;
             }
 
-            Manager.ProcessStart(service);
+            Manager.StartService(service);
 
             ServiceLog(serviceId, "Service has been started.");
         }
@@ -116,13 +116,13 @@ namespace ServiceManager.Base.wcf
                 ServiceLog(serviceId, "Service will be shutting down.");
 
                 analytics.Exiting = DateTime.Now;
-                Manager.ProcessEnd(service);
+                Manager.ServiceEnd(service);
             }
 
             //Does not restart automatically
             if (!service.ForceRestart)
             {
-                Manager.ProcessStart(service);
+                Manager.StartService(service);
             }
 
             ServiceLog(serviceId, "Service has been restarted.");
@@ -148,7 +148,7 @@ namespace ServiceManager.Base.wcf
             if (analytics.IsRunning)
             {
                 analytics.Exiting = DateTime.Now;
-                Manager.ProcessEnd(service);
+                Manager.ServiceEnd(service);
             }
 
             if (!analytics.IsRunning)
