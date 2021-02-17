@@ -776,6 +776,8 @@ namespace ServiceManager.UI
 
                 tmRefresh_Tick(null, null);
 
+                rmServiceRefresh_Tick(null, null);
+
                 MessageBox.Show("Service installed.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
@@ -796,6 +798,8 @@ namespace ServiceManager.UI
                 ServiceInstallerObj.Uninstall(null);
 
                 tmRefresh_Tick(null, null);
+
+                rmServiceRefresh_Tick(null, null);
 
                 MessageBox.Show("Service uninstalled.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
