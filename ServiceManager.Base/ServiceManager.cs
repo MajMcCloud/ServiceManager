@@ -75,15 +75,49 @@ namespace ServiceManager.Base
 
             foreach (var c in cfg.ServiceList)
             {
+                PrepareService(c);
+
+                //Don't start
                 if (!c.Enabled)
                     continue;
 
                 ProcessStart(c);
+                StartService(c);
             }
 
         }
 
-        public void ProcessStart(ServiceItem item)
+        /// <summary>
+        /// Preparing initialization of analytics and co
+        /// </summary>
+        /// <param name="item"></param>
+        public void PrepareService(ServiceItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
+
+            if (!Analytics.Services.Contains(sa))
+            {
+                sa.ServiceID = item.ID;
+                Analytics.Services.Add(sa);
+            }
+
+            sa.Status = ServiceAnalytics.eStatus.offline;
+            sa.ProcessID = 0;
+            sa.Started = null;
+            sa.Exited = null;
+            sa.Exiting = null;
+        }
+
+        /// <summary>
+        /// Starts the service and add some event hooks.
+        /// </summary>
+        /// <param name="item"></param>
+        public void StartService(ServiceItem item)
         {
             if (item == null)
             {
@@ -163,7 +197,7 @@ namespace ServiceManager.Base
             Connection?.Try(a => a.ServiceStarted(item.ID, item, sa));
         }
 
-        public void ProcessEnd(ServiceItem item)
+        public void ServiceEnd(ServiceItem item)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
 
@@ -377,7 +411,7 @@ namespace ServiceManager.Base
 
             sa.Restarts++;
 
-            ProcessStart(service);
+            StartService(service);
         }
 
         public void Shutdown()
