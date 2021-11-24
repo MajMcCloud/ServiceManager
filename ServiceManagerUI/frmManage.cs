@@ -70,6 +70,8 @@ namespace ServiceManager.UI
 
             nud_TCPPort.Value = slist.RuntimeSettings.TCPPort;
 
+            nudStartup_Delay.Value = slist.RuntimeSettings.Startup_Delay;
+
         }
 
         private void lsvServices_MouseClick(object sender, MouseEventArgs e)
@@ -194,6 +196,8 @@ namespace ServiceManager.UI
                 slist.RuntimeSettings.Mode = eMode.NetPipes;
 
             }
+
+            slist.RuntimeSettings.Startup_Delay = (int)nudStartup_Delay.Value;
 
             slist.save();
 

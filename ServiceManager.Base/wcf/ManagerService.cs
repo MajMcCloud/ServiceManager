@@ -52,6 +52,9 @@ namespace ServiceManager.Base.wcf
         [OperationContract(IsOneWay = true)]
         void ToggleAutoRestart(Guid serviceId);
 
+        [OperationContract]
+        void Ping();
+
     }
 
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = false, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = true, UseSynchronizationContext = false)]
@@ -167,12 +170,27 @@ namespace ServiceManager.Base.wcf
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
-            GetServiceLogsResponse logs = new GetServiceLogsResponse();
+            if(service.LogConsoleOutput)
+            {
+                GetServiceLogsResponse logs = new GetServiceLogsResponse();
 
-            logs.Logs = analytics.Output;
-            logs.Errors = analytics.Error;
+                logs.Logs = analytics.Output;
+                logs.Errors = analytics.Error;
 
-            return logs;
+                return logs;
+            }
+            else
+            {
+                GetServiceLogsResponse logs = new GetServiceLogsResponse();
+
+                logs.Logs = "SYSTEM: Output history logging is currently disabled.\r\n";
+                logs.Errors = "SYSTEM: Error history logging is currently disabled.\r\n";
+
+                return logs;
+            }
+
+
+
         }
 
         public void BeginLiveLogs(Guid serviceId)
@@ -231,5 +249,12 @@ namespace ServiceManager.Base.wcf
 
         }
 
+        /// <summary>
+        /// Just a Ping 
+        /// </summary>
+        public void Ping()
+        {
+            
+        }
     }
 }

@@ -27,8 +27,21 @@ namespace ServiceManager.Base.data
 
         public int Shutdown_ENTER_Timeout { get; set; }
 
-        public bool LogConsoleOutput { get; set; }
+        /// <summary>
+        /// Logs console output to memory
+        /// </summary>
+        public bool LogConsoleOutput { get; set; } = true;
 
+
+        /// <summary>
+        /// Logs console output to disk
+        /// </summary>
+        public bool LogConsoleOutputToDisk { get; set; }
+
+
+        /// <summary>
+        /// Clears up daily log cache from memory
+        /// </summary>
         public bool ResetConsoleOutputDaily { get; set; } = true;
 
         public ServiceItem()

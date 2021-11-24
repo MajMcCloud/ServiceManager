@@ -58,10 +58,12 @@ namespace ServiceManager.UI.forms
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.radPageViewPage1 = new Telerik.WinControls.UI.RadPageViewPage();
-            this.chkLogs_Enabled = new Telerik.WinControls.UI.RadCheckBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
             this.chkLogs_ResetDaily = new Telerik.WinControls.UI.RadCheckBox();
+            this.chkLogs_ToDisk = new Telerik.WinControls.UI.RadCheckBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.chkLogs_ToMemory = new Telerik.WinControls.UI.RadCheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.bnSave)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bnSelectPath)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radPageView1)).BeginInit();
@@ -75,8 +77,9 @@ namespace ServiceManager.UI.forms
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
             this.radPageViewPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_Enabled)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ResetDaily)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ToDisk)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ToMemory)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
@@ -348,8 +351,10 @@ namespace ServiceManager.UI.forms
             // radPageViewPage1
             // 
             this.radPageViewPage1.Controls.Add(this.chkLogs_ResetDaily);
-            this.radPageViewPage1.Controls.Add(this.chkLogs_Enabled);
+            this.radPageViewPage1.Controls.Add(this.chkLogs_ToMemory);
+            this.radPageViewPage1.Controls.Add(this.chkLogs_ToDisk);
             this.radPageViewPage1.Controls.Add(this.label13);
+            this.radPageViewPage1.Controls.Add(this.label14);
             this.radPageViewPage1.Controls.Add(this.label12);
             this.radPageViewPage1.ItemSize = new System.Drawing.SizeF(57F, 28F);
             this.radPageViewPage1.Location = new System.Drawing.Point(10, 37);
@@ -357,39 +362,58 @@ namespace ServiceManager.UI.forms
             this.radPageViewPage1.Size = new System.Drawing.Size(670, 371);
             this.radPageViewPage1.Text = "Logging";
             // 
-            // chkLogs_Enabled
-            // 
-            this.chkLogs_Enabled.Location = new System.Drawing.Point(285, 37);
-            this.chkLogs_Enabled.Name = "chkLogs_Enabled";
-            this.chkLogs_Enabled.Size = new System.Drawing.Size(15, 15);
-            this.chkLogs_Enabled.TabIndex = 11;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(22, 38);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(153, 13);
-            this.label12.TabIndex = 10;
-            this.label12.Text = "Log Console outputs to disk";
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(22, 65);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(149, 13);
-            this.label13.TabIndex = 10;
-            this.label13.Text = "Reset console outputs daily";
-            // 
             // chkLogs_ResetDaily
             // 
             this.chkLogs_ResetDaily.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkLogs_ResetDaily.Location = new System.Drawing.Point(285, 64);
+            this.chkLogs_ResetDaily.Location = new System.Drawing.Point(285, 74);
             this.chkLogs_ResetDaily.Name = "chkLogs_ResetDaily";
             this.chkLogs_ResetDaily.Size = new System.Drawing.Size(15, 15);
             this.chkLogs_ResetDaily.TabIndex = 11;
             this.chkLogs_ResetDaily.ToggleState = Telerik.WinControls.Enumerations.ToggleState.On;
+            // 
+            // chkLogs_ToDisk
+            // 
+            this.chkLogs_ToDisk.Location = new System.Drawing.Point(285, 47);
+            this.chkLogs_ToDisk.Name = "chkLogs_ToDisk";
+            this.chkLogs_ToDisk.Size = new System.Drawing.Size(15, 15);
+            this.chkLogs_ToDisk.TabIndex = 11;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(22, 75);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(147, 13);
+            this.label13.TabIndex = 10;
+            this.label13.Text = "Clear console outputs daily";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(22, 48);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(151, 13);
+            this.label12.TabIndex = 10;
+            this.label12.Text = "Log console outputs to disk";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(22, 22);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(170, 13);
+            this.label14.TabIndex = 10;
+            this.label14.Text = "Log console outputs to memory";
+            // 
+            // chkLogs_ToMemory
+            // 
+            this.chkLogs_ToMemory.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkLogs_ToMemory.Location = new System.Drawing.Point(285, 21);
+            this.chkLogs_ToMemory.Name = "chkLogs_ToMemory";
+            this.chkLogs_ToMemory.Size = new System.Drawing.Size(15, 15);
+            this.chkLogs_ToMemory.TabIndex = 11;
+            this.chkLogs_ToMemory.ToggleState = Telerik.WinControls.Enumerations.ToggleState.On;
+            this.chkLogs_ToMemory.ToggleStateChanged += new Telerik.WinControls.UI.StateChangedEventHandler(this.chkLogs_ToMemory_ToggleStateChanged);
             // 
             // frmNewService
             // 
@@ -429,8 +453,9 @@ namespace ServiceManager.UI.forms
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).EndInit();
             this.radPageViewPage1.ResumeLayout(false);
             this.radPageViewPage1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_Enabled)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ResetDaily)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ToDisk)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chkLogs_ToMemory)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
 
@@ -466,9 +491,11 @@ namespace ServiceManager.UI.forms
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label10;
         private RadPageViewPage radPageViewPage1;
-        private RadCheckBox chkLogs_Enabled;
+        private RadCheckBox chkLogs_ToDisk;
         private System.Windows.Forms.Label label12;
         private RadCheckBox chkLogs_ResetDaily;
         private System.Windows.Forms.Label label13;
+        private RadCheckBox chkLogs_ToMemory;
+        private System.Windows.Forms.Label label14;
     }
 }

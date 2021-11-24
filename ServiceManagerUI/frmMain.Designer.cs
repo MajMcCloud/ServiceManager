@@ -39,15 +39,19 @@
             this.tmRefresh = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.cmsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiMenu_Restart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMenu_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_Logs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Livelogs = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_ToggleAutoRestart = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiMenu_OpenExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_OpenLogs = new System.Windows.Forms.ToolStripMenuItem();
             this.lsvServices = new Telerik.WinControls.UI.RadListView();
             this.rmiManager = new Telerik.WinControls.UI.RadMenuItem();
+            this.rmiManager_OpenConfig = new Telerik.WinControls.UI.RadMenuItem();
             this.radMenuSeparatorItem1 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
             this.rmiManager_Close = new Telerik.WinControls.UI.RadMenuItem();
             this.rmiTesting = new Telerik.WinControls.UI.RadMenuItem();
@@ -61,6 +65,7 @@
             this.rmiService_Restart = new Telerik.WinControls.UI.RadMenuItem();
             this.rmiService_Stop = new Telerik.WinControls.UI.RadMenuItem();
             this.rmiInstances = new Telerik.WinControls.UI.RadMenuItem();
+            this.rmiInstances_ConnectTo = new Telerik.WinControls.UI.RadMenuItem();
             this.radMenuSeparatorItem3 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
             this.radStatusStrip1 = new Telerik.WinControls.UI.RadStatusStrip();
             this.radLabelElement1 = new Telerik.WinControls.UI.RadLabelElement();
@@ -77,17 +82,14 @@
             this.rmiServices_StopAll = new Telerik.WinControls.UI.RadMenuItem();
             this.radMenuSeparatorItem5 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
             this.rmiServices_OpenAllLiveLogs = new Telerik.WinControls.UI.RadMenuItem();
+            this.tmPing = new System.Windows.Forms.Timer(this.components);
+            this.lblVersion = new System.Windows.Forms.Label();
             this.radMenu1 = new Telerik.WinControls.UI.RadMenu();
-            this.rmiManager_OpenConfig = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiInstances_ConnectTo = new Telerik.WinControls.UI.RadMenuItem();
-            this.tsmiMenu_Restart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMenu_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMenu_OpenExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.lsvServices)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radStatusStrip1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radMenu1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.radMenu1)).BeginInit();
             this.SuspendLayout();
             // 
             // tmRefresh
@@ -120,6 +122,22 @@
             this.tsmiMenu_OpenLogs});
             this.cmsMenu.Name = "cmsMenu";
             this.cmsMenu.Size = new System.Drawing.Size(178, 176);
+            // 
+            // tsmiMenu_Restart
+            // 
+            this.tsmiMenu_Restart.Image = global::ServiceManager.UI.Properties.Resources.play;
+            this.tsmiMenu_Restart.Name = "tsmiMenu_Restart";
+            this.tsmiMenu_Restart.Size = new System.Drawing.Size(177, 22);
+            this.tsmiMenu_Restart.Text = "Start service";
+            this.tsmiMenu_Restart.Click += new System.EventHandler(this.tsmiMenu_Restart_Click);
+            // 
+            // tsmiMenu_Shutdown
+            // 
+            this.tsmiMenu_Shutdown.Image = global::ServiceManager.UI.Properties.Resources.stop;
+            this.tsmiMenu_Shutdown.Name = "tsmiMenu_Shutdown";
+            this.tsmiMenu_Shutdown.Size = new System.Drawing.Size(177, 22);
+            this.tsmiMenu_Shutdown.Text = "Shutdown service";
+            this.tsmiMenu_Shutdown.Click += new System.EventHandler(this.tsmiMenu_Shutdown_Click);
             // 
             // toolStripSeparator4
             // 
@@ -157,6 +175,14 @@
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(174, 6);
             // 
+            // tsmiMenu_OpenExplorer
+            // 
+            this.tsmiMenu_OpenExplorer.Image = global::ServiceManager.UI.Properties.Resources.explorer;
+            this.tsmiMenu_OpenExplorer.Name = "tsmiMenu_OpenExplorer";
+            this.tsmiMenu_OpenExplorer.Size = new System.Drawing.Size(177, 22);
+            this.tsmiMenu_OpenExplorer.Text = "Show in explorer";
+            this.tsmiMenu_OpenExplorer.Click += new System.EventHandler(this.tsmiMenu_OpenExplorer_Click);
+            // 
             // tsmiMenu_OpenLogs
             // 
             this.tsmiMenu_OpenLogs.Name = "tsmiMenu_OpenLogs";
@@ -191,7 +217,7 @@
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
             this.lsvServices.MultiSelect = true;
             this.lsvServices.Name = "lsvServices";
-            this.lsvServices.Size = new System.Drawing.Size(789, 371);
+            this.lsvServices.Size = new System.Drawing.Size(789, 360);
             this.lsvServices.TabIndex = 5;
             this.lsvServices.ViewType = Telerik.WinControls.UI.ListViewType.DetailsView;
             this.lsvServices.MouseClick += new System.Windows.Forms.MouseEventHandler(this.lsvServices_MouseClick_1);
@@ -205,6 +231,13 @@
             this.rmiManager_Close});
             this.rmiManager.Name = "rmiManager";
             this.rmiManager.Text = "Manager";
+            // 
+            // rmiManager_OpenConfig
+            // 
+            this.rmiManager_OpenConfig.Image = global::ServiceManager.UI.Properties.Resources.settings;
+            this.rmiManager_OpenConfig.Name = "rmiManager_OpenConfig";
+            this.rmiManager_OpenConfig.Text = "Open config";
+            this.rmiManager_OpenConfig.Click += new System.EventHandler(this.rmiManager_OpenConfig_Click);
             // 
             // radMenuSeparatorItem1
             // 
@@ -298,6 +331,13 @@
             this.rmiInstances.Name = "rmiInstances";
             this.rmiInstances.Text = "Instances";
             this.rmiInstances.DropDownOpening += new System.ComponentModel.CancelEventHandler(this.rmiInstances_DropDownOpening);
+            // 
+            // rmiInstances_ConnectTo
+            // 
+            this.rmiInstances_ConnectTo.Image = global::ServiceManager.UI.Properties.Resources.connect;
+            this.rmiInstances_ConnectTo.Name = "rmiInstances_ConnectTo";
+            this.rmiInstances_ConnectTo.Text = "Connect to";
+            this.rmiInstances_ConnectTo.Click += new System.EventHandler(this.rmiInstances_ConnectTo_Click);
             // 
             // radMenuSeparatorItem3
             // 
@@ -419,6 +459,27 @@
             this.rmiServices_OpenAllLiveLogs.Text = "Open all Live Logs";
             this.rmiServices_OpenAllLiveLogs.Click += new System.EventHandler(this.rmiServices_OpenAllLiveLogs_Click);
             // 
+            // tmPing
+            // 
+            this.tmPing.Interval = 2000;
+            this.tmPing.Tick += new System.EventHandler(this.tmPing_Tick);
+            // 
+            // lblVersion
+            // 
+            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblVersion.Location = new System.Drawing.Point(696, 422);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(103, 23);
+            this.lblVersion.TabIndex = 8;
+            this.lblVersion.Text = "label2";
+            this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // frmMain
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(814, 474);
+            // 
             // radMenu1
             // 
             this.radMenu1.Items.AddRange(new Telerik.WinControls.RadItem[] {
@@ -431,50 +492,7 @@
             this.radMenu1.Name = "radMenu1";
             this.radMenu1.Size = new System.Drawing.Size(814, 20);
             this.radMenu1.TabIndex = 6;
-            // 
-            // rmiManager_OpenConfig
-            // 
-            this.rmiManager_OpenConfig.Image = global::ServiceManager.UI.Properties.Resources.settings;
-            this.rmiManager_OpenConfig.Name = "rmiManager_OpenConfig";
-            this.rmiManager_OpenConfig.Text = "Open config";
-            this.rmiManager_OpenConfig.Click += new System.EventHandler(this.rmiManager_OpenConfig_Click);
-            // 
-            // rmiInstances_ConnectTo
-            // 
-            this.rmiInstances_ConnectTo.Image = global::ServiceManager.UI.Properties.Resources.connect;
-            this.rmiInstances_ConnectTo.Name = "rmiInstances_ConnectTo";
-            this.rmiInstances_ConnectTo.Text = "Connect to";
-            this.rmiInstances_ConnectTo.Click += new System.EventHandler(this.rmiInstances_ConnectTo_Click);
-            // 
-            // tsmiMenu_Restart
-            // 
-            this.tsmiMenu_Restart.Image = global::ServiceManager.UI.Properties.Resources.play;
-            this.tsmiMenu_Restart.Name = "tsmiMenu_Restart";
-            this.tsmiMenu_Restart.Size = new System.Drawing.Size(177, 22);
-            this.tsmiMenu_Restart.Text = "Start service";
-            this.tsmiMenu_Restart.Click += new System.EventHandler(this.tsmiMenu_Restart_Click);
-            // 
-            // tsmiMenu_Shutdown
-            // 
-            this.tsmiMenu_Shutdown.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMenu_Shutdown.Image")));
-            this.tsmiMenu_Shutdown.Name = "tsmiMenu_Shutdown";
-            this.tsmiMenu_Shutdown.Size = new System.Drawing.Size(177, 22);
-            this.tsmiMenu_Shutdown.Text = "Shutdown service";
-            this.tsmiMenu_Shutdown.Click += new System.EventHandler(this.tsmiMenu_Shutdown_Click);
-            // 
-            // tsmiMenu_OpenExplorer
-            // 
-            this.tsmiMenu_OpenExplorer.Image = global::ServiceManager.UI.Properties.Resources.explorer;
-            this.tsmiMenu_OpenExplorer.Name = "tsmiMenu_OpenExplorer";
-            this.tsmiMenu_OpenExplorer.Size = new System.Drawing.Size(177, 22);
-            this.tsmiMenu_OpenExplorer.Text = "Show in explorer";
-            this.tsmiMenu_OpenExplorer.Click += new System.EventHandler(this.tsmiMenu_OpenExplorer_Click);
-            // 
-            // frmMain
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(814, 474);
+            this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.radStatusStrip1);
             this.Controls.Add(this.radMenu1);
             this.Controls.Add(this.lsvServices);
@@ -541,13 +559,15 @@
         private System.Windows.Forms.Timer rmServiceRefresh;
         private Telerik.WinControls.UI.RadMenuItem rmiServices;
         private Telerik.WinControls.UI.RadMenuItem rmiServices_RefreshAll;
-        private Telerik.WinControls.UI.RadMenu radMenu1;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_OpenExplorer;
         private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem4;
         private Telerik.WinControls.UI.RadMenuItem rmiServices_StopAll;
         private Telerik.WinControls.UI.RadMenuItem rmiServices_StartAll;
         private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem5;
         private Telerik.WinControls.UI.RadMenuItem rmiServices_OpenAllLiveLogs;
+        private System.Windows.Forms.Timer tmPing;
+        private Telerik.WinControls.UI.RadMenu radMenu1;
+        private System.Windows.Forms.Label lblVersion;
     }
 }
 

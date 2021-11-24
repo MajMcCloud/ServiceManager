@@ -39,7 +39,8 @@ namespace ServiceManager.UI.forms
             Item.Shutdown_ENTER_Send = chkShutdown_SendENTER.Checked;
             Item.Shutdown_ENTER_Timeout = (int)nudShutdown_ENTER_Timeout.Value;
 
-            Item.LogConsoleOutput = chkLogs_Enabled.Checked;
+            Item.LogConsoleOutput = chkLogs_ToMemory.Checked;
+            Item.LogConsoleOutputToDisk = chkLogs_ToDisk.Checked;
             Item.ResetConsoleOutputDaily = chkLogs_ResetDaily.Checked;
 
             this.DialogResult = DialogResult.OK;
@@ -65,7 +66,8 @@ namespace ServiceManager.UI.forms
             nudShutdown_ENTER_Timeout.Value = this.Item.Shutdown_ENTER_Timeout;
 
 
-            chkLogs_Enabled.Checked = this.Item.LogConsoleOutput;
+            chkLogs_ToMemory.Checked = this.Item.LogConsoleOutput;
+            chkLogs_ToDisk.Checked = this.Item.LogConsoleOutputToDisk;
             chkLogs_ResetDaily.Checked = this.Item.ResetConsoleOutputDaily;
 
         }
@@ -118,6 +120,14 @@ namespace ServiceManager.UI.forms
 
                 txtTitle.Text = Path.GetFileNameWithoutExtension(ofdOpen.FileName);
             }
+        }
+
+        private void chkLogs_ToMemory_ToggleStateChanged(object sender, StateChangedEventArgs args)
+        {
+
+            chkLogs_ToDisk.Enabled = chkLogs_ToMemory.Checked;
+            chkLogs_ResetDaily.Enabled = chkLogs_ToMemory.Checked;
+
         }
     }
 }

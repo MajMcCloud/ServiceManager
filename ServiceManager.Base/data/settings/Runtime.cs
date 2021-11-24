@@ -19,10 +19,16 @@ namespace ServiceManager.Base.data.settings
 
         public int TCPPort { get; set; }
 
+        /// <summary>
+        /// Delay of service startup in seconds.
+        /// </summary>
+        public int Startup_Delay { get; set; }
+
         public Runtime()
         {
             this.Mode = eMode.NetPipes;
             this.TCPPort = 50000;
+            this.Startup_Delay = 0;
         }
 
     }

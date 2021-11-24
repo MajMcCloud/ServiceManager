@@ -118,7 +118,7 @@
             // 
             this.tsmiLogs_Live.CheckOnClick = true;
             this.tsmiLogs_Live.Name = "tsmiLogs_Live";
-            this.tsmiLogs_Live.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLogs_Live.Size = new System.Drawing.Size(128, 22);
             this.tsmiLogs_Live.Text = "Live";
             this.tsmiLogs_Live.CheckedChanged += new System.EventHandler(this.tsmiLogs_Live_CheckedChanged);
             // 
@@ -130,7 +130,7 @@
             this.tsmiLogs_Autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tsmiLogs_Autoscroll.ForeColor = System.Drawing.Color.Black;
             this.tsmiLogs_Autoscroll.Name = "tsmiLogs_Autoscroll";
-            this.tsmiLogs_Autoscroll.Size = new System.Drawing.Size(180, 22);
+            this.tsmiLogs_Autoscroll.Size = new System.Drawing.Size(128, 22);
             this.tsmiLogs_Autoscroll.Text = "Autoscroll";
             this.tsmiLogs_Autoscroll.Click += new System.EventHandler(this.tsmiLogs_Autoscroll_Click);
             // 
@@ -202,8 +202,6 @@
         }
 
         #endregion
-
-        public System.Windows.Forms.RichTextBox txtContent;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs_Autoscroll;
@@ -214,5 +212,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripTextBox txtSearch;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs_Live;
+        private System.Windows.Forms.RichTextBox txtContent;
     }
 }

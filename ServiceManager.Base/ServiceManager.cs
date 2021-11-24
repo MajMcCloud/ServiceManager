@@ -73,17 +73,37 @@ namespace ServiceManager.Base
 
             Connection.Server.Manager = this;
 
+            PrepareServices(cfg);
+
+            Thread th = new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(cfg.RuntimeSettings.Startup_Delay * 1000);
+
+                StartServices(cfg);
+            }));
+
+            th.Start();
+
+        }
+
+        private void PrepareServices(ServiceConfig cfg)
+        {
             foreach (var c in cfg.ServiceList)
             {
                 PrepareService(c);
+            }
+        }
 
+        private void StartServices(ServiceConfig cfg)
+        {
+            foreach (var c in cfg.ServiceList)
+            {
                 //Don't start
                 if (!c.Enabled)
                     continue;
 
                 StartService(c);
             }
-
         }
 
         /// <summary>
@@ -312,23 +332,27 @@ namespace ServiceManager.Base
             if (e.Data == null)
                 return;
 
-            //Save to harddrive
-            if (sa.LastSaved.Date != DateTime.Today)
+            var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
+            if (service.LogConsoleOutput)
             {
-                var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
-                if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
+                //Save to harddrive
+                if (sa.LastSaved.Date != DateTime.Today)
                 {
-                    sa.Output = "";
-                    sa.LastSaved = DateTime.Now;
-                }
-                else if (service.ResetConsoleOutputDaily)
-                {
-                    sa.Output = "";
-                    sa.LastSaved = DateTime.Now;
-                }
-            }
 
-            sa.Output += e.Data + "\r\n";
+                    if (service.LogConsoleOutputToDisk && SaveToDisk(service, sa.Output))
+                    {
+                        sa.Output = "";
+                        sa.LastSaved = DateTime.Now;
+                    }
+                    else if (service.ResetConsoleOutputDaily)
+                    {
+                        sa.Output = "";
+                        sa.LastSaved = DateTime.Now;
+                    }
+                }
+
+                sa.Output += e.Data + "\r\n";
+            }
 
             if (Connection.ServerChannel == null || Connection.Failed)
                 return;
@@ -336,7 +360,7 @@ namespace ServiceManager.Base
 
             var t = new Task(() =>
             {
-                if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 5)
+                if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 10)
                 {
                     Connection?.Try(a => a.ActivityPing(sa.ServiceID));
                     sa.LastPing = DateTime.Now;
@@ -353,7 +377,7 @@ namespace ServiceManager.Base
             t.Start();
         }
 
-        public bool SaveToLogs(ServiceItem service, String content)
+        public bool SaveToDisk(ServiceItem service, String content)
         {
 
             var path = AppContext.BaseDirectory + "\\logs\\" + service.ID.ToString() + "\\";
@@ -388,13 +412,14 @@ namespace ServiceManager.Base
 
             sa.Status = ServiceAnalytics.eStatus.offline;
 
-
-
-            //Save to harddrive
-            if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
+            if (service.LogConsoleOutput)
             {
-                sa.Output = "";
-                sa.LastSaved = DateTime.Now;
+                //Save to harddrive
+                if (service.LogConsoleOutputToDisk && SaveToDisk(service, sa.Output))
+                {
+                    sa.Output = "";
+                    sa.LastSaved = DateTime.Now;
+                }
             }
 
             //if (LiveLogs.Contains(sa.ServiceID))
@@ -486,7 +511,7 @@ namespace ServiceManager.Base
                     //Save to harddrive
                     if (sa.LastSaved.Date != DateTime.Today)
                     {
-                        if (service.LogConsoleOutput && SaveToLogs(service, sa.Output))
+                        if (service.LogConsoleOutput && SaveToDisk(service, sa.Output))
                         {
                             sa.Output = "";
                             sa.LastSaved = DateTime.Now;

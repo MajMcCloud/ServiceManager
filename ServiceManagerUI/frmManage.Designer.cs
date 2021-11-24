@@ -42,6 +42,9 @@
             this.bnAddService = new Telerik.WinControls.UI.RadButton();
             this.radPageViewPage1 = new Telerik.WinControls.UI.RadPageViewPage();
             this.bnSettings_Save = new Telerik.WinControls.UI.RadButton();
+            this.nudStartup_Delay = new System.Windows.Forms.NumericUpDown();
+            this.radLabel3 = new Telerik.WinControls.UI.RadLabel();
+            this.radLabel2 = new Telerik.WinControls.UI.RadLabel();
             this.nud_TCPPort = new System.Windows.Forms.NumericUpDown();
             this.lblPort = new Telerik.WinControls.UI.RadLabel();
             this.radLabel1 = new Telerik.WinControls.UI.RadLabel();
@@ -54,11 +57,15 @@
             ((System.ComponentModel.ISupportInitialize)(this.bnAddService)).BeginInit();
             this.radPageViewPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bnSettings_Save)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.radLabel3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.radLabel2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lblPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.rrbMode_TCP)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.rrbMode_NetPipes)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
             // lsvServices
@@ -124,6 +131,9 @@
             // 
             // rpv
             // 
+            this.rpv.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.rpv.Controls.Add(this.radPageViewPage2);
             this.rpv.Controls.Add(this.radPageViewPage1);
             this.rpv.Location = new System.Drawing.Point(12, 12);
@@ -156,6 +166,9 @@
             // radPageViewPage1
             // 
             this.radPageViewPage1.Controls.Add(this.bnSettings_Save);
+            this.radPageViewPage1.Controls.Add(this.nudStartup_Delay);
+            this.radPageViewPage1.Controls.Add(this.radLabel3);
+            this.radPageViewPage1.Controls.Add(this.radLabel2);
             this.radPageViewPage1.Controls.Add(this.nud_TCPPort);
             this.radPageViewPage1.Controls.Add(this.lblPort);
             this.radPageViewPage1.Controls.Add(this.radLabel1);
@@ -176,10 +189,38 @@
             this.bnSettings_Save.Text = "Save";
             this.bnSettings_Save.Click += new System.EventHandler(this.bnSettings_Save_Click);
             // 
+            // nudStartup_Delay
+            // 
+            this.nudStartup_Delay.Location = new System.Drawing.Point(153, 142);
+            this.nudStartup_Delay.Maximum = new decimal(new int[] {
+            600,
+            0,
+            0,
+            0});
+            this.nudStartup_Delay.Name = "nudStartup_Delay";
+            this.nudStartup_Delay.Size = new System.Drawing.Size(75, 20);
+            this.nudStartup_Delay.TabIndex = 2;
+            // 
+            // radLabel3
+            // 
+            this.radLabel3.Location = new System.Drawing.Point(234, 143);
+            this.radLabel3.Name = "radLabel3";
+            this.radLabel3.Size = new System.Drawing.Size(119, 18);
+            this.radLabel3.TabIndex = 1;
+            this.radLabel3.Text = "seconds (0 = no delay)";
+            // 
+            // radLabel2
+            // 
+            this.radLabel2.Location = new System.Drawing.Point(27, 142);
+            this.radLabel2.Name = "radLabel2";
+            this.radLabel2.Size = new System.Drawing.Size(120, 18);
+            this.radLabel2.TabIndex = 1;
+            this.radLabel2.Text = "Delay services start by ";
+            // 
             // nud_TCPPort
             // 
             this.nud_TCPPort.Enabled = false;
-            this.nud_TCPPort.Location = new System.Drawing.Point(118, 97);
+            this.nud_TCPPort.Location = new System.Drawing.Point(153, 91);
             this.nud_TCPPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -202,7 +243,7 @@
             // lblPort
             // 
             this.lblPort.Enabled = false;
-            this.lblPort.Location = new System.Drawing.Point(71, 98);
+            this.lblPort.Location = new System.Drawing.Point(106, 92);
             this.lblPort.Name = "lblPort";
             this.lblPort.Size = new System.Drawing.Size(29, 18);
             this.lblPort.TabIndex = 1;
@@ -210,7 +251,7 @@
             // 
             // radLabel1
             // 
-            this.radLabel1.Location = new System.Drawing.Point(30, 26);
+            this.radLabel1.Location = new System.Drawing.Point(65, 20);
             this.radLabel1.Name = "radLabel1";
             this.radLabel1.Size = new System.Drawing.Size(58, 18);
             this.radLabel1.TabIndex = 1;
@@ -218,7 +259,7 @@
             // 
             // rrbMode_TCP
             // 
-            this.rrbMode_TCP.Location = new System.Drawing.Point(48, 74);
+            this.rrbMode_TCP.Location = new System.Drawing.Point(83, 68);
             this.rrbMode_TCP.Name = "rrbMode_TCP";
             this.rrbMode_TCP.Size = new System.Drawing.Size(39, 18);
             this.rrbMode_TCP.TabIndex = 0;
@@ -227,7 +268,7 @@
             // 
             // rrbMode_NetPipes
             // 
-            this.rrbMode_NetPipes.Location = new System.Drawing.Point(48, 50);
+            this.rrbMode_NetPipes.Location = new System.Drawing.Point(83, 44);
             this.rrbMode_NetPipes.Name = "rrbMode_NetPipes";
             this.rrbMode_NetPipes.Size = new System.Drawing.Size(68, 18);
             this.rrbMode_NetPipes.TabIndex = 0;
@@ -241,6 +282,10 @@
             this.ClientSize = new System.Drawing.Size(790, 451);
             this.Controls.Add(this.rpv);
             this.Name = "frmManage";
+            // 
+            // 
+            // 
+            this.RootElement.ApplyShapeToControl = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Manage";
             this.Load += new System.EventHandler(this.frmManage_Load);
@@ -252,11 +297,15 @@
             this.radPageViewPage1.ResumeLayout(false);
             this.radPageViewPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bnSettings_Save)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.radLabel3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.radLabel2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lblPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.rrbMode_TCP)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.rrbMode_NetPipes)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -281,5 +330,8 @@
         private Telerik.WinControls.UI.RadLabel lblPort;
         private Telerik.WinControls.UI.RadButton bnAddService;
         private Telerik.WinControls.UI.RadButton bnSettings_Save;
+        private System.Windows.Forms.NumericUpDown nudStartup_Delay;
+        private Telerik.WinControls.UI.RadLabel radLabel3;
+        private Telerik.WinControls.UI.RadLabel radLabel2;
     }
 }

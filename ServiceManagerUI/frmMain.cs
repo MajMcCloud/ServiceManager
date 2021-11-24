@@ -50,6 +50,9 @@ namespace ServiceManager.UI
             {
                 StartWatching(Program.Parameters["host"], int.Parse(Program.Parameters["port"]));
             }
+
+            var version = Application.ProductVersion;
+            lblVersion.Text = $"Version {version}";
         }
 
 
@@ -208,7 +211,6 @@ namespace ServiceManager.UI
 
                     itm.SubItems.Add(a.Status);
 
-
                     itm.SubItems.Add(a.Restarts.ToString());
                     itm.SubItems.Add(item.ForceRestart ? "yes" : "no");
 
@@ -257,19 +259,22 @@ namespace ServiceManager.UI
                 }
                 else
                 {
-                    item = new RadMenuItem("PID " + c.Id.ToString());
-                    item.CheckOnClick = true;
-                }
 
-                if (NetPipesTest(c.Id))
-                {
-                    item.Tag = new { id = c.Id, type = "netpipes" };
-                    item.Image = Properties.Resources.rohr_24px;
-                }
-                else
-                {
-                    item.Tag = new { id = c.Id, type = "tcp" };
-                    item.Image = Properties.Resources.antenne_24px;
+
+                    if (NetPipesTest(c.Id))
+                    {
+                        item = new RadMenuItem("PID " + c.Id.ToString() + " (NetPipes)");
+                        item.CheckOnClick = true;
+                        item.Tag = new { id = c.Id, type = "netpipes" };
+                        item.Image = Properties.Resources.rohr_24px;
+                    }
+                    else
+                    {
+                        item = new RadMenuItem("IP " + c.Id.ToString() + " (TCP)");
+                        item.CheckOnClick = true;
+                        item.Tag = new { id = c.Id, type = "tcp" };
+                        item.Image = Properties.Resources.antenne_24px;
+                    }
                 }
 
 
@@ -456,6 +461,7 @@ namespace ServiceManager.UI
             WatchConnection = new Channel(false, IPOrHost, port);
 
             tmRefresh.Enabled = true;
+            tmPing.Enabled = true;
 
             WatchConnection.Connected += (s, en) =>
             {
@@ -484,6 +490,7 @@ namespace ServiceManager.UI
                 rmiServices.Enabled = false;
 
                 tmRefresh.Enabled = false;
+                tmPing.Enabled = false;
             };
 
             WatchConnection.Faulted += (s, en) =>
@@ -497,6 +504,7 @@ namespace ServiceManager.UI
 
                 rmiServices.Enabled = false;
                 tmRefresh.Enabled = false;
+                tmPing.Enabled = false;
 
                 MessageBox.Show("Connection failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -533,6 +541,7 @@ namespace ServiceManager.UI
                 lsvServices.EndUpdate();
 
                 tmRefresh.Enabled = false;
+                tmPing.Enabled = false;
             };
 
             WatchConnection.ClientCallback.ServiceChanged += (s, en) =>
@@ -612,6 +621,7 @@ namespace ServiceManager.UI
 
             rmiServices.Enabled = true;
 
+
             tmRefresh_Tick(null, null);
         }
 
@@ -630,6 +640,9 @@ namespace ServiceManager.UI
 
 
             WatchConnection = new Channel(false, "serviceman" + this.WatchingProcessID);
+
+            tmRefresh.Enabled = true;
+            tmPing.Enabled = true;
 
             WatchConnection.Connected += (s, en) =>
             {
@@ -706,7 +719,7 @@ namespace ServiceManager.UI
 
 
 
-            MessageBox.Show("Test will be finished.", "End", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //MessageBox.Show("Test will be finished.", "End", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
 
@@ -1214,6 +1227,15 @@ namespace ServiceManager.UI
                 }
 
             }
+        }
+
+        private void tmPing_Tick(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
+
+            //Try async ping
+            this.WatchConnection.Async(a => a.Ping());
         }
     }
 }
