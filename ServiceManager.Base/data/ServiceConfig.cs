@@ -14,11 +14,15 @@ namespace ServiceManager.Base.data
 
         public Runtime RuntimeSettings { get; set; }
 
+        public Notifications Notifications { get; set; }
+
+
 
         public ServiceConfig()
         {
             this.ServiceList = new List<ServiceItem>();
             this.RuntimeSettings = new Runtime();
+            this.Notifications = new Notifications();
         }
 
 

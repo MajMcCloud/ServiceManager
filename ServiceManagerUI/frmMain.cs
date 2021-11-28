@@ -157,7 +157,7 @@ namespace ServiceManager.UI
             WatchConnection.Async(a => a.GetServicesAnalytics(), b => UpdateServiceList(b));
         }
 
-        private void UpdateServiceList(GetServiceAnalyticsResponse analytics)
+        private void UpdateServiceList(GetServicesAnalyticsResponse analytics)
         {
             if (InvokeRequired)
             {

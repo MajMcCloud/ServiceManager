@@ -1,4 +1,5 @@
 ﻿using ServiceManager.Base.data;
+using ServiceManager.Extensions;
 using ServiceManager.UI.forms;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace ServiceManager.UI
 
             var running = ServiceManager.Base.ServiceManager.IsServiceRunning;
 
-            
+
             foreach (var i in slist.ServiceList.OrderBy(a => a.Title))
             {
 
@@ -52,6 +53,8 @@ namespace ServiceManager.UI
             }
 
             lsvServices.EndUpdate();
+
+            //Runtime Settings
 
             switch (slist.RuntimeSettings.Mode)
             {
@@ -71,6 +74,41 @@ namespace ServiceManager.UI
             nud_TCPPort.Value = slist.RuntimeSettings.TCPPort;
 
             nudStartup_Delay.Value = slist.RuntimeSettings.Startup_Delay;
+
+
+            //Notification Settings
+            txtNotifications_InstanceName.Text = slist.Notifications.InstanceName;
+
+            var extensions = Extensions.Extensions.GetNotificationExtensions();
+
+            cmbNotification_Extensions.Items.Add(new RadListDataItem("No extension", null));
+
+
+            foreach (var extension in extensions)
+            {
+
+                cmbNotification_Extensions.Items.Add(new RadListDataItem(extension.Name, extension.Id));
+
+            }
+
+            if (slist.Notifications.PluginId != null)
+            {
+                cmbNotification_Extensions.SelectedItem = cmbNotification_Extensions.Items.FirstOrDefault(a => a.Value?.ToString() == slist.Notifications.PluginId.ToString());
+            }
+            else
+            {
+                cmbNotification_Extensions.SelectedIndex = 0;
+            }
+
+            chkNotifications_OnStart.Checked = slist.Notifications.OnStart;
+            chkNotifications_OnStop.Checked = slist.Notifications.OnStop;
+            chkNotifications_OnRestart.Checked = slist.Notifications.OnRestart;
+            chkNotifications_OnConsoleOutput.Checked = slist.Notifications.OnConsoleOutput;
+            chkNotifications_OnConsoleError.Checked = slist.Notifications.OnConsoleError;
+
+            chkNotifications_OnServerStart.Checked = slist.Notifications.OnServerStart;
+            chkNotifications_OnServerShutdown.Checked = slist.Notifications.OnServerShutdown;
+
 
         }
 
@@ -184,14 +222,14 @@ namespace ServiceManager.UI
         {
             var slist = ServiceConfig.load();
 
-            if(rrbMode_TCP.CheckState == CheckState.Checked)
+            if (rrbMode_TCP.CheckState == CheckState.Checked)
             {
                 slist.RuntimeSettings.Mode = eMode.Tcp;
 
                 slist.RuntimeSettings.TCPPort = (int)nud_TCPPort.Value;
             }
 
-            if(rrbMode_NetPipes.CheckState == CheckState.Checked)
+            if (rrbMode_NetPipes.CheckState == CheckState.Checked)
             {
                 slist.RuntimeSettings.Mode = eMode.NetPipes;
 
@@ -202,6 +240,56 @@ namespace ServiceManager.UI
             slist.save();
 
             this.Close();
+        }
+
+        private void rbnNotifications_Save_Click(object sender, EventArgs e)
+        {
+            var slist = ServiceConfig.load();
+
+            slist.Notifications.InstanceName = txtNotifications_InstanceName.Text;
+
+            if (cmbNotification_Extensions.SelectedIndex == 0)
+            {
+                slist.Notifications.PluginId = null;
+            }
+            else
+            {
+                slist.Notifications.PluginId = (Guid)cmbNotification_Extensions.SelectedItem.Value;
+            }
+
+
+            slist.Notifications.OnStart = chkNotifications_OnStart.Checked;
+            slist.Notifications.OnStop = chkNotifications_OnStop.Checked;
+            slist.Notifications.OnRestart = chkNotifications_OnRestart.Checked;
+            slist.Notifications.OnConsoleOutput = chkNotifications_OnConsoleOutput.Checked;
+            slist.Notifications.OnConsoleError = chkNotifications_OnConsoleError.Checked;
+
+            slist.Notifications.OnServerStart = chkNotifications_OnServerStart.Checked;
+            slist.Notifications.OnServerShutdown = chkNotifications_OnServerShutdown.Checked;
+
+            slist.save();
+
+            this.Close();
+        }
+
+        private void bnNotifications_Configure_Click(object sender, EventArgs e)
+        {
+            if (cmbNotification_Extensions.SelectedValue == null)
+            {
+                return;
+            }
+
+            Guid pluginId = (Guid)cmbNotification_Extensions.SelectedItem.Value;
+
+            var extensions = Extensions.Extensions.GetNotificationExtensions();
+
+            var plugin = extensions.FirstOrDefault(a => a.Id == pluginId);
+            if (plugin == null)
+            {
+                return;
+            }
+
+            plugin.Notification.Configure();
         }
     }
 }

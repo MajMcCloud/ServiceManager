@@ -18,9 +18,11 @@ namespace ServiceManager.Base.wcf
         [OperationContract(IsOneWay = true)]
         void Init();
 
+        [OperationContract]
+        GetServiceAnalyticsResponse GetServiceAnalytics(Guid serviceId);
 
         [OperationContract]
-        GetServiceAnalyticsResponse GetServicesAnalytics();
+        GetServicesAnalyticsResponse GetServicesAnalytics();
 
 
         [OperationContract(IsOneWay = true)]
@@ -69,9 +71,25 @@ namespace ServiceManager.Base.wcf
             this.CallbackChannel = OperationContext.Current.GetCallbackChannel<ICallbacks>();
         }
 
-        public GetServiceAnalyticsResponse GetServicesAnalytics()
+        public GetServiceAnalyticsResponse GetServiceAnalytics(Guid serviceId)
         {
             var response = new GetServiceAnalyticsResponse();
+
+            var item = this.Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
+            if (item == null)
+                return null;
+
+            var sa = this.Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
+
+            response.Service = item;
+            response.Analytics = sa;
+
+            return response;
+        }
+
+        public GetServicesAnalyticsResponse GetServicesAnalytics()
+        {
+            var response = new GetServicesAnalyticsResponse();
 
             foreach (var an in this.Manager.Analytics.Services)
             {
@@ -256,5 +274,6 @@ namespace ServiceManager.Base.wcf
         {
             
         }
+
     }
 }

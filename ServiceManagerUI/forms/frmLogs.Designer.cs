@@ -39,6 +39,7 @@
             this.txtSearch = new System.Windows.Forms.ToolStripTextBox();
             this.txtInput = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.tsmLastPing = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
@@ -66,7 +67,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiStatus,
             this.tsmiLogs,
-            this.txtSearch});
+            this.txtSearch,
+            this.tsmLastPing});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 24);
@@ -172,6 +174,15 @@
             this.label1.Text = ">>";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // tsmLastPing
+            // 
+            this.tsmLastPing.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tsmLastPing.Enabled = false;
+            this.tsmLastPing.ForeColor = System.Drawing.Color.White;
+            this.tsmLastPing.Name = "tsmLastPing";
+            this.tsmLastPing.Size = new System.Drawing.Size(73, 20);
+            this.tsmLastPing.Text = "01.01.1970";
+            // 
             // frmLogs
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -213,5 +224,6 @@
         private System.Windows.Forms.ToolStripTextBox txtSearch;
         private System.Windows.Forms.ToolStripMenuItem tsmiLogs_Live;
         private System.Windows.Forms.RichTextBox txtContent;
+        private System.Windows.Forms.ToolStripMenuItem tsmLastPing;
     }
 }

@@ -41,6 +41,11 @@ namespace ServiceManager.Base
             var cfg = ServiceConfig.load();
             Config = cfg;
 
+            if (this.Config.Notifications.OnServerStart)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server started");
+            }
+
             this.IsRunning = true;
 
             Analytics = new Analytics();
@@ -149,6 +154,11 @@ namespace ServiceManager.Base
             {
                 sa.ServiceID = item.ID;
                 Analytics.Services.Add(sa);
+            }
+
+            if (this.Config.Notifications.OnStart)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started");
             }
 
             Process proc = new Process();
@@ -310,27 +320,44 @@ namespace ServiceManager.Base
 
         private void Proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (e.Data == null)
+                return;
+
             Process proc = sender as Process;
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == proc.Id) ?? new ServiceAnalytics();
             if (sa == null)
                 return;
 
-            if (e.Data == null)
+            var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
+            if (s == null)
                 return;
+
+            if (this.Config.Notifications.OnConsoleError)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data);
+            }
 
             sa.Error += (e.Data ?? "") + "\r\n";
         }
 
         private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (e.Data == null)
+                return;
 
             Process proc = sender as Process;
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == proc.Id) ?? new ServiceAnalytics();
             if (sa == null)
                 return;
 
-            if (e.Data == null)
+            var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
+            if (s == null)
                 return;
+
+            if (this.Config.Notifications.OnConsoleOutput)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data);
+            }
 
             var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
             if (service.LogConsoleOutput)
@@ -410,6 +437,10 @@ namespace ServiceManager.Base
 
             }
 
+            var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
+            if (s == null)
+                return;
+
             sa.Status = ServiceAnalytics.eStatus.offline;
 
             if (service.LogConsoleOutput)
@@ -427,15 +458,24 @@ namespace ServiceManager.Base
             //    Connection.ServerChannel.LiveLogsUpdate(sa.ServiceID, "SERVICE MANAGER: Service has been ended");
             //}
 
-            if (!service.ForceRestart)
+            if (!service.ForceRestart | !this.IsRunning)
+            {
+                if (this.Config.Notifications.OnStop)
+                {
+                    Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Stopped");
+                }
                 return;
+            }
 
-            if (!this.IsRunning)
-                return;
 
             sa.Restarts++;
 
             StartService(service);
+
+            if (this.Config.Notifications.OnRestart)
+            {
+                Extensions.Extensions.GetExtension(this.Config.Notifications.PluginId)?.Notification?.Send(this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted");
+            }
         }
 
         public void Shutdown()
@@ -445,11 +485,14 @@ namespace ServiceManager.Base
 
         public void Stop()
         {
+            if (this.Config.Notifications.OnServerShutdown)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server shutting down");
+            }
 
             this.Connection?.Try(a => a.ShutdownStarted());
 
             this.IsRunning = false;
-
 
             List<Task> Exits = new List<Task>();
 
@@ -544,6 +587,11 @@ namespace ServiceManager.Base
 
             this.Connection?.Stop();
 
+
+            if (this.Config.Notifications.OnServerShutdown)
+            {
+                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server shutted down");
+            }
 
         }
 

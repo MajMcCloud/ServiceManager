@@ -182,6 +182,10 @@
       <Project>{f7e25e80-2ddf-4928-a4fa-0f235d353a16}</Project>
       <Name>ServiceManager.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj">
+      <Project>{cee74910-e8c8-449a-a1f4-e25fbef2934e}</Project>
+      <Name>ServiceManager.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceManager.Service\ServiceManager.Service.csproj">
       <Project>{4cd4c58b-ad13-4755-af13-2a82b4f8f262}</Project>
       <Name>ServiceManager.Service</Name>

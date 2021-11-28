@@ -70,18 +70,16 @@ namespace ServiceManager.UI.forms
                 txtContent.AppendText(logs.Logs);
             }
             
-
             txtContent.SelectionStart = txtContent.Text.Length;
 
             txtContent.ScrollToCaret();
 
-            this.Connection.Async(a => a.GetServicesAnalytics(), b =>
+            this.Connection.Async(a => a.GetServiceAnalytics(serviceId), b =>
             {
                 Invoke((Action)(() =>
                 {
-                    var service = b.Analytics.FirstOrDefault(a => a.ServiceID == serviceId);
-
-                    ClientCallback_ServiceChanged(null, new Base.wcf.args.ServiceChangedEventArgs() { Status = service.Status, ServiceId = service.ServiceID });
+                    tsmLastPing.Text = "Last ping: " + b.Analytics.LastPing.ToString();
+                    ClientCallback_ServiceChanged(null, new Base.wcf.args.ServiceChangedEventArgs() { Status = b.Analytics.Status, ServiceId = b.Analytics.ServiceID });
                 }));
             });
 
@@ -137,6 +135,8 @@ namespace ServiceManager.UI.forms
 
             }
 
+            
+
         }
 
         private void ClientCallback_LiveLogs(object sender, Base.wcf.args.LiveLogsEventArgs e)
@@ -161,6 +161,7 @@ namespace ServiceManager.UI.forms
                 //SendMessage(txtContent.Handle, EM_LINESCROLL, 0, scroll);
             }
 
+            tsmLastPing.Text = "Last ping: " + DateTime.Now.ToString();
         }
 
         private void frmLogs_FormClosing(object sender, FormClosingEventArgs e)

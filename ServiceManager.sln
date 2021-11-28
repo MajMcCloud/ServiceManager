@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.UI", "ServiceManagerUI\ServiceManager.UI.csproj", "{E1921317-2E79-4715-AF44-483B610CF7B7}"
 EndProject
@@ -25,6 +25,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions", "ServiceManager.Extensions\ServiceManager.Extensions.csproj", "{CEE74910-E8C8-449A-A1F4-E25FBEF2934E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{780CE37D-09B1-49DF-BEFF-1AF57BB88225}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.TelegramNotifier", "Extensions\TelegramNotifier\ServiceManager.Extensions.TelegramNotifier.csproj", "{CFBE063F-8393-45AA-841F-0AC2F554871D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +66,14 @@ Global
 		{F7E25E80-2DDF-4928-A4FA-0F235D353A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7E25E80-2DDF-4928-A4FA-0F235D353A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7E25E80-2DDF-4928-A4FA-0F235D353A16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEE74910-E8C8-449A-A1F4-E25FBEF2934E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEE74910-E8C8-449A-A1F4-E25FBEF2934E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEE74910-E8C8-449A-A1F4-E25FBEF2934E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEE74910-E8C8-449A-A1F4-E25FBEF2934E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFBE063F-8393-45AA-841F-0AC2F554871D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFBE063F-8393-45AA-841F-0AC2F554871D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFBE063F-8393-45AA-841F-0AC2F554871D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFBE063F-8393-45AA-841F-0AC2F554871D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +83,7 @@ Global
 		{2B16A02E-0ABB-4568-B0AC-0A6098739777} = {020304EB-E623-4258-B099-1A7585A193F9}
 		{2EF5276E-2DEF-46C4-9A16-2B99E04D11CD} = {020304EB-E623-4258-B099-1A7585A193F9}
 		{4FAA365C-C3BF-4948-B5D9-88D04B25C6EB} = {020304EB-E623-4258-B099-1A7585A193F9}
+		{CFBE063F-8393-45AA-841F-0AC2F554871D} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB8FBBF3-4399-40AF-94BD-A688100D132C}

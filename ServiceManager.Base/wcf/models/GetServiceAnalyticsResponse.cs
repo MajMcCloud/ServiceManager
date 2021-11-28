@@ -9,15 +9,14 @@ namespace ServiceManager.Base.wcf.models
 {
     public class GetServiceAnalyticsResponse
     {
-        public List<ServiceAnalytics> Analytics { get; set; }
+        public ServiceAnalytics Analytics { get; set; }
 
-        public List<ServiceItem> Services { get; set; }
+        public ServiceItem Service { get; set; }
 
 
         public GetServiceAnalyticsResponse()
         {
-            this.Analytics = new List<ServiceAnalytics>();
-            this.Services = new List<ServiceItem>();
+
         }
     }
 

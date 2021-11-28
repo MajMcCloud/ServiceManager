@@ -8,6 +8,8 @@ namespace ServiceManager.Base.data.settings
 {
     public class Runtime
     {
+        
+
         public enum eMode
         {
             NetPipes = 0,

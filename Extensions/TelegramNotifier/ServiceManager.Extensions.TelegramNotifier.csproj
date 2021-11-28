@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F7E25E80-2DDF-4928-A4FA-0F235D353A16}</ProjectGuid>
+    <ProjectGuid>{CFBE063F-8393-45AA-841F-0AC2F554871D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceManager.Base</RootNamespace>
-    <AssemblyName>ServiceManager.Base</AssemblyName>
+    <RootNamespace>ServiceManager.Extensions.TelegramNotifier</RootNamespace>
+    <AssemblyName>ServiceManager.Extensions.TelegramNotifier</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\ServiceManagerUI\bin\Debug\extensions\TelegramBotNotifier\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,13 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,40 +43,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Channel.cs" />
-    <Compile Include="ChannelExtensions.cs" />
-    <Compile Include="data\Analytics.cs" />
-    <Compile Include="data\ServiceAnalytics.cs" />
-    <Compile Include="data\ServiceConfig.cs" />
-    <Compile Include="data\ServiceItem.cs" />
-    <Compile Include="data\settings\Notifications.cs" />
-    <Compile Include="data\settings\Runtime.cs" />
-    <Compile Include="ManagerServiceBase.cs">
-      <SubType>Component</SubType>
+    <Compile Include="Config\Config.cs" />
+    <Compile Include="forms\frmConfig.cs">
+      <SubType>Form</SubType>
     </Compile>
+    <Compile Include="forms\frmConfig.Designer.cs">
+      <DependentUpon>frmConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TelegramNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceManager.cs" />
-    <Compile Include="wcf\args\ActivityPingEventArgs.cs" />
-    <Compile Include="wcf\args\LiveLogsEventArgs.cs" />
-    <Compile Include="wcf\args\ServiceChangedEventArgs.cs" />
-    <Compile Include="wcf\Callbacks.cs" />
-    <Compile Include="wcf\ManagerService.cs" />
-    <Compile Include="wcf\models\GetServiceAnalyticsResponse.cs" />
-    <Compile Include="wcf\models\GetServicesAnalyticsResponse.cs" />
-    <Compile Include="wcf\models\GetServiceLogsResponse.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Telegram.Bot">
+      <Version>17.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Telegram.Bot.Extensions.Polling">
+      <Version>1.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConfigBase\ConfigBase.csproj">
+    <ProjectReference Include="..\..\..\ConfigBase\ConfigBase.csproj">
       <Project>{9015d6fe-b0cd-4c41-b35f-b5c22abd5cb1}</Project>
       <Name>ConfigBase</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj">
+    <ProjectReference Include="..\..\ServiceManager.Extensions\ServiceManager.Extensions.csproj">
       <Project>{cee74910-e8c8-449a-a1f4-e25fbef2934e}</Project>
       <Name>ServiceManager.Extensions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="forms\frmConfig.resx">
+      <DependentUpon>frmConfig.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
