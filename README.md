@@ -14,8 +14,7 @@ Authentication is not integrated yet. => Todo List
 - [Service Settings - Shutdown](#service-settings---shutdown)
 - [Service Settings - Logging](#service-settings---logging)
 - [Live Console In and Output](#live-console-in-and-output)
-
-
+- [Notifications - Telegram](#notifications---telegram)
 
 ## MainWindow
 
@@ -66,6 +65,12 @@ Get directly output from your console applications and send back informations ov
 Example:
 
 <img src="Screens/livelogs_example.gif" />
+
+## Notifications - Telegram
+
+Example of telegram messages you will receive when used.
+
+<img src="Screens/Notifications_Telegram.png" />
 
 
 Icons where used from:
