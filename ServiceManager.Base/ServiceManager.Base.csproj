@@ -72,9 +72,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConfigBase\ConfigBase.csproj">
-      <Project>{9015d6fe-b0cd-4c41-b35f-b5c22abd5cb1}</Project>
-      <Name>ConfigBase</Name>
+    <ProjectReference Include="..\ServiceManager.ConfigBase\ServiceManager.ConfigBase.csproj">
+      <Project>{3F0D9E6B-5C1A-4D2E-9B7F-8A4C6E0D1F52}</Project>
+      <Name>ServiceManager.ConfigBase</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj">
       <Project>{cee74910-e8c8-449a-a1f4-e25fbef2934e}</Project>

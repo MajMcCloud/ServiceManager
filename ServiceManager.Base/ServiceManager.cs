@@ -39,6 +39,7 @@ namespace ServiceManager.Base
         public void Start()
         {
             var cfg = ServiceConfig.load();
+
             Config = cfg;
 
             if (this.Config.Notifications.OnServerStart)
