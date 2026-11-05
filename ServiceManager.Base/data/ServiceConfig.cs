@@ -1,5 +1,5 @@
-﻿using ConfigBase;
-using ServiceManager.Base.data.settings;
+﻿using ServiceManager.Base.data.settings;
+using ServiceManager.ConfigBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ServiceManager.Base.data
 {
-    public class ServiceConfig : ConfigBase<ServiceConfig>
+    public class ServiceConfig : ConfigBase.ConfigBase<ServiceConfig>
     {
         public List<ServiceItem> ServiceList { get; set; }
 

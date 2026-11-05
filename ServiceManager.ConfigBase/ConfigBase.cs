@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 
-namespace ConfigBase
+namespace ServiceManager.ConfigBase
 {
     public class ConfigBase<T>
         where T : ConfigBase.ConfigBase<T>, new()
