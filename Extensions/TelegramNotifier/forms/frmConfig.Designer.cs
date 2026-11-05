@@ -37,46 +37,52 @@
             this.bnSave = new System.Windows.Forms.Button();
             this.bnSearch = new System.Windows.Forms.Button();
             this.tmSearch = new System.Windows.Forms.Timer(this.components);
+            this.bnTestMessage = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(37, 35);
+            this.label1.Location = new System.Drawing.Point(68, 65);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(48, 13);
+            this.label1.Size = new System.Drawing.Size(90, 25);
             this.label1.TabIndex = 0;
             this.label1.Text = "API Key:";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(40, 90);
+            this.label2.Location = new System.Drawing.Point(73, 166);
+            this.label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(44, 13);
+            this.label2.Size = new System.Drawing.Size(81, 25);
             this.label2.TabIndex = 1;
             this.label2.Text = "Chat Id:";
             // 
             // txtAPIKey
             // 
-            this.txtAPIKey.Location = new System.Drawing.Point(122, 32);
+            this.txtAPIKey.Location = new System.Drawing.Point(224, 59);
+            this.txtAPIKey.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtAPIKey.Name = "txtAPIKey";
-            this.txtAPIKey.Size = new System.Drawing.Size(255, 20);
+            this.txtAPIKey.Size = new System.Drawing.Size(464, 29);
             this.txtAPIKey.TabIndex = 2;
             // 
             // txtChatId
             // 
-            this.txtChatId.Location = new System.Drawing.Point(122, 87);
+            this.txtChatId.Location = new System.Drawing.Point(224, 161);
+            this.txtChatId.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtChatId.Name = "txtChatId";
-            this.txtChatId.Size = new System.Drawing.Size(255, 20);
+            this.txtChatId.Size = new System.Drawing.Size(464, 29);
             this.txtChatId.TabIndex = 3;
             // 
             // bnCancel
             // 
             this.bnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bnCancel.Location = new System.Drawing.Point(302, 197);
+            this.bnCancel.Location = new System.Drawing.Point(554, 403);
+            this.bnCancel.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.bnCancel.Name = "bnCancel";
-            this.bnCancel.Size = new System.Drawing.Size(75, 23);
+            this.bnCancel.Size = new System.Drawing.Size(138, 42);
             this.bnCancel.TabIndex = 4;
             this.bnCancel.Text = "Cancel";
             this.bnCancel.UseVisualStyleBackColor = true;
@@ -85,9 +91,10 @@
             // bnSave
             // 
             this.bnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bnSave.Location = new System.Drawing.Point(221, 197);
+            this.bnSave.Location = new System.Drawing.Point(405, 403);
+            this.bnSave.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.bnSave.Name = "bnSave";
-            this.bnSave.Size = new System.Drawing.Size(75, 23);
+            this.bnSave.Size = new System.Drawing.Size(138, 42);
             this.bnSave.TabIndex = 5;
             this.bnSave.Text = "Save";
             this.bnSave.UseVisualStyleBackColor = true;
@@ -96,9 +103,10 @@
             // bnSearch
             // 
             this.bnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bnSearch.Location = new System.Drawing.Point(122, 113);
+            this.bnSearch.Location = new System.Drawing.Point(224, 212);
+            this.bnSearch.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.bnSearch.Name = "bnSearch";
-            this.bnSearch.Size = new System.Drawing.Size(130, 23);
+            this.bnSearch.Size = new System.Drawing.Size(238, 42);
             this.bnSearch.TabIndex = 5;
             this.bnSearch.Text = "Start searching";
             this.bnSearch.UseVisualStyleBackColor = true;
@@ -109,12 +117,25 @@
             this.tmSearch.Interval = 10000;
             this.tmSearch.Tick += new System.EventHandler(this.tmSearch_Tick);
             // 
+            // bnTestMessage
+            // 
+            this.bnTestMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.bnTestMessage.Location = new System.Drawing.Point(224, 290);
+            this.bnTestMessage.Margin = new System.Windows.Forms.Padding(6);
+            this.bnTestMessage.Name = "bnTestMessage";
+            this.bnTestMessage.Size = new System.Drawing.Size(238, 42);
+            this.bnTestMessage.TabIndex = 5;
+            this.bnTestMessage.Text = "Send test message";
+            this.bnTestMessage.UseVisualStyleBackColor = true;
+            this.bnTestMessage.Click += new System.EventHandler(this.bnTestMessage_Click);
+            // 
             // frmConfig
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(411, 237);
+            this.ClientSize = new System.Drawing.Size(754, 477);
             this.Controls.Add(this.bnSearch);
+            this.Controls.Add(this.bnTestMessage);
             this.Controls.Add(this.bnSave);
             this.Controls.Add(this.bnCancel);
             this.Controls.Add(this.txtChatId);
@@ -122,6 +143,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmConfig";
@@ -143,5 +165,6 @@
         private System.Windows.Forms.Button bnSave;
         private System.Windows.Forms.Button bnSearch;
         private System.Windows.Forms.Timer tmSearch;
+        private System.Windows.Forms.Button bnTestMessage;
     }
 }

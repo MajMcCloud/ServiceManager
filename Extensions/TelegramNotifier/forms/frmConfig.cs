@@ -137,5 +137,30 @@ namespace ServiceManager.Extensions.TelegramNotifier.forms
 
             this.Close();
         }
+
+        private void bnTestMessage_Click(object sender, EventArgs e)
+        {
+            TelegramBotClient = new TelegramBotClient(txtAPIKey.Text);
+
+            long chatId = 0;
+            if (!long.TryParse(txtChatId.Text, out chatId))
+            {
+                return;
+            }
+
+
+            try
+            {
+                TelegramBotClient.SendTextMessageAsync(chatId, "Testmessage from ServiceManager");
+
+                MessageBox.Show($"Testmessage sent!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Error during sending. {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            TelegramBotClient = null;
+        }
     }
 }
