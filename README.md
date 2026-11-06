@@ -1,7 +1,7 @@
 # ServiceManager
 A tool for managing mostly console applications like Cronjobs.
 
-Developed with C# and make use of Telerik WinForms controls.
+Developed with C# using the standard WinForms controls.
 
 The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
 
