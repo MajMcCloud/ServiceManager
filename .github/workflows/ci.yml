@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ( .NET Framework 4.7.2 )
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: msbuild ServiceManager.sln /t:Restore /p:Configuration=Release /v:minimal /nologo
+
+      - name: Build solution
+        run: msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release /v:minimal /nologo
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ServiceManager-Release
+          path: |
+            ServiceManager.Service/bin/Release
+            ServiceManagerUI/bin/Release
+          if-no-files-found: error
+          retention-days: 14

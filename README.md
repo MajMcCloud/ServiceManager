@@ -1,4 +1,6 @@
 # ServiceManager
+[![CI](https://github.com/MajMcCloud/ServiceManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MajMcCloud/ServiceManager/actions/workflows/ci.yml)
+
 A tool for managing mostly console applications like Cronjobs.
 
 Developed with C# using the standard WinForms controls.
@@ -6,6 +8,17 @@ Developed with C# using the standard WinForms controls.
 The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
 
 Authentication is not integrated yet. => Todo List
+
+## Build
+
+Requires Visual Studio 2022 (or newer) with the .NET Framework 4.7.2 targeting pack. No third party UI controls, so a plain clone builds out of the box:
+
+```
+msbuild ServiceManager.sln /t:Restore /p:Configuration=Release
+msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release
+```
+
+The same two commands run in [CI](.github/workflows/ci.yml), which uploads the `ServiceManager.Service\bin\Release` and `ServiceManagerUI\bin\Release` folders as build artifacts.
 
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)
