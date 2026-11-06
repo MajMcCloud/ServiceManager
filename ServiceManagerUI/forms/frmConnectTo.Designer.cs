@@ -28,16 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.txtHost = new Telerik.WinControls.UI.RadTextBox();
-            this.radLabel1 = new Telerik.WinControls.UI.RadLabel();
-            this.bnConnect = new Telerik.WinControls.UI.RadButton();
-            this.txtPort = new Telerik.WinControls.UI.RadTextBox();
-            this.radLabel2 = new Telerik.WinControls.UI.RadLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.txtHost)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bnConnect)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPort)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radLabel2)).BeginInit();
+            this.txtHost = new System.Windows.Forms.TextBox();
+            this.lblHost = new System.Windows.Forms.Label();
+            this.bnConnect = new System.Windows.Forms.Button();
+            this.txtPort = new System.Windows.Forms.TextBox();
+            this.lblPort = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // txtHost
@@ -45,28 +40,28 @@
             this.txtHost.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.txtHost.Location = new System.Drawing.Point(119, 33);
             this.txtHost.Name = "txtHost";
-            this.txtHost.SelectionStart = 9;
-            this.txtHost.Size = new System.Drawing.Size(222, 23);
+            this.txtHost.Size = new System.Drawing.Size(222, 26);
             this.txtHost.TabIndex = 0;
             this.txtHost.Text = "localhost";
             // 
-            // radLabel1
+            // lblHost
             // 
-            this.radLabel1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.radLabel1.Location = new System.Drawing.Point(12, 34);
-            this.radLabel1.Name = "radLabel1";
-            this.radLabel1.Size = new System.Drawing.Size(101, 21);
-            this.radLabel1.TabIndex = 1;
-            this.radLabel1.Text = "IP or Hostname";
-            this.radLabel1.TextAlignment = System.Drawing.ContentAlignment.TopLeft;
+            this.lblHost.AutoSize = true;
+            this.lblHost.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblHost.Location = new System.Drawing.Point(12, 36);
+            this.lblHost.Name = "lblHost";
+            this.lblHost.Size = new System.Drawing.Size(101, 23);
+            this.lblHost.TabIndex = 1;
+            this.lblHost.Text = "IP or Hostname";
             // 
             // bnConnect
             // 
             this.bnConnect.Location = new System.Drawing.Point(119, 100);
             this.bnConnect.Name = "bnConnect";
-            this.bnConnect.Size = new System.Drawing.Size(110, 24);
+            this.bnConnect.Size = new System.Drawing.Size(110, 26);
             this.bnConnect.TabIndex = 2;
             this.bnConnect.Text = "Connect";
+            this.bnConnect.UseVisualStyleBackColor = true;
             this.bnConnect.Click += new System.EventHandler(this.bnConnect_Click);
             // 
             // txtPort
@@ -74,19 +69,19 @@
             this.txtPort.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.txtPort.Location = new System.Drawing.Point(119, 62);
             this.txtPort.Name = "txtPort";
-            this.txtPort.Size = new System.Drawing.Size(74, 23);
-            this.txtPort.TabIndex = 0;
+            this.txtPort.Size = new System.Drawing.Size(74, 26);
+            this.txtPort.TabIndex = 3;
             this.txtPort.Text = "50000";
             // 
-            // radLabel2
+            // lblPort
             // 
-            this.radLabel2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.radLabel2.Location = new System.Drawing.Point(81, 63);
-            this.radLabel2.Name = "radLabel2";
-            this.radLabel2.Size = new System.Drawing.Size(32, 21);
-            this.radLabel2.TabIndex = 1;
-            this.radLabel2.Text = "Port";
-            this.radLabel2.TextAlignment = System.Drawing.ContentAlignment.TopLeft;
+            this.lblPort.AutoSize = true;
+            this.lblPort.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblPort.Location = new System.Drawing.Point(81, 65);
+            this.lblPort.Name = "lblPort";
+            this.lblPort.Size = new System.Drawing.Size(32, 23);
+            this.lblPort.TabIndex = 4;
+            this.lblPort.Text = "Port";
             // 
             // frmConnectTo
             // 
@@ -94,8 +89,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(379, 136);
             this.Controls.Add(this.bnConnect);
-            this.Controls.Add(this.radLabel2);
-            this.Controls.Add(this.radLabel1);
+            this.Controls.Add(this.lblPort);
+            this.Controls.Add(this.lblHost);
             this.Controls.Add(this.txtPort);
             this.Controls.Add(this.txtHost);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -105,11 +100,6 @@
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Connect to";
-            ((System.ComponentModel.ISupportInitialize)(this.txtHost)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radLabel1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bnConnect)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.txtPort)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radLabel2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -117,10 +107,10 @@
 
         #endregion
 
-        private Telerik.WinControls.UI.RadTextBox txtHost;
-        private Telerik.WinControls.UI.RadLabel radLabel1;
-        private Telerik.WinControls.UI.RadButton bnConnect;
-        private Telerik.WinControls.UI.RadTextBox txtPort;
-        private Telerik.WinControls.UI.RadLabel radLabel2;
+        private System.Windows.Forms.TextBox txtHost;
+        private System.Windows.Forms.Label lblHost;
+        private System.Windows.Forms.Button bnConnect;
+        private System.Windows.Forms.TextBox txtPort;
+        private System.Windows.Forms.Label lblPort;
     }
 }

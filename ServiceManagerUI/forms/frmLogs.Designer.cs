@@ -41,7 +41,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tsmLastPing = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             this.SuspendLayout();
             // 
             // txtContent
@@ -195,10 +194,6 @@
             this.Controls.Add(this.label1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "frmLogs";
-            // 
-            // 
-            // 
-            this.RootElement.ApplyShapeToControl = true;
             this.Text = "Service logs";
             this.Activated += new System.EventHandler(this.frmLogs_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmLogs_FormClosing);
@@ -206,7 +201,6 @@
             this.Shown += new System.EventHandler(this.frmLogs_Shown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

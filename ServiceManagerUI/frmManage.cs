@@ -10,12 +10,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.UI;
 using static ServiceManager.Base.data.settings.Runtime;
 
 namespace ServiceManager.UI
 {
-    public partial class frmManage : RadForm
+    public partial class frmManage : Form
     {
         public String ConfigFile { get; set; }
 
@@ -60,12 +59,12 @@ namespace ServiceManager.UI
             {
                 case eMode.NetPipes:
 
-                    rrbMode_NetPipes.CheckState = CheckState.Checked;
+                    rrbMode_NetPipes.Checked = true;
 
                     break;
                 case eMode.Tcp:
 
-                    rrbMode_TCP.CheckState = CheckState.Checked;
+                    rrbMode_TCP.Checked = true;
 
                     break;
             }
@@ -81,19 +80,19 @@ namespace ServiceManager.UI
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
-            cmbNotification_Extensions.Items.Add(new RadListDataItem("No extension", null));
+            cmbNotification_Extensions.Items.Add(new ExtensionItem("No extension", null));
 
 
             foreach (var extension in extensions)
             {
 
-                cmbNotification_Extensions.Items.Add(new RadListDataItem(extension.Name, extension.Id));
+                cmbNotification_Extensions.Items.Add(new ExtensionItem(extension.Name, extension.Id));
 
             }
 
             if (slist.Notifications.PluginId != null)
             {
-                cmbNotification_Extensions.SelectedItem = cmbNotification_Extensions.Items.FirstOrDefault(a => a.Value?.ToString() == slist.Notifications.PluginId.ToString());
+                cmbNotification_Extensions.SelectedItem = cmbNotification_Extensions.Items.OfType<ExtensionItem>().FirstOrDefault(a => a.Value?.ToString() == slist.Notifications.PluginId.ToString());
             }
             else
             {
@@ -202,19 +201,12 @@ namespace ServiceManager.UI
             loadList();
         }
 
-        private void rrbMode_TCP_ToggleStateChanged(object sender, Telerik.WinControls.UI.StateChangedEventArgs args)
+        private void rrbMode_TCP_CheckedChanged(object sender, EventArgs e)
         {
-            var on = args.ToggleState == Telerik.WinControls.Enumerations.ToggleState.On;
+            var on = rrbMode_TCP.Checked;
 
             lblPort.Enabled = on;
             nud_TCPPort.Enabled = on;
-
-        }
-
-        private void rrbMode_NetPipes_ToggleStateChanged(object sender, Telerik.WinControls.UI.StateChangedEventArgs args)
-        {
-
-
 
         }
 
@@ -222,14 +214,14 @@ namespace ServiceManager.UI
         {
             var slist = ServiceConfig.load();
 
-            if (rrbMode_TCP.CheckState == CheckState.Checked)
+            if (rrbMode_TCP.Checked)
             {
                 slist.RuntimeSettings.Mode = eMode.Tcp;
 
                 slist.RuntimeSettings.TCPPort = (int)nud_TCPPort.Value;
             }
 
-            if (rrbMode_NetPipes.CheckState == CheckState.Checked)
+            if (rrbMode_NetPipes.Checked)
             {
                 slist.RuntimeSettings.Mode = eMode.NetPipes;
 
@@ -254,7 +246,7 @@ namespace ServiceManager.UI
             }
             else
             {
-                slist.Notifications.PluginId = (Guid)cmbNotification_Extensions.SelectedItem.Value;
+                slist.Notifications.PluginId = (Guid)((ExtensionItem)cmbNotification_Extensions.SelectedItem).Value;
             }
 
 
@@ -274,12 +266,13 @@ namespace ServiceManager.UI
 
         private void bnNotifications_Configure_Click(object sender, EventArgs e)
         {
-            if (cmbNotification_Extensions.SelectedValue == null)
+            var selected = cmbNotification_Extensions.SelectedItem as ExtensionItem;
+            if (selected == null || selected.Value == null)
             {
                 return;
             }
 
-            Guid pluginId = (Guid)cmbNotification_Extensions.SelectedItem.Value;
+            Guid pluginId = (Guid)selected.Value;
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
@@ -290,6 +283,22 @@ namespace ServiceManager.UI
             }
 
             plugin.Notification.Configure();
+        }
+
+        /// <summary>Eintrag der Extensions-Auswahl.</summary>
+        private sealed class ExtensionItem
+        {
+            public ExtensionItem(string text, object value)
+            {
+                Text = text;
+                Value = value;
+            }
+
+            public string Text { get; }
+
+            public object Value { get; }
+
+            public override string ToString() => Text;
         }
     }
 }

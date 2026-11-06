@@ -10,11 +10,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.UI;
 
 namespace ServiceManager.UI.forms
 {
-    public partial class frmLogs : RadForm
+    public partial class frmLogs : Form
     {
         const int EM_LINESCROLL = 0x00B6;
 

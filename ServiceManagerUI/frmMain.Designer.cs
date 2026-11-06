@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn1 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 0", "Activity");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn2 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 1", "PID");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn3 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 2", "Title");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn4 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 3", "Status");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn5 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 4", "Restarts");
-            Telerik.WinControls.UI.ListViewDetailColumn listViewDetailColumn6 = new Telerik.WinControls.UI.ListViewDetailColumn("Column 5", "Auto Restart");
+            System.Windows.Forms.ColumnHeader listViewDetailColumn1 = new System.Windows.Forms.ColumnHeader();
+            System.Windows.Forms.ColumnHeader listViewDetailColumn2 = new System.Windows.Forms.ColumnHeader();
+            System.Windows.Forms.ColumnHeader listViewDetailColumn3 = new System.Windows.Forms.ColumnHeader();
+            System.Windows.Forms.ColumnHeader listViewDetailColumn4 = new System.Windows.Forms.ColumnHeader();
+            System.Windows.Forms.ColumnHeader listViewDetailColumn5 = new System.Windows.Forms.ColumnHeader();
+            System.Windows.Forms.ColumnHeader listViewDetailColumn6 = new System.Windows.Forms.ColumnHeader();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.tmRefresh = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -49,47 +49,43 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_OpenExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_OpenLogs = new System.Windows.Forms.ToolStripMenuItem();
-            this.lsvServices = new Telerik.WinControls.UI.RadListView();
-            this.rmiManager = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiManager_OpenConfig = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem1 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiManager_Close = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiTesting = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiTesting_Start = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiTesting_End = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiService = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiService_Install = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiService_Uninstall = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem2 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiService_Start = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiService_Restart = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiService_Stop = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiInstances = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiInstances_ConnectTo = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem3 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.radStatusStrip1 = new Telerik.WinControls.UI.RadStatusStrip();
-            this.radLabelElement1 = new Telerik.WinControls.UI.RadLabelElement();
-            this.lblStatus = new Telerik.WinControls.UI.RadLabelElement();
-            this.commandBarSeparator1 = new Telerik.WinControls.UI.CommandBarSeparator();
-            this.radLabelElement3 = new Telerik.WinControls.UI.RadLabelElement();
-            this.radLabelElement2 = new Telerik.WinControls.UI.RadLabelElement();
-            this.lblActiveServiceCount = new Telerik.WinControls.UI.RadLabelElement();
+            this.lsvServices = new System.Windows.Forms.ListView();
+            this.rmiManager = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiManager_OpenConfig = new System.Windows.Forms.ToolStripMenuItem();
+            this.radMenuSeparatorItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.rmiManager_Close = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiTesting = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiTesting_Start = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiTesting_End = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService_Install = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService_Uninstall = new System.Windows.Forms.ToolStripMenuItem();
+            this.radMenuSeparatorItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.rmiService_Start = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService_Restart = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService_Stop = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiInstances = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiInstances_ConnectTo = new System.Windows.Forms.ToolStripMenuItem();
+            this.radMenuSeparatorItem3 = new System.Windows.Forms.ToolStripSeparator();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.radLabelElement1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.commandBarSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.radLabelElement3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.radLabelElement2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblActiveServiceCount = new System.Windows.Forms.ToolStripStatusLabel();
             this.rmServiceRefresh = new System.Windows.Forms.Timer(this.components);
-            this.rmiServices = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiServices_RefreshAll = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem4 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiServices_StartAll = new Telerik.WinControls.UI.RadMenuItem();
-            this.rmiServices_StopAll = new Telerik.WinControls.UI.RadMenuItem();
-            this.radMenuSeparatorItem5 = new Telerik.WinControls.UI.RadMenuSeparatorItem();
-            this.rmiServices_OpenAllLiveLogs = new Telerik.WinControls.UI.RadMenuItem();
+            this.rmiServices = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiServices_RefreshAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.radMenuSeparatorItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.rmiServices_StartAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiServices_StopAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.radMenuSeparatorItem5 = new System.Windows.Forms.ToolStripSeparator();
+            this.rmiServices_OpenAllLiveLogs = new System.Windows.Forms.ToolStripMenuItem();
             this.tmPing = new System.Windows.Forms.Timer(this.components);
             this.lblVersion = new System.Windows.Forms.Label();
-            this.radMenu1 = new Telerik.WinControls.UI.RadMenu();
+            this.menuMain = new System.Windows.Forms.MenuStrip();
             this.cmsMenu.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.lsvServices)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radStatusStrip1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radMenu1)).BeginInit();
             this.SuspendLayout();
             // 
             // tmRefresh
@@ -195,37 +191,37 @@
             this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            listViewDetailColumn1.HeaderText = "Activity";
-            listViewDetailColumn1.Width = 60F;
-            listViewDetailColumn2.HeaderText = "PID";
-            listViewDetailColumn2.Width = 60F;
-            listViewDetailColumn3.HeaderText = "Title";
-            listViewDetailColumn4.HeaderText = "Status";
-            listViewDetailColumn4.Width = 150F;
-            listViewDetailColumn5.HeaderText = "Restarts";
-            listViewDetailColumn5.Width = 60F;
-            listViewDetailColumn6.HeaderText = "Auto Restart";
-            listViewDetailColumn6.Width = 80F;
-            this.lsvServices.Columns.AddRange(new Telerik.WinControls.UI.ListViewDetailColumn[] {
+            listViewDetailColumn1.Text = "Activity";
+            listViewDetailColumn1.Width = 60;
+            listViewDetailColumn2.Text = "PID";
+            listViewDetailColumn2.Width = 60;
+            listViewDetailColumn3.Text = "Title";
+            listViewDetailColumn4.Text = "Status";
+            listViewDetailColumn4.Width = 150;
+            listViewDetailColumn5.Text = "Restarts";
+            listViewDetailColumn5.Width = 60;
+            listViewDetailColumn6.Text = "Auto Restart";
+            listViewDetailColumn6.Width = 80;
+            this.lsvServices.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             listViewDetailColumn1,
             listViewDetailColumn2,
             listViewDetailColumn3,
             listViewDetailColumn4,
             listViewDetailColumn5,
             listViewDetailColumn6});
-            this.lsvServices.ItemSpacing = -1;
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
             this.lsvServices.MultiSelect = true;
+            this.lsvServices.HideSelection = false;
             this.lsvServices.Name = "lsvServices";
             this.lsvServices.Size = new System.Drawing.Size(789, 360);
             this.lsvServices.TabIndex = 5;
-            this.lsvServices.ViewType = Telerik.WinControls.UI.ListViewType.DetailsView;
+            this.lsvServices.View = System.Windows.Forms.View.Details;
             this.lsvServices.MouseClick += new System.Windows.Forms.MouseEventHandler(this.lsvServices_MouseClick_1);
             this.lsvServices.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lsvServices_MouseDoubleClick_1);
             // 
             // rmiManager
             // 
-            this.rmiManager.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.rmiManager.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiManager_OpenConfig,
             this.radMenuSeparatorItem1,
             this.rmiManager_Close});
@@ -242,8 +238,6 @@
             // radMenuSeparatorItem1
             // 
             this.radMenuSeparatorItem1.Name = "radMenuSeparatorItem1";
-            this.radMenuSeparatorItem1.Text = "radMenuSeparatorItem1";
-            this.radMenuSeparatorItem1.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // rmiManager_Close
             // 
@@ -253,7 +247,7 @@
             // 
             // rmiTesting
             // 
-            this.rmiTesting.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.rmiTesting.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiTesting_Start,
             this.rmiTesting_End});
             this.rmiTesting.Name = "rmiTesting";
@@ -274,7 +268,7 @@
             // 
             // rmiService
             // 
-            this.rmiService.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.rmiService.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiService_Install,
             this.rmiService_Uninstall,
             this.radMenuSeparatorItem2,
@@ -283,7 +277,7 @@
             this.rmiService_Stop});
             this.rmiService.Name = "rmiService";
             this.rmiService.Text = "Service";
-            this.rmiService.DropDownOpening += new System.ComponentModel.CancelEventHandler(this.rmiService_DropDownOpening);
+            this.rmiService.DropDownOpening += new System.EventHandler(this.rmiService_DropDownOpening);
             // 
             // rmiService_Install
             // 
@@ -300,8 +294,6 @@
             // radMenuSeparatorItem2
             // 
             this.radMenuSeparatorItem2.Name = "radMenuSeparatorItem2";
-            this.radMenuSeparatorItem2.Text = "radMenuSeparatorItem2";
-            this.radMenuSeparatorItem2.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // rmiService_Start
             // 
@@ -323,14 +315,12 @@
             // 
             // rmiInstances
             // 
-            this.rmiInstances.Image = null;
-            this.rmiInstances.ImageAlignment = System.Drawing.ContentAlignment.MiddleLeft;
-            this.rmiInstances.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.rmiInstances.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiInstances_ConnectTo,
             this.radMenuSeparatorItem3});
             this.rmiInstances.Name = "rmiInstances";
             this.rmiInstances.Text = "Instances";
-            this.rmiInstances.DropDownOpening += new System.ComponentModel.CancelEventHandler(this.rmiInstances_DropDownOpening);
+            this.rmiInstances.DropDownOpening += new System.EventHandler(this.rmiInstances_DropDownOpening);
             // 
             // rmiInstances_ConnectTo
             // 
@@ -342,65 +332,51 @@
             // radMenuSeparatorItem3
             // 
             this.radMenuSeparatorItem3.Name = "radMenuSeparatorItem3";
-            this.radMenuSeparatorItem3.Text = "radMenuSeparatorItem3";
-            this.radMenuSeparatorItem3.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // radStatusStrip1
+            // statusStrip1
             // 
-            this.radStatusStrip1.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.radLabelElement1,
             this.lblStatus,
             this.commandBarSeparator1,
             this.radLabelElement3,
             this.radLabelElement2,
             this.lblActiveServiceCount});
-            this.radStatusStrip1.Location = new System.Drawing.Point(0, 448);
-            this.radStatusStrip1.Name = "radStatusStrip1";
-            this.radStatusStrip1.Size = new System.Drawing.Size(814, 26);
-            this.radStatusStrip1.TabIndex = 7;
+            this.statusStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(814, 26);
+            this.statusStrip1.TabIndex = 7;
             // 
             // radLabelElement1
             // 
             this.radLabelElement1.Name = "radLabelElement1";
-            this.radStatusStrip1.SetSpring(this.radLabelElement1, false);
             this.radLabelElement1.Text = "Status:";
-            this.radLabelElement1.TextWrap = true;
             // 
             // lblStatus
             // 
             this.lblStatus.Name = "lblStatus";
-            this.radStatusStrip1.SetSpring(this.lblStatus, false);
             this.lblStatus.Text = "Disconnected";
-            this.lblStatus.TextWrap = true;
             // 
             // commandBarSeparator1
             // 
             this.commandBarSeparator1.Name = "commandBarSeparator1";
-            this.radStatusStrip1.SetSpring(this.commandBarSeparator1, false);
-            this.commandBarSeparator1.VisibleInOverflowMenu = false;
             // 
             // radLabelElement3
             // 
             this.radLabelElement3.AutoSize = true;
-            this.radLabelElement3.AutoSizeMode = Telerik.WinControls.RadAutoSizeMode.Auto;
             this.radLabelElement3.Name = "radLabelElement3";
-            this.radStatusStrip1.SetSpring(this.radLabelElement3, true);
+            this.radLabelElement3.Spring = true;
             this.radLabelElement3.Text = "";
-            this.radLabelElement3.TextWrap = true;
             // 
             // radLabelElement2
             // 
             this.radLabelElement2.Name = "radLabelElement2";
-            this.radStatusStrip1.SetSpring(this.radLabelElement2, false);
             this.radLabelElement2.Text = "RunningServices: ";
-            this.radLabelElement2.TextWrap = true;
             // 
             // lblActiveServiceCount
             // 
             this.lblActiveServiceCount.Name = "lblActiveServiceCount";
-            this.radStatusStrip1.SetSpring(this.lblActiveServiceCount, false);
             this.lblActiveServiceCount.Text = "0";
-            this.lblActiveServiceCount.TextWrap = true;
             // 
             // rmServiceRefresh
             // 
@@ -411,7 +387,7 @@
             // rmiServices
             // 
             this.rmiServices.Enabled = false;
-            this.rmiServices.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.rmiServices.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiServices_RefreshAll,
             this.radMenuSeparatorItem4,
             this.rmiServices_StartAll,
@@ -430,8 +406,6 @@
             // radMenuSeparatorItem4
             // 
             this.radMenuSeparatorItem4.Name = "radMenuSeparatorItem4";
-            this.radMenuSeparatorItem4.Text = "radMenuSeparatorItem4";
-            this.radMenuSeparatorItem4.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // rmiServices_StartAll
             // 
@@ -450,8 +424,6 @@
             // radMenuSeparatorItem5
             // 
             this.radMenuSeparatorItem5.Name = "radMenuSeparatorItem5";
-            this.radMenuSeparatorItem5.Text = "radMenuSeparatorItem5";
-            this.radMenuSeparatorItem5.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // rmiServices_OpenAllLiveLogs
             // 
@@ -480,39 +452,31 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(814, 474);
             // 
-            // radMenu1
+            // menuMain
             // 
-            this.radMenu1.Items.AddRange(new Telerik.WinControls.RadItem[] {
+            this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiManager,
             this.rmiTesting,
             this.rmiService,
             this.rmiInstances,
             this.rmiServices});
-            this.radMenu1.Location = new System.Drawing.Point(0, 0);
-            this.radMenu1.Name = "radMenu1";
-            this.radMenu1.Size = new System.Drawing.Size(814, 20);
-            this.radMenu1.TabIndex = 6;
+            this.menuMain.Location = new System.Drawing.Point(0, 0);
+            this.menuMain.Name = "menuMain";
+            this.menuMain.Size = new System.Drawing.Size(814, 20);
+            this.menuMain.TabIndex = 6;
             this.Controls.Add(this.lblVersion);
-            this.Controls.Add(this.radStatusStrip1);
-            this.Controls.Add(this.radMenu1);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.menuMain);
             this.Controls.Add(this.lsvServices);
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(676, 313);
             this.Name = "frmMain";
-            // 
-            // 
-            // 
-            this.RootElement.ApplyShapeToControl = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Service Manager UI";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.cmsMenu.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.lsvServices)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radStatusStrip1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.radMenu1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -531,42 +495,42 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_ToggleAutoRestart;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_OpenLogs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private Telerik.WinControls.UI.RadListView lsvServices;
-        private Telerik.WinControls.UI.RadMenuItem rmiManager;
-        private Telerik.WinControls.UI.RadMenuItem rmiTesting;
-        private Telerik.WinControls.UI.RadMenuItem rmiService;
-        private Telerik.WinControls.UI.RadMenuItem rmiInstances;
-        private Telerik.WinControls.UI.RadMenuItem rmiManager_OpenConfig;
-        private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem1;
-        private Telerik.WinControls.UI.RadMenuItem rmiManager_Close;
-        private Telerik.WinControls.UI.RadMenuItem rmiTesting_Start;
-        private Telerik.WinControls.UI.RadMenuItem rmiTesting_End;
-        private Telerik.WinControls.UI.RadMenuItem rmiService_Install;
-        private Telerik.WinControls.UI.RadMenuItem rmiService_Uninstall;
-        private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem2;
-        private Telerik.WinControls.UI.RadMenuItem rmiService_Start;
-        private Telerik.WinControls.UI.RadMenuItem rmiService_Restart;
-        private Telerik.WinControls.UI.RadMenuItem rmiService_Stop;
-        private Telerik.WinControls.UI.RadMenuItem rmiInstances_ConnectTo;
-        private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem3;
-        private Telerik.WinControls.UI.RadStatusStrip radStatusStrip1;
-        private Telerik.WinControls.UI.RadLabelElement radLabelElement1;
-        private Telerik.WinControls.UI.RadLabelElement lblStatus;
-        private Telerik.WinControls.UI.CommandBarSeparator commandBarSeparator1;
-        private Telerik.WinControls.UI.RadLabelElement radLabelElement3;
-        private Telerik.WinControls.UI.RadLabelElement radLabelElement2;
-        private Telerik.WinControls.UI.RadLabelElement lblActiveServiceCount;
+        private System.Windows.Forms.ListView lsvServices;
+        private System.Windows.Forms.ToolStripMenuItem rmiManager;
+        private System.Windows.Forms.ToolStripMenuItem rmiTesting;
+        private System.Windows.Forms.ToolStripMenuItem rmiService;
+        private System.Windows.Forms.ToolStripMenuItem rmiInstances;
+        private System.Windows.Forms.ToolStripMenuItem rmiManager_OpenConfig;
+        private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem1;
+        private System.Windows.Forms.ToolStripMenuItem rmiManager_Close;
+        private System.Windows.Forms.ToolStripMenuItem rmiTesting_Start;
+        private System.Windows.Forms.ToolStripMenuItem rmiTesting_End;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Install;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Uninstall;
+        private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem2;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Start;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Restart;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Stop;
+        private System.Windows.Forms.ToolStripMenuItem rmiInstances_ConnectTo;
+        private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem3;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel radLabelElement1;
+        private System.Windows.Forms.ToolStripStatusLabel lblStatus;
+        private System.Windows.Forms.ToolStripSeparator commandBarSeparator1;
+        private System.Windows.Forms.ToolStripStatusLabel radLabelElement3;
+        private System.Windows.Forms.ToolStripStatusLabel radLabelElement2;
+        private System.Windows.Forms.ToolStripStatusLabel lblActiveServiceCount;
         private System.Windows.Forms.Timer rmServiceRefresh;
-        private Telerik.WinControls.UI.RadMenuItem rmiServices;
-        private Telerik.WinControls.UI.RadMenuItem rmiServices_RefreshAll;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices_RefreshAll;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_OpenExplorer;
-        private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem4;
-        private Telerik.WinControls.UI.RadMenuItem rmiServices_StopAll;
-        private Telerik.WinControls.UI.RadMenuItem rmiServices_StartAll;
-        private Telerik.WinControls.UI.RadMenuSeparatorItem radMenuSeparatorItem5;
-        private Telerik.WinControls.UI.RadMenuItem rmiServices_OpenAllLiveLogs;
+        private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem4;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices_StopAll;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices_StartAll;
+        private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem5;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices_OpenAllLiveLogs;
         private System.Windows.Forms.Timer tmPing;
-        private Telerik.WinControls.UI.RadMenu radMenu1;
+        private System.Windows.Forms.MenuStrip menuMain;
         private System.Windows.Forms.Label lblVersion;
     }
 }

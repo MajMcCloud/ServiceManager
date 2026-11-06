@@ -9,11 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.UI;
 
 namespace ServiceManager.UI.forms
 {
-    public partial class frmNewService : RadForm
+    public partial class frmNewService : Form
     {
 
         public ServiceItem Item { get; set; }
@@ -122,7 +121,7 @@ namespace ServiceManager.UI.forms
             }
         }
 
-        private void chkLogs_ToMemory_ToggleStateChanged(object sender, StateChangedEventArgs args)
+        private void chkLogs_ToMemory_CheckedChanged(object sender, EventArgs e)
         {
 
             chkLogs_ToDisk.Enabled = chkLogs_ToMemory.Checked;

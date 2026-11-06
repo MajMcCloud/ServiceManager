@@ -7,11 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.UI;
 
 namespace ServiceManager.UI.forms
 {
-    public partial class frmConnectTo : RadForm
+    public partial class frmConnectTo : Form
     {
         public String IPOrHost { get; set; }
 

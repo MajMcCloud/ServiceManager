@@ -5,7 +5,6 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.Themes;
 
 namespace ServiceManager.UI
 {
@@ -52,10 +51,6 @@ namespace ServiceManager.UI
 
             Application.ThreadException += Application_ThreadException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-
-            var th = new FluentTheme();
-            Telerik.WinControls.ThemeResolutionService.ApplicationThemeName = th.ThemeName;
 
             Application.Run(new frmMain());
         }

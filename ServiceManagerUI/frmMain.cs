@@ -16,13 +16,12 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.WinControls.UI;
 using Verifide.ServiceUtils;
 using static ServiceManager.Base.data.ServiceAnalytics;
 
 namespace ServiceManager.UI
 {
-    public partial class frmMain : RadForm
+    public partial class frmMain : Form
     {
         public Base.ServiceManager Manager { get; set; }
 
@@ -38,6 +37,10 @@ namespace ServiceManager.UI
         public frmMain()
         {
             InitializeComponent();
+
+            var rowImages = new ImageList { ColorDepth = ColorDepth.Depth32Bit, ImageSize = new Size(16, 16) };
+            rowImages.Images.Add("led_on", new Bitmap(Properties.Resources.led_on, 16, 16));
+            lsvServices.SmallImageList = rowImages;
         }
         private void frmMain_Load(object sender, EventArgs e)
         {
@@ -61,22 +64,13 @@ namespace ServiceManager.UI
             if (e.Button != MouseButtons.Right)
                 return;
 
-            var clickedItem = lsvServices.ElementTree.GetElementAtPoint(e.Location);
-
-            var visualItem = clickedItem as BaseListViewVisualItem ?? clickedItem.FindAncestor<BaseListViewVisualItem>();
-
-
-            if (visualItem == null)
-                return;
-
-            // Get the data from the visual item
-            var dataItem = visualItem?.Data;
+            var dataItem = lsvServices.HitTest(e.Location)?.Item;
 
             if (dataItem == null) return;
 
-            lsvServices.SelectedItem = dataItem;
+            dataItem.Selected = true;
 
-            if (dataItem[3].ToString() == "running")
+            if (dataItem.SubItems[3].Text == "running")
             {
                 tsmiMenu_Restart.Text = "Restart service";
             }
@@ -94,19 +88,8 @@ namespace ServiceManager.UI
             if (e.Button != MouseButtons.Left)
                 return;
 
-            var clickedItem = lsvServices.ElementTree.GetElementAtPoint(e.Location);
-
-            var visualItem = clickedItem as BaseListViewVisualItem ?? clickedItem.FindAncestor<BaseListViewVisualItem>();
-
-
-            if (visualItem == null)
+            if (lsvServices.HitTest(e.Location)?.Item == null)
                 return;
-
-            // Get the data from the visual item
-            var dataItem = visualItem?.Data;
-
-            if (dataItem == null) return;
-
 
             tsmiMenu_Livelogs_Click(sender, e);
         }
@@ -170,7 +153,7 @@ namespace ServiceManager.UI
 
             lock (_sync)
             {
-                var selected = lsvServices.SelectedItems.Cast<ListViewDataItem>().FirstOrDefault();
+                var selected = lsvServices.SelectedItems.Cast<ListViewItem>().FirstOrDefault();
 
                 lsvServices.BeginUpdate();
                 lsvServices.Items.Clear();
@@ -185,13 +168,12 @@ namespace ServiceManager.UI
                     if (a == null)
                         continue;
 
-                    var itm = new ListViewDataItem(item.ID.ToString());
+                    var itm = new ListViewItem("");
                     if (!a.IsRunning)
                     {
-                        itm.Image = null;
+                        itm.ImageIndex = -1;
                     }
 
-                    itm.SubItems.Add("");
                     itm.SubItems.Add((a.IsRunning ? a.ProcessID.ToString() : "-"));
                     itm.SubItems.Add(item.Title);
                     itm.Tag = item.ID;
@@ -209,7 +191,7 @@ namespace ServiceManager.UI
                     //    itm.SubItems.Add(a.IsRunning ? "running" : "offline");
                     //}
 
-                    itm.SubItems.Add(a.Status);
+                    itm.SubItems.Add(a.Status.ToString());
 
                     itm.SubItems.Add(a.Restarts.ToString());
                     itm.SubItems.Add(item.ForceRestart ? "yes" : "no");
@@ -218,8 +200,9 @@ namespace ServiceManager.UI
 
                 if (selected != null)
                 {
-                    var item = lsvServices.Items.Cast<ListViewDataItem>().FirstOrDefault(a => a.Tag.ToString() == selected.Tag.ToString());
-                    lsvServices.SelectedItem = item;
+                    var item = lsvServices.Items.Cast<ListViewItem>().FirstOrDefault(a => a.Tag.ToString() == selected.Tag.ToString());
+                    if (item != null)
+                        item.Selected = true;
                 }
 
                 lblActiveServiceCount.Text = active.ToString();
@@ -232,16 +215,16 @@ namespace ServiceManager.UI
         {
             var connections = ServiceManager.Base.ServiceManager.GetProcesses();
 
-            while (rmiInstances.Items.Count > 2)
+            while (rmiInstances.DropDownItems.Count > 2)
             {
-                rmiInstances.Items.RemoveAt(2);
+                rmiInstances.DropDownItems.RemoveAt(2);
             }
 
-            RadMenuItem item = null;
+            ToolStripMenuItem item = null;
             if (connections.Count == 0)
             {
-                item = new RadMenuItem("There are no running instances.");
-                rmiInstances.Items.Add(item);
+                item = new ToolStripMenuItem("There are no running instances.");
+                rmiInstances.DropDownItems.Add(item);
                 return;
             }
 
@@ -251,7 +234,7 @@ namespace ServiceManager.UI
 
                 if (c.Id == Process.GetCurrentProcess().Id)
                 {
-                    item = new RadMenuItem("PID " + c.Id.ToString() + " (this application)");
+                    item = new ToolStripMenuItem("PID " + c.Id.ToString() + " (this application)");
                     item.Click += (s, en) =>
                     {
                         MessageBox.Show("Start Test instead of connecting directly.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -263,14 +246,14 @@ namespace ServiceManager.UI
 
                     if (NetPipesTest(c.Id))
                     {
-                        item = new RadMenuItem("PID " + c.Id.ToString() + " (NetPipes)");
+                        item = new ToolStripMenuItem("PID " + c.Id.ToString() + " (NetPipes)");
                         item.CheckOnClick = true;
                         item.Tag = new { id = c.Id, type = "netpipes" };
                         item.Image = Properties.Resources.rohr_24px;
                     }
                     else
                     {
-                        item = new RadMenuItem("IP " + c.Id.ToString() + " (TCP)");
+                        item = new ToolStripMenuItem("IP " + c.Id.ToString() + " (TCP)");
                         item.CheckOnClick = true;
                         item.Tag = new { id = c.Id, type = "tcp" };
                         item.Image = Properties.Resources.antenne_24px;
@@ -280,14 +263,14 @@ namespace ServiceManager.UI
 
                 if (c.Id == this.WatchingProcessID)
                 {
-                    item.IsChecked = true;
+                    item.Checked = true;
                 }
 
                 item.CheckOnClick = true;
-                item.ToggleStateChanged += Item_ToggleStateChanged;
+                item.CheckedChanged += Item_CheckedChanged;
                 //item.CheckStateChanged += Item_CheckStateChanged;
 
-                rmiInstances.Items.Add(item);
+                rmiInstances.DropDownItems.Add(item);
             }
         }
 
@@ -303,9 +286,9 @@ namespace ServiceManager.UI
             StartWatching(frm.IPOrHost, frm.Port);
         }
 
-        private void Item_ToggleStateChanged(object sender, StateChangedEventArgs args)
+        private void Item_CheckedChanged(object sender, EventArgs e)
         {
-            var item = sender as RadMenuItem;
+            var item = sender as ToolStripMenuItem;
             if (item == null)
                 return;
 
@@ -314,13 +297,13 @@ namespace ServiceManager.UI
             var processId = t.id;
             var type = t.type;
 
-            if (!item.IsChecked)
+            if (!item.Checked)
             {
                 if (processId == WatchingProcessID)
                 {
                     if (MessageBox.Show("Disconnect ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                     {
-                        item.IsChecked = true;
+                        item.Checked = true;
                         return;
                     }
 
@@ -337,7 +320,7 @@ namespace ServiceManager.UI
 
             if (processId == Process.GetCurrentProcess().Id)
             {
-                item.IsChecked = false;
+                item.Checked = false;
                 return;
             }
 
@@ -546,13 +529,13 @@ namespace ServiceManager.UI
 
             WatchConnection.ClientCallback.ServiceChanged += (s, en) =>
             {
-                var item = lsvServices.Items.Cast<ListViewDataItem>().FirstOrDefault(a => (Guid)a.Tag == en.ServiceId);
+                var item = lsvServices.Items.Cast<ListViewItem>().FirstOrDefault(a => (Guid)a.Tag == en.ServiceId);
                 if (item == null)
                     return;
 
                 if (en.Status == ServiceAnalytics.eStatus.offline)
                 {
-                    item.Image = null;
+                    item.ImageIndex = -1;
                 }
 
 
@@ -561,22 +544,22 @@ namespace ServiceManager.UI
                 {
                     case eStatus.offline:
 
-                        item[1] = "-";
-                        item[3] = "offline";
+                        item.SubItems[1].Text = "-";
+                        item.SubItems[3].Text = "offline";
 
                         break;
 
                     case eStatus.shutting_down:
 
-                        //item[1] = en.PID.ToString();
-                        item[3] = "shutting down";
+                        //item.SubItems[1].Text = en.PID.ToString();
+                        item.SubItems[3].Text = "shutting down";
 
                         break;
 
                     case eStatus.running:
 
-                        item[1] = en.PID.ToString();
-                        item[3] = "running";
+                        item.SubItems[1].Text = en.PID.ToString();
+                        item.SubItems[3].Text = "running";
 
                         break;
 
@@ -587,14 +570,14 @@ namespace ServiceManager.UI
 
                     default:
 
-                        item[3] = en.Status.ToString();
+                        item.SubItems[3].Text = en.Status.ToString();
 
                         break;
 
                 }
 
-                item[4] = en.Restarts.ToString();
-                item[5] = (en.AutoRestart ? "yes" : "no");
+                item.SubItems[4].Text = en.Restarts.ToString();
+                item.SubItems[5].Text = (en.AutoRestart ? "yes" : "no");
 
             };
 
@@ -603,15 +586,14 @@ namespace ServiceManager.UI
 
                 lsvServices.BeginUpdate();
 
-                foreach (ListViewDataItem lvi in lsvServices.Items)
+                foreach (ListViewItem lvi in lsvServices.Items)
                 {
                     if (lvi.Tag.ToString() != en.ServiceId.ToString())
                         continue;
 
-                    var bmp = new Bitmap(Properties.Resources.led_on, 16, 16);
                     //Graphics.FromImage(bmp).FillRectangle(Brushes.Black, 0, 0, 16, 16);
 
-                    lvi.Image = bmp;
+                    lvi.ImageKey = "led_on";
 
                 }
 
@@ -663,11 +645,20 @@ namespace ServiceManager.UI
             rmiTesting_End.Enabled = true;
 
 
+            var cfg = ServiceConfig.load();
+
+            if (cfg == null)
+            {
+                MessageBox.Show("No service config found.");
+                return;
+            }
+
+
             this.Manager = new ServiceManager.Base.ServiceManager();
 
             this.Manager.Start();
 
-            var cfg = ServiceConfig.load();
+            
 
             switch (cfg.RuntimeSettings.Mode)
             {
@@ -931,12 +922,12 @@ namespace ServiceManager.UI
         }
 
 
-        private void rmiInstances_DropDownOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void rmiInstances_DropDownOpening(object sender, EventArgs e)
         {
             loadConnections();
         }
 
-        private void rmiService_DropDownOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void rmiService_DropDownOpening(object sender, EventArgs e)
         {
             ServiceController[] services = ServiceController.GetServices();
             ServiceController sc = services.FirstOrDefault(a => a.ServiceName == Program.ServiceName);
@@ -999,12 +990,12 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.SelectedItems)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
-                    if (item[3].ToString() == "running")
+                    if (item.SubItems[3].Text == "running")
                     {
-                        if (MessageBox.Show($"Restart service {item[1]} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        if (MessageBox.Show($"Restart service {item.SubItems[1].Text} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                             return;
                     }
 
@@ -1027,7 +1018,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.SelectedItems)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     this.WatchConnection.TryCatch(a => a.ShutdownService(id));
@@ -1049,7 +1040,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.SelectedItems)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     frmLogs frm = new frmLogs();
@@ -1075,7 +1066,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.SelectedItems)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     frmLogs frm = new frmLogs();
@@ -1100,7 +1091,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.SelectedItems)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     this.WatchConnection.TryCatch(a => a.ToggleAutoRestart(id));
@@ -1148,7 +1139,7 @@ namespace ServiceManager.UI
 
             foreach (var i in lsvServices.SelectedItems)
             {
-                var item = i as ListViewDataItem;
+                var item = i as ListViewItem;
                 var id = (Guid)item.Tag;
 
                 var sv = Services.FirstOrDefault(a => a.ID == id);
@@ -1174,7 +1165,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.Items)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     this.WatchConnection.TryCatch(a => a.StartService(id));
@@ -1195,7 +1186,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.Items)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     this.WatchConnection.TryCatch(a => a.ShutdownService(id));
@@ -1216,7 +1207,7 @@ namespace ServiceManager.UI
             {
                 foreach (var i in lsvServices.Items)
                 {
-                    var item = i as ListViewDataItem;
+                    var item = i as ListViewItem;
                     var id = (Guid)item.Tag;
 
                     frmLogs frm = new frmLogs();
