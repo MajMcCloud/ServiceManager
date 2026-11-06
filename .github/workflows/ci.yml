@@ -29,6 +29,9 @@ jobs:
       - name: Build solution
         run: msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release /v:minimal /nologo
 
+      - name: Run tests
+        run: dotnet test ServiceManager.Tests/ServiceManager.Tests.csproj -c Release --no-build -v minimal
+
       - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
