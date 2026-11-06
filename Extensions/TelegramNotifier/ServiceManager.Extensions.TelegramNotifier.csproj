@@ -50,15 +50,13 @@
     <Compile Include="forms\frmConfig.Designer.cs">
       <DependentUpon>frmConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="Polling\ChatIdCollector.cs" />
     <Compile Include="TelegramNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Telegram.Bot">
-      <Version>17.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Telegram.Bot.Extensions.Polling">
-      <Version>1.0.2</Version>
+      <Version>19.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

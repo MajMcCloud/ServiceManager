@@ -36,7 +36,6 @@
             this.bnCancel = new System.Windows.Forms.Button();
             this.bnSave = new System.Windows.Forms.Button();
             this.bnSearch = new System.Windows.Forms.Button();
-            this.tmSearch = new System.Windows.Forms.Timer(this.components);
             this.bnTestMessage = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -112,11 +111,6 @@
             this.bnSearch.UseVisualStyleBackColor = true;
             this.bnSearch.Click += new System.EventHandler(this.bnSearch_Click);
             // 
-            // tmSearch
-            // 
-            this.tmSearch.Interval = 10000;
-            this.tmSearch.Tick += new System.EventHandler(this.tmSearch_Tick);
-            // 
             // bnTestMessage
             // 
             this.bnTestMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -164,7 +158,6 @@
         private System.Windows.Forms.Button bnCancel;
         private System.Windows.Forms.Button bnSave;
         private System.Windows.Forms.Button bnSearch;
-        private System.Windows.Forms.Timer tmSearch;
         private System.Windows.Forms.Button bnTestMessage;
     }
 }

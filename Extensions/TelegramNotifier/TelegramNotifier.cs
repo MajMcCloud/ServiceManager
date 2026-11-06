@@ -24,6 +24,25 @@ namespace ServiceManager.Extensions.TelegramNotifier
 
         private Config.Config __config;
 
+        private static TelegramBotClient __client;
+
+        private static string __clientToken;
+
+        /// <summary>
+        /// The host creates a new instance of this extension for every notification, so the client
+        /// (and with it its HttpClient and its connection pool) has to live beyond one instance.
+        /// </summary>
+        private static TelegramBotClient GetClient(string token)
+        {
+            if (__client == null || __clientToken != token)
+            {
+                __client = new TelegramBotClient(token);
+                __clientToken = token;
+            }
+
+            return __client;
+        }
+
 
         public TelegramNotifier()
         {
@@ -45,9 +64,7 @@ namespace ServiceManager.Extensions.TelegramNotifier
 
             try
             {
-                var tc = new TelegramBotClient(__config.APIKey);
-
-                var msg = await tc.SendTextMessageAsync(__config.ChatId, message, Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                await GetClient(__config.APIKey).SendTextMessageAsync(__config.ChatId, message, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
 
                 return;
 

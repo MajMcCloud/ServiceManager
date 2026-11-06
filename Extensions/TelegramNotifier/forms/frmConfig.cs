@@ -1,108 +1,120 @@
 ﻿using ServiceManager.Extensions.TelegramNotifier.Config;
+using ServiceManager.Extensions.TelegramNotifier.Polling;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Extensions.Polling;
-using Telegram.Bot.Types;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types.Enums;
 
 namespace ServiceManager.Extensions.TelegramNotifier.forms
 {
     public partial class frmConfig : Form
     {
 
-        Telegram.Bot.TelegramBotClient TelegramBotClient { get; set; }
+        private static readonly TimeSpan SearchTimeout = TimeSpan.FromSeconds(10);
+
+        TelegramBotClient __client;
+
+        string __clientToken;
 
         CancellationTokenSource __cancellationTokenSource;
+
+        bool __closing;
 
         public frmConfig()
         {
             InitializeComponent();
         }
 
-        private void bnSearch_Click(object sender, EventArgs e)
+        /// <summary>
+        /// A client owns its HttpClient, so keep one per API key instead of creating one per click.
+        /// </summary>
+        private TelegramBotClient GetClient(string token)
         {
-            if (txtAPIKey.Text == "")
+            if (__client == null || __clientToken != token)
+            {
+                __client = new TelegramBotClient(token);
+                __clientToken = token;
+            }
+
+            return __client;
+        }
+
+        private async void bnSearch_Click(object sender, EventArgs e)
+        {
+            var token = txtAPIKey.Text.Trim();
+
+            if (token == "")
                 return;
 
-            MessageBox.Show("This will start the Bot for 10 seconds and saves the chat id from the first message arrived.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("This will start the Bot for 10 seconds and saves the chat id of the first message sent to it.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            tmSearch.Enabled = true;
-            bnSearch.Enabled = false;
-
-            TelegramBotClient = new TelegramBotClient(txtAPIKey.Text);
+            var collector = new ChatIdCollector();
 
             __cancellationTokenSource = new CancellationTokenSource();
 
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = { } // receive all update types
+                AllowedUpdates = new[] { UpdateType.Message, UpdateType.EditedMessage, UpdateType.ChannelPost },
+                ThrowPendingUpdates = true
             };
 
-            TelegramBotClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, receiverOptions, __cancellationTokenSource.Token);
+            bnSearch.Enabled = false;
+            bnSearch.Text = "Searching...";
 
+            GetClient(token).StartReceiving(collector, receiverOptions, __cancellationTokenSource.Token);
 
-        }
+            var timeout = Task.Delay(SearchTimeout, __cancellationTokenSource.Token);
 
-        public Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            var message = update.Message ?? update.EditedMessage ?? update.ChannelPost;
+            var finished = await Task.WhenAny(collector.Result, timeout);
 
-            if (message != null)
+            StopSearch();
+
+            if (__closing || IsDisposed)
+                return;
+
+            if (finished == collector.Result)
             {
-                BeginInvoke(new Action(() =>
+                try
                 {
-                    Thread.Sleep(500);
-                    tmSearch_Tick(null, null);
+                    txtChatId.Text = (await collector.Result).ToString();
 
-                    txtChatId.Text = message.Chat.Id.ToString();
-
-                    MessageBox.Show($"Chat Id {message.Chat.Id} found !");
-
-                }));
+                    MessageBox.Show($"Chat Id {txtChatId.Text} found !");
+                }
+                catch (ApiRequestException ex)
+                {
+                    MessageBox.Show($"Telegram rejected the API key: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
-
-            return Task.CompletedTask;
+            else if (!timeout.IsCanceled)
+            {
+                MessageBox.Show("No message arrived within 10 seconds.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
-        public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        private void StopSearch()
         {
-            return Task.CompletedTask;
-        }
-
-        private void tmSearch_Tick(object sender, EventArgs e)
-        {
-            tmSearch.Enabled = false;
-            bnSearch.Enabled = true;
-
-            if (TelegramBotClient != null)
+            if (__cancellationTokenSource != null)
             {
                 __cancellationTokenSource.Cancel();
-                TelegramBotClient = null;
+                __cancellationTokenSource = null;
             }
 
-
-
+            if (!IsDisposed)
+            {
+                bnSearch.Text = "Start searching";
+                bnSearch.Enabled = true;
+            }
         }
 
         private void frmConfig_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (TelegramBotClient != null)
-            {
-                __cancellationTokenSource.Cancel();
-                TelegramBotClient = null;
-            }
+            __closing = true;
 
-
+            StopSearch();
         }
 
         private void frmConfig_Load(object sender, EventArgs e)
@@ -138,29 +150,31 @@ namespace ServiceManager.Extensions.TelegramNotifier.forms
             this.Close();
         }
 
-        private void bnTestMessage_Click(object sender, EventArgs e)
+        private async void bnTestMessage_Click(object sender, EventArgs e)
         {
-            TelegramBotClient = new TelegramBotClient(txtAPIKey.Text);
-
             long chatId = 0;
-            if (!long.TryParse(txtChatId.Text, out chatId))
+            if (!long.TryParse(txtChatId.Text.Trim(), out chatId))
             {
                 return;
             }
 
+            bnTestMessage.Enabled = false;
 
             try
             {
-                TelegramBotClient.SendTextMessageAsync(chatId, "Testmessage from ServiceManager");
+                await GetClient(txtAPIKey.Text.Trim()).SendTextMessageAsync(chatId, "Testmessage from ServiceManager");
 
                 MessageBox.Show($"Testmessage sent!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show($"Error during sending. {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-
-            TelegramBotClient = null;
+            finally
+            {
+                if (!IsDisposed)
+                    bnTestMessage.Enabled = true;
+            }
         }
     }
 }
