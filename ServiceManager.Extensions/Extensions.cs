@@ -13,6 +13,16 @@ namespace ServiceManager.Extensions
     public static class Extensions
     {
 
+        private static readonly Object m_Sync = new Object();
+
+        private static readonly Dictionary<String, Extension> m_Cache = new Dictionary<String, Extension>(StringComparer.OrdinalIgnoreCase);
+
+
+        /// <summary>
+        /// The instances are kept, so an extension is built once per process instead of once per call:
+        /// GetExtension runs on every notification and TelegramNotifier reads and writes its settings file
+        /// in its constructor. Added and removed files are still picked up on the next call.
+        /// </summary>
         public static List<Extension> GetNotificationExtensions()
         {
             var lst = new List<Extension>();
@@ -22,23 +32,59 @@ namespace ServiceManager.Extensions
             if (!Directory.Exists(path))
                 return lst;
 
-            foreach (var file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
+            lock (m_Sync)
             {
-                var extension = LoadExtension(file);
+                var present = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
 
-                if (extension == null)
-                    continue;
-
-                if (lst.Any(a => a.Id == extension.Id))
+                foreach (var file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
                 {
-                    Console.WriteLine($"Extension \"{extension.Name}\" skipped: the Id {extension.Id} is already registered");
-                    continue;
+                    var full = Path.GetFullPath(file);
+
+                    present.Add(full);
+
+                    Extension cached;
+
+                    if (m_Cache.TryGetValue(full, out cached))
+                    {
+                        lst.Add(cached);
+                        continue;
+                    }
+
+                    var extension = LoadExtension(full);
+
+                    if (extension == null)
+                        continue;
+
+                    if (lst.Any(a => a.Id == extension.Id))
+                    {
+                        Console.WriteLine($"Extension \"{extension.Name}\" skipped: the Id {extension.Id} is already registered");
+                        continue;
+                    }
+
+                    m_Cache[full] = extension;
+
+                    lst.Add(extension);
                 }
 
-                lst.Add(extension);
+                foreach (var missing in m_Cache.Keys.Where(a => !present.Contains(a)).ToList())
+                    m_Cache.Remove(missing);
             }
 
             return lst;
+        }
+
+
+        /// <summary>
+        /// Forgets every cached instance. An extension keeps its settings in memory, so this has to run
+        /// after its settings were changed. A replaced assembly is not picked up either way, the CLR
+        /// keeps it for the lifetime of the AppDomain.
+        /// </summary>
+        public static void Reload()
+        {
+            lock (m_Sync)
+            {
+                m_Cache.Clear();
+            }
         }
 
 

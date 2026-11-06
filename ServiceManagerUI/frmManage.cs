@@ -283,6 +283,9 @@ namespace ServiceManager.UI
             }
 
             plugin.Notification.Configure();
+
+            // The dialog writes the settings file, but the cached instance keeps its settings in memory.
+            Extensions.Extensions.Reload();
         }
 
         /// <summary>Eintrag der Extensions-Auswahl.</summary>
