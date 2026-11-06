@@ -1,0 +1,47 @@
+﻿<Project>
+
+  <!--
+    Central assembly version for every project in this solution.
+
+    version.props holds the default used by Visual Studio and CI. A version passed on the
+    command line always wins, because global properties cannot be overwritten by a project:
+
+        msbuild ServiceManager.sln /p:SMVersion=2.1.0.0
+
+    The attribute file is generated into obj\ (already gitignored), so releasing a new version
+    changes neither source files nor project files.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)version.props" Condition="Exists('$(MSBuildThisFileDirectory)version.props')" />
+
+  <PropertyGroup>
+    <SMVersion Condition="'$(SMVersion)' == ''">0.0.0.0</SMVersion>
+
+    <!-- SDK style projects (Examples\ENTERTest) generate the attributes out of $(Version). -->
+    <Version Condition="'$(UsingMicrosoftNETSdk)' == 'true'">$(SMVersion)</Version>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+    <Compile Include="$(IntermediateOutputPath)$(MSBuildProjectName).versioninfo.cs" />
+  </ItemGroup>
+
+  <Target Name="GenerateAssemblyVersionInfo" BeforeTargets="CoreCompile">
+
+    <PropertyGroup>
+      <_VersionInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).versioninfo.cs</_VersionInfoFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_VersionLines Include="[assembly: System.Reflection.AssemblyVersion(&quot;$(SMVersion)&quot;)]" />
+      <_VersionLines Include="[assembly: System.Reflection.AssemblyFileVersion(&quot;$(SMVersion)&quot;)]" />
+      <_VersionLines Include="[assembly: System.Reflection.AssemblyInformationalVersion(&quot;$(SMVersion)&quot;)]" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_VersionInfoFile)"
+                      Lines="@(_VersionLines)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+  </Target>
+
+</Project>
