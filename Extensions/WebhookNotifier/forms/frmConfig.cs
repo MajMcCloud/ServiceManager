@@ -149,7 +149,7 @@ namespace ServiceManager.Extensions.WebhookNotifier.forms
         /// Sends one event through the provider and reports what the endpoint answered. The answer of
         /// the endpoint is the fastest way to find a wrong body or a rejected header.
         /// </summary>
-        private void bnTest_Click(object sender, EventArgs e)
+        private async void bnTest_Click(object sender, EventArgs e)
         {
             if (!save())
                 return;
@@ -166,12 +166,25 @@ namespace ServiceManager.Extensions.WebhookNotifier.forms
                 Details = "A second line with \"quotes\" and a \\ backslash"
             };
 
-            var error = notifier.Test(message).GetAwaiter().GetResult();
+            // A request that has to wait for its timeout would otherwise simply be started again.
+            bnTest.Enabled = false;
+
+            String error;
+            try
+            {
+                error = await notifier.Test(message);
+            }
+            finally
+            {
+                bnTest.Enabled = true;
+            }
 
             if (error == null)
-                MessageBox.Show("The endpoint accepted the message.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("The endpoint accepted the message.", "Success",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             else
-                MessageBox.Show("The endpoint did not accept the message:\r\n" + error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("The endpoint did not accept the message:\r\n" + error,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void bnDefaultBody_Click(object sender, EventArgs e)

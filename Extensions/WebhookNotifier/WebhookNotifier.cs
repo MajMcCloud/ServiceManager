@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceManager.Extensions.WebhookNotifier
@@ -67,7 +68,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
         /// </summary>
         private async Task Report(NotificationMessage message)
         {
-            var error = await Deliver(message);
+            var error = await Deliver(message).ConfigureAwait(false);
 
             if (error != null)
                 Console.WriteLine("WebhookNotifier: " + error);
@@ -118,7 +119,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
             {
                 try
                 {
-                    var answer = await Post(url, body, contentType);
+                    var answer = await Post(url, body, contentType).ConfigureAwait(false);
 
                     if (answer.Key >= 200 && answer.Key < 300)
                         return null;
@@ -136,7 +137,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
                 if (attempt >= attempts)
                     return last;
 
-                await Task.Delay(1000 * attempt);
+                await Task.Delay(1000 * attempt).ConfigureAwait(false);
             }
         }
 
@@ -167,28 +168,47 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
             request.ContentLength = bytes.Length;
 
-            using (var stream = await request.GetRequestStreamAsync())
+            // Timeout and ReadWriteTimeout bound the synchronous path only. The asynchronous one of
+            // .NET Framework runs on regardless, so a timer aborts the request once the seconds the
+            // user configured are over. Without it a silent endpoint keeps the event waiting forever.
+            using (var deadline = new CancellationTokenSource(seconds * 1000))
+            using (deadline.Token.Register(() =>
             {
-                await stream.WriteAsync(bytes, 0, bytes.Length);
-            }
-
-            try
+                try { request.Abort(); }
+                catch { } // an abort of a request that finished in the meantime means nothing
+            }))
             {
-                using (var answer = (HttpWebResponse)await request.GetResponseAsync())
+                try
                 {
-                    return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
+                    using (var stream = await request.GetRequestStreamAsync().ConfigureAwait(false))
+                    {
+                        await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                    }
+
+                    try
+                    {
+                        using (var answer = (HttpWebResponse)await request.GetResponseAsync().ConfigureAwait(false))
+                        {
+                            return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
+                        }
+                    }
+                    catch (WebException ex)
+                    {
+                        var answer = ex.Response as HttpWebResponse;
+
+                        if (answer == null)
+                            throw; // nothing answered at all: timeout, unknown host, connection refused
+
+                        using (answer)
+                        {
+                            return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
+                        }
+                    }
                 }
-            }
-            catch (WebException ex)
-            {
-                var answer = ex.Response as HttpWebResponse;
-
-                if (answer == null)
-                    throw; // nothing answered at all: timeout, unknown host, connection refused
-
-                using (answer)
+                catch (Exception ex) when (deadline.IsCancellationRequested)
                 {
-                    return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
+                    // The abort of our own timer is the one thing the user wants to hear about by name.
+                    throw new TimeoutException("no answer within " + seconds + " seconds", ex);
                 }
             }
         }
