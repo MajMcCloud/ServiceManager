@@ -100,5 +100,21 @@ Registering the event source writes into the registry, so the first entry needs 
 the settings form says so while they are missing. Every kind of event gets its own event id and its
 own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
 
+## Notifications - Webhook
+
+One request to an endpoint of your choice. The body is written in the settings, so the same provider
+serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and an endpoint of your
+own.
+
+`{text}` `{details}` `{kind}` `{level}` `{service}` `{instance}` and `{timestamp}` are replaced.
+Inside a JSON body the values are escaped, so a console line containing a quote cannot break the
+message, while a plain text body receives them as they are. A placeholder the provider does not know
+is sent untouched, which keeps templates written for another tool working.
+
+Additional headers go one per line as `Name: value`, enough for `Authorization: Bearer ...` or the
+`X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
+the console of the ServiceManager. The settings form has a test button that answers what the endpoint
+replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
+
 Icons where used from:
 https://www.iconfinder.com/iconsets/ui-basic-glyph

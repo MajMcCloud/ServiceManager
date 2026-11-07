@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Tests", "Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.EventLogNotifier", "Extensions\EventLogNotifier\ServiceManager.Extensions.EventLogNotifier.csproj", "{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.WebhookNotifier", "Extensions\WebhookNotifier\ServiceManager.Extensions.WebhookNotifier.csproj", "{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +86,10 @@ Global
 		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
