@@ -65,6 +65,10 @@
             this.cmbNotification_Extensions = new System.Windows.Forms.ComboBox();
             this.rbnNotifications_Save = new System.Windows.Forms.Button();
             this.bnNotifications_Configure = new System.Windows.Forms.Button();
+            this.bnNotifications_Add = new System.Windows.Forms.Button();
+            this.bnNotifications_Remove = new System.Windows.Forms.Button();
+            this.lstNotifications_Providers = new System.Windows.Forms.ListBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.cmsMenu.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabServices.SuspendLayout();
@@ -282,6 +286,10 @@
             // tabNotifications
             // 
             this.tabNotifications.Controls.Add(this.bnNotifications_Configure);
+            this.tabNotifications.Controls.Add(this.bnNotifications_Add);
+            this.tabNotifications.Controls.Add(this.bnNotifications_Remove);
+            this.tabNotifications.Controls.Add(this.lstNotifications_Providers);
+            this.tabNotifications.Controls.Add(this.label3);
             this.tabNotifications.Controls.Add(this.txtNotifications_InstanceName);
             this.tabNotifications.Controls.Add(this.label4);
             this.tabNotifications.Controls.Add(this.chkNotifications_OnConsoleError);
@@ -320,7 +328,7 @@
             // chkNotifications_OnConsoleError
             // 
             this.chkNotifications_OnConsoleError.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnConsoleError.Location = new System.Drawing.Point(31, 246);
+            this.chkNotifications_OnConsoleError.Location = new System.Drawing.Point(190, 316);
             this.chkNotifications_OnConsoleError.Name = "chkNotifications_OnConsoleError";
             this.chkNotifications_OnConsoleError.AutoSize = true;
             this.chkNotifications_OnConsoleError.TabIndex = 10;
@@ -329,7 +337,7 @@
             // chkNotifications_OnConsoleOutput
             // 
             this.chkNotifications_OnConsoleOutput.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnConsoleOutput.Location = new System.Drawing.Point(31, 222);
+            this.chkNotifications_OnConsoleOutput.Location = new System.Drawing.Point(190, 292);
             this.chkNotifications_OnConsoleOutput.Name = "chkNotifications_OnConsoleOutput";
             this.chkNotifications_OnConsoleOutput.AutoSize = true;
             this.chkNotifications_OnConsoleOutput.TabIndex = 10;
@@ -338,7 +346,7 @@
             // chkNotifications_OnStop
             // 
             this.chkNotifications_OnStop.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnStop.Location = new System.Drawing.Point(31, 174);
+            this.chkNotifications_OnStop.Location = new System.Drawing.Point(31, 316);
             this.chkNotifications_OnStop.Name = "chkNotifications_OnStop";
             this.chkNotifications_OnStop.AutoSize = true;
             this.chkNotifications_OnStop.TabIndex = 10;
@@ -347,7 +355,7 @@
             // chkNotifications_OnRestart
             // 
             this.chkNotifications_OnRestart.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnRestart.Location = new System.Drawing.Point(31, 198);
+            this.chkNotifications_OnRestart.Location = new System.Drawing.Point(31, 340);
             this.chkNotifications_OnRestart.Name = "chkNotifications_OnRestart";
             this.chkNotifications_OnRestart.AutoSize = true;
             this.chkNotifications_OnRestart.TabIndex = 10;
@@ -356,7 +364,7 @@
             // chkNotifications_OnServerShutdown
             // 
             this.chkNotifications_OnServerShutdown.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnServerShutdown.Location = new System.Drawing.Point(302, 174);
+            this.chkNotifications_OnServerShutdown.Location = new System.Drawing.Point(380, 316);
             this.chkNotifications_OnServerShutdown.Name = "chkNotifications_OnServerShutdown";
             this.chkNotifications_OnServerShutdown.AutoSize = true;
             this.chkNotifications_OnServerShutdown.TabIndex = 10;
@@ -365,7 +373,7 @@
             // chkNotifications_OnServerStart
             // 
             this.chkNotifications_OnServerStart.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnServerStart.Location = new System.Drawing.Point(302, 150);
+            this.chkNotifications_OnServerStart.Location = new System.Drawing.Point(380, 292);
             this.chkNotifications_OnServerStart.Name = "chkNotifications_OnServerStart";
             this.chkNotifications_OnServerStart.AutoSize = true;
             this.chkNotifications_OnServerStart.TabIndex = 10;
@@ -374,7 +382,7 @@
             // chkNotifications_OnStart
             // 
             this.chkNotifications_OnStart.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkNotifications_OnStart.Location = new System.Drawing.Point(31, 150);
+            this.chkNotifications_OnStart.Location = new System.Drawing.Point(31, 292);
             this.chkNotifications_OnStart.Name = "chkNotifications_OnStart";
             this.chkNotifications_OnStart.AutoSize = true;
             this.chkNotifications_OnStart.TabIndex = 10;
@@ -383,7 +391,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(27, 121);
+            this.label2.Location = new System.Drawing.Point(27, 268);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(87, 13);
             this.label2.TabIndex = 6;
@@ -404,12 +412,12 @@
             this.cmbNotification_Extensions.Location = new System.Drawing.Point(30, 87);
             this.cmbNotification_Extensions.Name = "cmbNotification_Extensions";
             this.cmbNotification_Extensions.FormattingEnabled = true;
-            this.cmbNotification_Extensions.Size = new System.Drawing.Size(239, 21);
+            this.cmbNotification_Extensions.Size = new System.Drawing.Size(250, 21);
             this.cmbNotification_Extensions.TabIndex = 5;
             // 
             // rbnNotifications_Save
             // 
-            this.rbnNotifications_Save.Location = new System.Drawing.Point(30, 325);
+            this.rbnNotifications_Save.Location = new System.Drawing.Point(30, 372);
             this.rbnNotifications_Save.Name = "rbnNotifications_Save";
             this.rbnNotifications_Save.Size = new System.Drawing.Size(110, 24);
             this.rbnNotifications_Save.TabIndex = 4;
@@ -418,12 +426,49 @@
             // 
             // bnNotifications_Configure
             // 
-            this.bnNotifications_Configure.Location = new System.Drawing.Point(288, 82);
+            this.bnNotifications_Configure.Location = new System.Drawing.Point(375, 82);
             this.bnNotifications_Configure.Name = "bnNotifications_Configure";
             this.bnNotifications_Configure.Size = new System.Drawing.Size(110, 28);
             this.bnNotifications_Configure.TabIndex = 13;
             this.bnNotifications_Configure.Text = "Configure";
             this.bnNotifications_Configure.Click += new System.EventHandler(this.bnNotifications_Configure_Click);
+            // 
+            // bnNotifications_Add
+            // 
+            this.bnNotifications_Add.Location = new System.Drawing.Point(288, 82);
+            this.bnNotifications_Add.Name = "bnNotifications_Add";
+            this.bnNotifications_Add.Size = new System.Drawing.Size(75, 28);
+            this.bnNotifications_Add.TabIndex = 14;
+            this.bnNotifications_Add.Text = "Add";
+            this.bnNotifications_Add.UseVisualStyleBackColor = true;
+            this.bnNotifications_Add.Click += new System.EventHandler(this.bnNotifications_Add_Click);
+            // 
+            // bnNotifications_Remove
+            // 
+            this.bnNotifications_Remove.Location = new System.Drawing.Point(288, 145);
+            this.bnNotifications_Remove.Name = "bnNotifications_Remove";
+            this.bnNotifications_Remove.Size = new System.Drawing.Size(75, 28);
+            this.bnNotifications_Remove.TabIndex = 15;
+            this.bnNotifications_Remove.Text = "Remove";
+            this.bnNotifications_Remove.UseVisualStyleBackColor = true;
+            this.bnNotifications_Remove.Click += new System.EventHandler(this.bnNotifications_Remove_Click);
+            // 
+            // lstNotifications_Providers
+            // 
+            this.lstNotifications_Providers.FormattingEnabled = true;
+            this.lstNotifications_Providers.Location = new System.Drawing.Point(30, 145);
+            this.lstNotifications_Providers.Name = "lstNotifications_Providers";
+            this.lstNotifications_Providers.Size = new System.Drawing.Size(250, 108);
+            this.lstNotifications_Providers.TabIndex = 16;
+            this.lstNotifications_Providers.SelectedIndexChanged += new System.EventHandler(this.lstNotifications_Providers_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(27, 125);
+            this.label3.Name = "label3";
+            this.label3.TabIndex = 17;
+            this.label3.Text = "Active providers (select one to edit its events):";
             // 
             // frmManage
             // 
@@ -487,5 +532,9 @@
         private System.Windows.Forms.CheckBox chkNotifications_OnServerShutdown;
         private System.Windows.Forms.CheckBox chkNotifications_OnServerStart;
         private System.Windows.Forms.Button bnNotifications_Configure;
+        private System.Windows.Forms.Button bnNotifications_Add;
+        private System.Windows.Forms.Button bnNotifications_Remove;
+        private System.Windows.Forms.ListBox lstNotifications_Providers;
+        private System.Windows.Forms.Label label3;
     }
 }

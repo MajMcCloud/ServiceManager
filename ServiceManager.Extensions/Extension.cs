@@ -17,5 +17,11 @@ namespace ServiceManager.Extensions
 
         public INotificationExtension Notification { get; set; }
 
+        /// <summary>
+        /// Set when the assembly also offers INotificationMessageExtension. Older extensions leave it
+        /// null and keep receiving the plain text.
+        /// </summary>
+        public INotificationMessageExtension MessageNotification { get; set; }
+
     }
 }

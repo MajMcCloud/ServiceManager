@@ -1,4 +1,5 @@
 ﻿using ServiceManager.Base.data;
+using ServiceManager.Base.data.settings;
 using ServiceManager.Extensions;
 using ServiceManager.UI.forms;
 using System;
@@ -17,6 +18,12 @@ namespace ServiceManager.UI
     public partial class frmManage : Form
     {
         public String ConfigFile { get; set; }
+
+        /// <summary>The providers of the settings file, edited before they are saved.</summary>
+        private List<NotificationTarget> m_Targets = new List<NotificationTarget>();
+
+        /// <summary>True while the list is filled, so the selection handler does not write back.</summary>
+        private bool m_LoadingTargets;
 
         public frmManage()
         {
@@ -80,9 +87,6 @@ namespace ServiceManager.UI
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
-            cmbNotification_Extensions.Items.Add(new ExtensionItem("No extension", null));
-
-
             foreach (var extension in extensions)
             {
 
@@ -90,25 +94,156 @@ namespace ServiceManager.UI
 
             }
 
-            if (slist.Notifications.PluginId != null)
-            {
-                cmbNotification_Extensions.SelectedItem = cmbNotification_Extensions.Items.OfType<ExtensionItem>().FirstOrDefault(a => a.Value?.ToString() == slist.Notifications.PluginId.ToString());
-            }
-            else
-            {
+            if (cmbNotification_Extensions.Items.Count > 0)
                 cmbNotification_Extensions.SelectedIndex = 0;
+
+            m_Targets = slist.Notifications.Targets ?? new List<NotificationTarget>();
+
+            reloadTargets();
+
+
+        }
+
+
+        /// <summary>Eintrag der aktiven Provider.</summary>
+        private sealed class TargetItem
+        {
+            public TargetItem(NotificationTarget target, string text)
+            {
+                Target = target;
+                Text = text;
             }
 
-            chkNotifications_OnStart.Checked = slist.Notifications.OnStart;
-            chkNotifications_OnStop.Checked = slist.Notifications.OnStop;
-            chkNotifications_OnRestart.Checked = slist.Notifications.OnRestart;
-            chkNotifications_OnConsoleOutput.Checked = slist.Notifications.OnConsoleOutput;
-            chkNotifications_OnConsoleError.Checked = slist.Notifications.OnConsoleError;
+            public NotificationTarget Target { get; }
 
-            chkNotifications_OnServerStart.Checked = slist.Notifications.OnServerStart;
-            chkNotifications_OnServerShutdown.Checked = slist.Notifications.OnServerShutdown;
+            public string Text { get; }
 
+            public override string ToString()
+            {
+                return Text;
+            }
+        }
 
+        /// <summary>
+        /// Refills the provider list. A provider whose assembly disappeared is still listed, otherwise
+        /// saving would silently drop it and the user could no longer remove it.
+        /// </summary>
+        private void reloadTargets(int? select = null)
+        {
+            var extensions = Extensions.Extensions.GetNotificationExtensions();
+
+            m_LoadingTargets = true;
+
+            lstNotifications_Providers.BeginUpdate();
+            lstNotifications_Providers.Items.Clear();
+
+            foreach (var target in m_Targets)
+            {
+                var extension = extensions.FirstOrDefault(a => a.Id == target.PluginId);
+
+                var text = extension != null ? extension.Name : "unknown provider: " + target.PluginId;
+
+                lstNotifications_Providers.Items.Add(new TargetItem(target, text));
+            }
+
+            lstNotifications_Providers.EndUpdate();
+
+            var index = select ?? lstNotifications_Providers.SelectedIndex;
+
+            if (index < 0 || index >= lstNotifications_Providers.Items.Count)
+                index = lstNotifications_Providers.Items.Count > 0 ? 0 : -1;
+
+            lstNotifications_Providers.SelectedIndex = index;
+
+            m_LoadingTargets = false;
+
+            applySelectedTarget();
+        }
+
+        private NotificationTarget selectedTarget()
+        {
+            var item = lstNotifications_Providers.SelectedItem as TargetItem;
+
+            return item != null ? item.Target : null;
+        }
+
+        /// <summary>Moves the checkbox state into the provider that is currently selected.</summary>
+        private void commitCheckboxes()
+        {
+            var target = selectedTarget();
+
+            if (target == null)
+                return;
+
+            target.OnStart = chkNotifications_OnStart.Checked;
+            target.OnStop = chkNotifications_OnStop.Checked;
+            target.OnRestart = chkNotifications_OnRestart.Checked;
+            target.OnConsoleOutput = chkNotifications_OnConsoleOutput.Checked;
+            target.OnConsoleError = chkNotifications_OnConsoleError.Checked;
+            target.OnServerStart = chkNotifications_OnServerStart.Checked;
+            target.OnServerShutdown = chkNotifications_OnServerShutdown.Checked;
+        }
+
+        /// <summary>Shows the events the selected provider asked for.</summary>
+        private void applySelectedTarget()
+        {
+            var target = selectedTarget();
+
+            bnNotifications_Remove.Enabled = target != null;
+            bnNotifications_Configure.Enabled = target != null;
+
+            if (target == null)
+                return;
+
+            chkNotifications_OnStart.Checked = target.OnStart;
+            chkNotifications_OnStop.Checked = target.OnStop;
+            chkNotifications_OnRestart.Checked = target.OnRestart;
+            chkNotifications_OnConsoleOutput.Checked = target.OnConsoleOutput;
+            chkNotifications_OnConsoleError.Checked = target.OnConsoleError;
+            chkNotifications_OnServerStart.Checked = target.OnServerStart;
+            chkNotifications_OnServerShutdown.Checked = target.OnServerShutdown;
+        }
+
+        private void lstNotifications_Providers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (m_LoadingTargets)
+                return;
+
+            applySelectedTarget();
+        }
+
+        private void bnNotifications_Add_Click(object sender, EventArgs e)
+        {
+            var selected = cmbNotification_Extensions.SelectedItem as ExtensionItem;
+
+            if (selected == null || selected.Value == null)
+                return;
+
+            var id = (Guid)selected.Value;
+
+            if (m_Targets.Any(a => a.PluginId == id))
+            {
+                MessageBox.Show("This provider is already active, select it in the list below.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            commitCheckboxes();
+
+            m_Targets.Add(new NotificationTarget() { PluginId = id });
+
+            reloadTargets(m_Targets.Count - 1);
+        }
+
+        private void bnNotifications_Remove_Click(object sender, EventArgs e)
+        {
+            var target = selectedTarget();
+
+            if (target == null)
+                return;
+
+            m_Targets.Remove(target);
+
+            reloadTargets(0);
         }
 
         private void lsvServices_MouseClick(object sender, MouseEventArgs e)
@@ -240,24 +375,13 @@ namespace ServiceManager.UI
 
             slist.Notifications.InstanceName = txtNotifications_InstanceName.Text;
 
-            if (cmbNotification_Extensions.SelectedIndex == 0)
-            {
-                slist.Notifications.PluginId = null;
-            }
-            else
-            {
-                slist.Notifications.PluginId = (Guid)((ExtensionItem)cmbNotification_Extensions.SelectedItem).Value;
-            }
+            commitCheckboxes();
 
+            slist.Notifications.Targets = m_Targets;
 
-            slist.Notifications.OnStart = chkNotifications_OnStart.Checked;
-            slist.Notifications.OnStop = chkNotifications_OnStop.Checked;
-            slist.Notifications.OnRestart = chkNotifications_OnRestart.Checked;
-            slist.Notifications.OnConsoleOutput = chkNotifications_OnConsoleOutput.Checked;
-            slist.Notifications.OnConsoleError = chkNotifications_OnConsoleError.Checked;
-
-            slist.Notifications.OnServerStart = chkNotifications_OnServerStart.Checked;
-            slist.Notifications.OnServerShutdown = chkNotifications_OnServerShutdown.Checked;
+            // An older file keeps its single provider in PluginId. Migrate() moved it into Targets on
+            // load, so what is written here never carries both.
+            slist.Notifications.PluginId = null;
 
             slist.save();
 
@@ -266,19 +390,31 @@ namespace ServiceManager.UI
 
         private void bnNotifications_Configure_Click(object sender, EventArgs e)
         {
-            var selected = cmbNotification_Extensions.SelectedItem as ExtensionItem;
-            if (selected == null || selected.Value == null)
-            {
-                return;
-            }
+            Guid pluginId;
 
-            Guid pluginId = (Guid)selected.Value;
+            var target = selectedTarget();
+
+            if (target != null)
+            {
+                pluginId = target.PluginId;
+            }
+            else
+            {
+                var selected = cmbNotification_Extensions.SelectedItem as ExtensionItem;
+                if (selected == null || selected.Value == null)
+                {
+                    return;
+                }
+
+                pluginId = (Guid)selected.Value;
+            }
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
             var plugin = extensions.FirstOrDefault(a => a.Id == pluginId);
             if (plugin == null)
             {
+                MessageBox.Show("The settings name a provider that is not installed in the extensions folder.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -286,6 +422,8 @@ namespace ServiceManager.UI
 
             // The dialog writes the settings file, but the cached instance keeps its settings in memory.
             Extensions.Extensions.Reload();
+
+            reloadTargets();
         }
 
         /// <summary>Eintrag der Extensions-Auswahl.</summary>

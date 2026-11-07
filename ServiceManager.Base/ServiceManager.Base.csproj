@@ -50,6 +50,7 @@
     <Compile Include="data\ServiceConfig.cs" />
     <Compile Include="data\ServiceItem.cs" />
     <Compile Include="data\settings\Notifications.cs" />
+    <Compile Include="data\settings\NotificationTarget.cs" />
     <Compile Include="data\settings\Runtime.cs" />
     <Compile Include="ManagerServiceBase.cs">
       <SubType>Component</SubType>

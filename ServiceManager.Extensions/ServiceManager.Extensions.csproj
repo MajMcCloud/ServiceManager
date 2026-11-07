@@ -49,6 +49,9 @@
     <Compile Include="Extension.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Interfaces\INotificationExtension.cs" />
+    <Compile Include="Interfaces\INotificationMessageExtension.cs" />
+    <Compile Include="Interfaces\NotificationKind.cs" />
+    <Compile Include="Interfaces\NotificationMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

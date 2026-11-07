@@ -150,7 +150,7 @@ namespace ServiceManager.Extensions
                     return null;
                 }
 
-                return new Extension() { Id = instance.Id, Name = instance.Name, Path = file, Notification = instance };
+                return new Extension() { Id = instance.Id, Name = instance.Name, Path = file, Notification = instance, MessageNotification = instance as INotificationMessageExtension };
             }
             catch (Exception ex)
             {
@@ -232,6 +232,58 @@ namespace ServiceManager.Extensions
 
             });
 
+            t.Start();
+        }
+
+
+        /// <summary>
+        /// Hands one event to every provider that was selected for it. The extensions are resolved
+        /// once per event instead of once per provider, and a provider that fails only costs itself.
+        ///
+        /// A provider compiled against the old contract never sees the structured message, it keeps
+        /// receiving exactly the text it used to get.
+        /// </summary>
+        public static void SendNotification(IEnumerable<Guid> pluginIds, NotificationMessage message)
+        {
+            if (message == null || pluginIds == null)
+                return;
+
+            var ids = pluginIds.Distinct().ToList();
+
+            if (ids.Count == 0)
+                return;
+
+            var t = new Thread(() =>
+            {
+                var extensions = GetNotificationExtensions();
+
+                foreach (var id in ids)
+                {
+                    Extension extension = null;
+
+                    try
+                    {
+                        extension = extensions.FirstOrDefault(a => a.Id == id);
+
+                        if (extension == null)
+                            continue;
+
+                        var task = extension.MessageNotification != null
+                            ? extension.MessageNotification.Send(message)
+                            : extension.Notification?.Send(message.Text);
+
+                        task?.GetAwaiter().GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        var name = extension != null ? extension.Name : id.ToString();
+
+                        Console.WriteLine($"Notification \"{name}\" failed: {ex.Message}");
+                    }
+                }
+            });
+
+            t.IsBackground = true;
             t.Start();
         }
 

@@ -1,4 +1,5 @@
 ﻿using ServiceManager.Base.data;
+using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,10 +43,7 @@ namespace ServiceManager.Base
 
             Config = cfg;
 
-            if (this.Config.Notifications.OnServerStart)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server started");
-            }
+            Notify(NotificationKind.ServerStart, this.Config.Notifications.InstanceName + ": Server started");
 
             this.IsRunning = true;
 
@@ -157,10 +155,7 @@ namespace ServiceManager.Base
                 Analytics.Services.Add(sa);
             }
 
-            if (this.Config.Notifications.OnStart)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started");
-            }
+            Notify(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item.Title);
 
             Process proc = new Process();
 
@@ -333,10 +328,7 @@ namespace ServiceManager.Base
             if (s == null)
                 return;
 
-            if (this.Config.Notifications.OnConsoleError)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data);
-            }
+            Notify(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data, s.Title, e.Data);
 
             sa.Error += (e.Data ?? "") + "\r\n";
         }
@@ -355,10 +347,7 @@ namespace ServiceManager.Base
             if (s == null)
                 return;
 
-            if (this.Config.Notifications.OnConsoleOutput)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data);
-            }
+            Notify(NotificationKind.ConsoleOutput, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data, s.Title, e.Data);
 
             var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
             if (service.LogConsoleOutput)
@@ -461,10 +450,8 @@ namespace ServiceManager.Base
 
             if (!service.ForceRestart | !this.IsRunning)
             {
-                if (this.Config.Notifications.OnStop)
-                {
-                    Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Stopped");
-                }
+                Notify(NotificationKind.ServiceStop, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Stopped", s.Title);
+
                 return;
             }
 
@@ -473,10 +460,7 @@ namespace ServiceManager.Base
 
             StartService(service);
 
-            if (this.Config.Notifications.OnRestart)
-            {
-                Extensions.Extensions.GetExtension(this.Config.Notifications.PluginId)?.Notification?.Send(this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted");
-            }
+            Notify(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted", s.Title);
         }
 
         public void Shutdown()
@@ -486,10 +470,7 @@ namespace ServiceManager.Base
 
         public void Stop()
         {
-            if (this.Config.Notifications.OnServerShutdown)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server shutting down");
-            }
+            Notify(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutting down");
 
             this.Connection?.Try(a => a.ShutdownStarted());
 
@@ -589,12 +570,38 @@ namespace ServiceManager.Base
             this.Connection?.Stop();
 
 
-            if (this.Config.Notifications.OnServerShutdown)
-            {
-                Extensions.Extensions.SendNotification(this.Config.Notifications.PluginId.Value, this.Config.Notifications.InstanceName + ": Server shutted down");
-            }
+            Notify(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutted down");
 
         }
+
+        /// <summary>
+        /// Hands an event to every provider that opted into this kind. Text keeps the wording the
+        /// providers have always received, the structured fields are for providers that build cards
+        /// or map an event to a log level.
+        /// </summary>
+        private void Notify(NotificationKind kind, String text, String serviceTitle = null, String details = null)
+        {
+            var notifications = this.Config?.Notifications;
+
+            if (notifications == null)
+                return;
+
+            var providers = notifications.GetProviders(kind);
+
+            if (providers.Count == 0)
+                return;
+
+            Extensions.Extensions.SendNotification(providers, new NotificationMessage()
+            {
+                Kind = kind,
+                Timestamp = DateTime.Now,
+                InstanceName = notifications.InstanceName,
+                ServiceTitle = serviceTitle,
+                Details = details,
+                Text = text
+            });
+        }
+
 
         private void Wait(int seconds, Func<object, bool> HasExited)
         {
