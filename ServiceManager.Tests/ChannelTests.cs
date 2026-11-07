@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using ServiceManager.Base;
 using ServiceManager.Base.data;
 using ServiceManager.Base.data.settings;
@@ -56,8 +57,13 @@ namespace ServiceManager.Tests
         {
             // Newtonsoft writes enums as numbers, so an existing default.cfg carries the raw
             // value. Reordering the members would silently flip every installed config.
-            Assert.AreEqual(0, (int)Runtime.eMode.NetPipes);
-            Assert.AreEqual(1, (int)Runtime.eMode.Tcp);
+            var runtime = new Runtime();
+
+            StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Mode\":0", "the default transport is named pipes");
+
+            runtime.Mode = Runtime.eMode.Tcp;
+
+            StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Mode\":1", "Tcp has to stay the second member");
         }
 
         [TestMethod]

@@ -26,7 +26,7 @@ namespace ServiceManager.Tests
         public void missingExtensionFolder_returnsAnEmptyListInsteadOfThrowing()
         {
             if (Directory.Exists(ExtensionLoader.ExtensionFolder))
-                Assert.Inconclusive("an extensions folder exists in this output directory");
+                Assert.Inconclusive("the fixture suite fills this output directory with extensions, the empty case only happens in a clean build");
 
             Assert.AreEqual(0, ExtensionLoader.GetNotificationExtensions().Count);
         }
