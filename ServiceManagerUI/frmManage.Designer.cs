@@ -285,9 +285,9 @@
             // 
             // tabNotifications
             // 
-            this.tabNotifications.Controls.Add(this.bnNotifications_Configure);
             this.tabNotifications.Controls.Add(this.bnNotifications_Add);
             this.tabNotifications.Controls.Add(this.bnNotifications_Remove);
+            this.tabNotifications.Controls.Add(this.bnNotifications_Configure);
             this.tabNotifications.Controls.Add(this.lstNotifications_Providers);
             this.tabNotifications.Controls.Add(this.label3);
             this.tabNotifications.Controls.Add(this.txtNotifications_InstanceName);
@@ -426,10 +426,10 @@
             // 
             // bnNotifications_Configure
             // 
-            this.bnNotifications_Configure.Location = new System.Drawing.Point(375, 82);
+            this.bnNotifications_Configure.Location = new System.Drawing.Point(288, 181);
             this.bnNotifications_Configure.Name = "bnNotifications_Configure";
-            this.bnNotifications_Configure.Size = new System.Drawing.Size(110, 28);
-            this.bnNotifications_Configure.TabIndex = 13;
+            this.bnNotifications_Configure.Size = new System.Drawing.Size(75, 28);
+            this.bnNotifications_Configure.TabIndex = 15;
             this.bnNotifications_Configure.Text = "Configure";
             this.bnNotifications_Configure.Click += new System.EventHandler(this.bnNotifications_Configure_Click);
             // 
@@ -438,7 +438,7 @@
             this.bnNotifications_Add.Location = new System.Drawing.Point(288, 82);
             this.bnNotifications_Add.Name = "bnNotifications_Add";
             this.bnNotifications_Add.Size = new System.Drawing.Size(75, 28);
-            this.bnNotifications_Add.TabIndex = 14;
+            this.bnNotifications_Add.TabIndex = 13;
             this.bnNotifications_Add.Text = "Add";
             this.bnNotifications_Add.UseVisualStyleBackColor = true;
             this.bnNotifications_Add.Click += new System.EventHandler(this.bnNotifications_Add_Click);
@@ -448,7 +448,7 @@
             this.bnNotifications_Remove.Location = new System.Drawing.Point(288, 145);
             this.bnNotifications_Remove.Name = "bnNotifications_Remove";
             this.bnNotifications_Remove.Size = new System.Drawing.Size(75, 28);
-            this.bnNotifications_Remove.TabIndex = 15;
+            this.bnNotifications_Remove.TabIndex = 14;
             this.bnNotifications_Remove.Text = "Remove";
             this.bnNotifications_Remove.UseVisualStyleBackColor = true;
             this.bnNotifications_Remove.Click += new System.EventHandler(this.bnNotifications_Remove_Click);
