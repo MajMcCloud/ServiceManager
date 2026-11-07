@@ -25,6 +25,9 @@ namespace ServiceManager.UI
         /// <summary>True while the list is filled, so the selection handler does not write back.</summary>
         private bool m_LoadingTargets;
 
+        /// <summary>The provider the checkboxes currently show, the one <see cref="commitCheckboxes"/> writes to.</summary>
+        private NotificationTarget m_DisplayedTarget;
+
         public frmManage()
         {
             InitializeComponent();
@@ -167,10 +170,10 @@ namespace ServiceManager.UI
             return item != null ? item.Target : null;
         }
 
-        /// <summary>Moves the checkbox state into the provider that is currently selected.</summary>
+        /// <summary>Moves the checkbox state into the provider the checkboxes were loaded for.</summary>
         private void commitCheckboxes()
         {
-            var target = selectedTarget();
+            var target = m_DisplayedTarget;
 
             if (target == null)
                 return;
@@ -188,6 +191,8 @@ namespace ServiceManager.UI
         private void applySelectedTarget()
         {
             var target = selectedTarget();
+
+            m_DisplayedTarget = target;
 
             bnNotifications_Remove.Enabled = target != null;
             bnNotifications_Configure.Enabled = target != null;
@@ -208,6 +213,9 @@ namespace ServiceManager.UI
         {
             if (m_LoadingTargets)
                 return;
+
+            // The selection is already the new one, so the ticks still in the boxes belong to the previous entry.
+            commitCheckboxes();
 
             applySelectedTarget();
         }

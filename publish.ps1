@@ -9,12 +9,12 @@
 	Der Deployment-Ordner ist bewusst ein einzelner Ordner: frmMain.cs installiert den Windows-Dienst mit
 	"/assemblypath=<Application.StartupPath>\ServiceManager.exe", der Dienst muss also neben
 	ServiceManager.UI.exe liegen. Der Extension-Loader sucht unter <BaseDirectory>\extensions, deshalb
-	gehoert auch die TelegramNotifier-Ausgabe in denselben Ordner.
+	gehoert auch die Ausgabe jeder Extension in denselben Ordner.
 
 	Schritte:
 	  1. Version abfragen (oder -Version verwenden)
 	  2. Ausgabemappen loeschen, msbuild /t:Restore + /t:Rebuild /p:Configuration=Release /p:SMVersion=<version>
-	  3. publish\ zusammenbauen (UI-Ausgabe + extensions\TelegramBotNotifier)
+	  3. publish\ zusammenbauen (UI-Ausgabe + extensions\<jeder Provider>)
 	  4. Version der fertigen Bausteine nachpruefen
 	  5. ZIP + RELEASE-NOTES.md
 	  6. naechste Schritte ausgeben (Committen und Taggen uebernimmt der Entwickler)
@@ -60,11 +60,30 @@ $PropsFile = Join-Path $Root 'version.props'
 
 $UiProject      = Join-Path $Root 'ServiceManagerUI'
 $ServiceProject = Join-Path $Root 'ServiceManager.Service'
-$ExtProject     = Join-Path $Root 'Extensions\TelegramNotifier'
+# Jeder Ordner unter Extensions\ ist ein Provider, keiner wird mehr von Hand eingetragen. Der Ordner
+# im Paket entspricht dem Projektnamen - mit einer Ausnahme: TelegramNotifier war immer als
+# TelegramBotNotifier installiert, und genau dort liegt die settings.cfg bestehender Installationen.
+$FolderNames = @{ 'TelegramNotifier' = 'TelegramBotNotifier' }
+
+$ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
+	ForEach-Object {
+		$csproj = Get-ChildItem $_.FullName -Filter '*.csproj' -File | Select-Object -First 1
+
+		if (-not $csproj) { return }
+
+		[PSCustomObject]@{
+			Project = $_.FullName
+			Release = Join-Path $_.FullName "bin\$Config"
+			Folder  = if ($FolderNames.ContainsKey($_.Name)) { $FolderNames[$_.Name] } else { $_.Name }
+			Dll     = $csproj.BaseName + '.dll'
+		}
+	}
+
+if (-not $ExtensionProjects) { throw "Kein Provider unter Extensions\ gefunden." }
 
 $UiRelease      = Join-Path $UiProject      "bin\$Config"
 $ServiceRelease = Join-Path $ServiceProject "bin\$Config"
-$ExtRelease     = Join-Path $ExtProject     "bin\$Config"
+
 
 # ClickOnce-Reste und Laufzeitabfall haben in einem Deployment nichts verloren.
 $ExcludeDirs  = @('app.publish', 'logs')
@@ -203,7 +222,7 @@ else
 	# ehemaligen externen Projekts, das mit dem jetzigen nichts mehr zu tun hat.
 	Write-Step 'Ausgabemappen saubermachen'
 
-	foreach ($project in @($UiProject, $ServiceProject, $ExtProject))
+	foreach ($project in @($UiProject, $ServiceProject) + $ExtensionProjects.Project)
 	{
 		foreach ($sub in @('bin', 'obj'))
 		{
@@ -232,7 +251,7 @@ else
 	if ($LASTEXITCODE -ne 0) { throw "Rebuild fehlgeschlagen (Exit $LASTEXITCODE)" }
 }
 
-foreach ($path in @($UiRelease, $ExtRelease))
+foreach ($path in @($UiRelease) + $ExtensionProjects.Release)
 {
 	if (-not (Test-Path $path)) { throw "Erwartete Ausgabe fehlt: $path" }
 }
@@ -268,14 +287,19 @@ Get-ChildItem $UiRelease -Recurse -File |
 		$copied++
 	}
 
-# Die Extension gehoert nach <BaseDirectory>\extensions\TelegramBotNotifier.
-$ExtTarget = Join-Path $Publish 'extensions\TelegramBotNotifier'
+# Jeder Provider gehoert nach <BaseDirectory>\extensions\<Ordner>, nur dort findet der Loader ihn.
+foreach ($extension in $ExtensionProjects)
+{
+	$ExtTarget = Join-Path $Publish "extensions\$($extension.Folder)"
 
-New-Item $ExtTarget -ItemType Directory -Force | Out-Null
+	New-Item $ExtTarget -ItemType Directory -Force | Out-Null
 
-Get-ChildItem $ExtRelease -File |
-	Where-Object { $_.Extension -ne '.pdb' -or -not $SkipPdb } |
-	ForEach-Object { Copy-Item $_.FullName (Join-Path $ExtTarget $_.Name); $copied++ }
+	Get-ChildItem $extension.Release -File |
+		Where-Object { $_.Extension -ne '.pdb' -or -not $SkipPdb } |
+		ForEach-Object { Copy-Item $_.FullName (Join-Path $ExtTarget $_.Name); $copied++ }
+
+	Write-Host "  Provider: extensions\$($extension.Folder)"
+}
 
 Write-Host "  $copied Dateien uebernommen"
 
@@ -294,9 +318,12 @@ Write-Step 'Dateiversionen im Paket'
 $checked = @()
 $mismatch = $false
 
-foreach ($file in @('ServiceManager.UI.exe', 'ServiceManager.exe', 'ServiceManager.Extensions.dll',
-					'ServiceManager.Base.dll', 'ServiceManager.ConfigBase.dll',
-					'extensions\TelegramBotNotifier\ServiceManager.Extensions.TelegramNotifier.dll'))
+$packageFiles = @('ServiceManager.UI.exe', 'ServiceManager.exe', 'ServiceManager.Extensions.dll',
+					'ServiceManager.Base.dll', 'ServiceManager.ConfigBase.dll')
+
+$packageFiles += $ExtensionProjects | ForEach-Object { "extensions\$($_.Folder)\$($_.Dll)" }
+
+foreach ($file in $packageFiles)
 {
 	$path = Join-Path $Publish $file
 
@@ -358,7 +385,7 @@ $notes = @(
     '1. ZIP in einen Ordner entpacken, z. B. C:\Program Files\ServiceManager.',
     '2. ServiceManager.UI.exe als Administrator starten.',
     '3. Dienst installieren: der UI-Dialog nutzt <Startpfad>\ServiceManager.exe, beide Programme muessen im selben Ordner bleiben.',
-    '4. Extension-Einstellungen unter extensions\TelegramBotNotifier\settings.cfg pruefen.',
+    '4. Extension-Einstellungen liegen pro Provider unter extensions\<Ordner>\settings.cfg.',
     '',
     '### Tag',
     '',

@@ -42,7 +42,12 @@ Choose between Net Pipes and TCP connection for your Service Manager.
 
 ## Notification Settings
 
-Choose a notification provider for getting messages over server or service status changes.
+Pick every provider that should react to an event and decide per provider which events it receives.
+Add registers a provider, Remove drops it again, Configure opens the settings of the selected one.
+An empty list switches notifications off, a provider that is not listed never receives a message.
+
+A settings file of an older version keeps working: its single provider and the global ticks become
+one entry of this list the first time the file is read.
 
 <img src="Screens/Settings_3.png" />
 
@@ -85,6 +90,15 @@ Example of telegram messages you will receive when used.
 
 <img src="Screens/Notifications_Telegram.png" />
 
+## Notifications - Windows Event Log
+
+The provider without any network: every event becomes an entry in the Windows Event Log and, when
+enabled, a balloon tip on the desktop. It keeps working without internet access and while the service
+runs with no user logged on - only the balloon tip needs an interactive session.
+
+Registering the event source writes into the registry, so the first entry needs administrator rights;
+the settings form says so while they are missing. Every kind of event gets its own event id and its
+own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
 
 Icons where used from:
 https://www.iconfinder.com/iconsets/ui-basic-glyph

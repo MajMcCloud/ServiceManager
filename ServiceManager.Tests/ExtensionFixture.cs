@@ -27,6 +27,8 @@ namespace ServiceManager.Tests
 
         public String CtorLog { get; }
 
+        public String SentLog { get; }
+
         public Guid Id { get; }
 
         public String Name { get; }
@@ -50,6 +52,7 @@ namespace ServiceManager.Tests
             Folder = folder;
             AssemblyPath = assemblyPath;
             CtorLog = Path.Combine(folder, "ctor.log");
+            SentLog = Path.Combine(folder, "sent.log");
             Id = id;
             Name = name;
         }
@@ -61,6 +64,15 @@ namespace ServiceManager.Tests
         public int ConstructorCalls
         {
             get { return File.Exists(CtorLog) ? File.ReadAllLines(CtorLog).Length : 0; }
+        }
+
+        /// <summary>
+        /// What the fixture received, one line per Send call. The fixture writes it next to its own
+        /// assembly because the CLR gives the fixture its own copy of the interface types.
+        /// </summary>
+        public String[] SentLines
+        {
+            get { return File.Exists(SentLog) ? File.ReadAllLines(SentLog) : new String[0]; }
         }
 
         /// <summary>
@@ -234,6 +246,144 @@ namespace Fixtures
                 Members +
                 "    }\r\n}\r\n";
         }
+
+        /// <summary>
+        /// A provider written against the structured contract. It logs both entry points, so a test
+        /// can see which overload the dispatcher chose and what arrived in it.
+        /// </summary>
+        public static String StructuredSource(String className, Guid id, String name)
+        {
+            return StructuredTemplate
+                .Replace("$CLASS$", className)
+                .Replace("$ID$", id.ToString("N"))
+                .Replace("$NAME$", name);
+        }
+
+        private const String StructuredTemplate =
+@"using System;
+using System.IO;
+using System.Threading.Tasks;
+using ServiceManager.Extensions.Interfaces;
+
+namespace Fixtures
+{
+    public class $CLASS$ : INotificationMessageExtension
+    {
+        public Guid Id { get { return new Guid(""$ID$""); } }
+
+        public String Name { get { return ""$NAME$""; } }
+
+        public String Description { get { return ""test fixture""; } }
+
+        public $CLASS$()
+        {
+            File.AppendAllText(Path.Combine(Path.GetDirectoryName(typeof($CLASS$).Assembly.Location), ""ctor.log""), ""ctor"" + Environment.NewLine);
+        }
+
+        public Task Send(String message)
+        {
+            return Record(""text"", message, null, null, null);
+        }
+
+        public Task Send(NotificationMessage message)
+        {
+            return Record(""message"", message.Text, message.Kind.ToString(), message.ServiceTitle, message.Details);
+        }
+
+        public void Configure() { }
+
+        private static Task Record(String entry, String text, String kind, String service, String details)
+        {
+            File.AppendAllText(
+                Path.Combine(Path.GetDirectoryName(typeof($CLASS$).Assembly.Location), ""sent.log""),
+                String.Join(""|"", entry, text, kind, service, details) + Environment.NewLine);
+
+            return Task.CompletedTask;
+        }
+    }
+}
+";
+
+        /// <summary>
+        /// A provider written against the old contract only. It records its text, so a test can see
+        /// that such a provider still gets exactly what it used to get.
+        /// </summary>
+        public static String LegacyRecordSource(String className, Guid id, String name)
+        {
+            return Fill(LegacyTemplate, className, id, name);
+        }
+
+        /// <summary>Structured provider whose Send throws, the way a provider without internet fails.</summary>
+        public static String FailingStructuredSource(String className, Guid id, String name)
+        {
+            return Fill(FailingTemplate, className, id, name);
+        }
+
+        private static String Fill(String template, String className, Guid id, String name)
+        {
+            return template
+                .Replace("$CLASS$", className)
+                .Replace("$ID$", id.ToString("N"))
+                .Replace("$NAME$", name);
+        }
+
+        private const String LegacyTemplate =
+@"using System;
+using System.IO;
+using System.Threading.Tasks;
+using ServiceManager.Extensions.Interfaces;
+
+namespace Fixtures
+{
+    public class $CLASS$ : INotificationExtension
+    {
+        public Guid Id { get { return new Guid(""$ID$""); } }
+
+        public String Name { get { return ""$NAME$""; } }
+
+        public String Description { get { return ""test fixture""; } }
+
+        public Task Send(String message)
+        {
+            File.AppendAllText(
+                Path.Combine(Path.GetDirectoryName(typeof($CLASS$).Assembly.Location), ""sent.log""),
+                message + Environment.NewLine);
+
+            return Task.CompletedTask;
+        }
+
+        public void Configure() { }
+    }
+}
+";
+
+        private const String FailingTemplate =
+@"using System;
+using System.IO;
+using System.Threading.Tasks;
+using ServiceManager.Extensions.Interfaces;
+
+namespace Fixtures
+{
+    public class $CLASS$ : INotificationMessageExtension
+    {
+        public Guid Id { get { return new Guid(""$ID$""); } }
+
+        public String Name { get { return ""$NAME$""; } }
+
+        public String Description { get { return ""test fixture""; } }
+
+        public Task Send(String message) { return Task.CompletedTask; }
+
+        public Task Send(NotificationMessage message)
+        {
+            throw new InvalidOperationException(""fixture provider failed"");
+        }
+
+        public void Configure() { }
+    }
+}
+";
 
         /// <summary>An assembly without any extension at all, e.g. a library an extension ships with.</summary>
         public static String PlainLibrarySource(String className)

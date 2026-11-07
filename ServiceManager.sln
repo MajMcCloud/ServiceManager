@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.12.12328.396 insiders
+VisualStudioVersion = 18.12.12328.396
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.UI", "ServiceManagerUI\ServiceManager.UI.csproj", "{E1921317-2E79-4715-AF44-483B610CF7B7}"
 EndProject
@@ -31,6 +31,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.TelegramNotifier", "Extensions\TelegramNotifier\ServiceManager.Extensions.TelegramNotifier.csproj", "{CFBE063F-8393-45AA-841F-0AC2F554871D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Tests", "ServiceManager.Tests\ServiceManager.Tests.csproj", "{6F44E975-4B18-602A-4774-C5795250626C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.EventLogNotifier", "Extensions\EventLogNotifier\ServiceManager.Extensions.EventLogNotifier.csproj", "{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +80,10 @@ Global
 		{6F44E975-4B18-602A-4774-C5795250626C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F44E975-4B18-602A-4774-C5795250626C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F44E975-4B18-602A-4774-C5795250626C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
