@@ -31,17 +31,23 @@
 .PARAMETER SkipBuild
 	Den letzten Release-Build wiederverwenden statt neu zu bauen.
 
+.PARAMETER Strict
+	Aus einer abweichenden Dateiversion einen Fehler machen. Fuer die CI, damit ein Paket nie mit
+	vermischten Versionsnummern durchrauscht.
+
 .EXAMPLE
 	.\publish.ps1
 	.\publish.ps1 -Version 2.1.0.0 -Persist
 	.\publish.ps1 -SkipPdb
+	.\publish.ps1 -Version 2.1.0.1 -SkipBuild -Strict   # so nutzt die CI das Skript
 #>
 [CmdletBinding()]
 param(
 	[String]$Version,
 	[Switch]$Persist,
 	[Switch]$SkipPdb,
-	[Switch]$SkipBuild
+	[Switch]$SkipBuild,
+	[Switch]$Strict
 )
 
 $ErrorActionPreference = 'Stop'
@@ -315,6 +321,8 @@ $checked | Format-Table -AutoSize | Out-String | Write-Host
 
 if ($mismatch)
 {
+	if ($Strict) { throw "Mindestens eine Baustein traegt nicht $Version - Paket verworfen." }
+
 	Write-Host "  Warnung: mindestens eine Datei traegt nicht $Version." -ForegroundColor Yellow
 }
 else

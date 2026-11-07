@@ -3,10 +3,11 @@
   <!--
     Default assembly version for plain builds (Visual Studio and CI).
     publish.ps1 overrides it per release with /p:SMVersion=<version> and normally leaves this file alone.
+    Keep it one step ahead of the last tag: the CI takes branch builds from this file.
   -->
 
   <PropertyGroup>
-    <SMVersion>2.0.1.27</SMVersion>
+    <SMVersion>2.1.0.1</SMVersion>
   </PropertyGroup>
 
 </Project>

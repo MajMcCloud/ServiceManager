@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [ main ]
+    # Tags ausloesen, damit ein Release-Bau die Versionsnummer aus dem Tag bekommt.
+    # Der Bestand traegt "v2.0.1.27", der neueste "2.1.0.0" - beides soll laufen.
+    tags: [ 'v*', '[0-9]*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -10,6 +13,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   build:
@@ -19,25 +26,53 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # publish.ps1 schreibt die Release-Notizen aus git log <letzter Tag>..HEAD.
+          fetch-depth: 0
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
+      - name: Resolve version
+        id: version
+        run: |
+          if ( $env:GITHUB_REF_TYPE -eq 'tag' ) {
+            $v = $env:GITHUB_REF_NAME -replace '^[vV]', ''
+          } else {
+            $v = ( Select-String -Path version.props -Pattern '<SMVersion>([^<]+)</SMVersion>' ).Matches[0].Groups[1].Value
+          }
+
+          if ( $v -notmatch '^\d+\.\d+\.\d+\.\d+$' ) {
+            Write-Error "Erwartet werden vier Zahlen als Version, bekommen: $v"
+            exit 1
+          }
+
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "SM_VERSION=$v" >> $env:GITHUB_ENV
+
+          if ( $env:GITHUB_REF_TYPE -eq 'tag' ) { Write-Host "Version $v vom Tag" } else { Write-Host "Version $v aus version.props" }
+
       - name: Restore NuGet packages
-        run: msbuild ServiceManager.sln /t:Restore /p:Configuration=Release /v:minimal /nologo
+        run: msbuild ServiceManager.sln /t:Restore /p:Configuration=Release /p:SMVersion=$env:SM_VERSION /v:minimal /nologo
 
       - name: Build solution
-        run: msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release /v:minimal /nologo
+        run: msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release /p:SMVersion=$env:SM_VERSION /v:minimal /nologo
 
       - name: Run tests
         run: dotnet test ServiceManager.Tests/ServiceManager.Tests.csproj -c Release --no-build -v minimal
 
-      - name: Upload build output
+      # Ein Ordner, genau so, wie spaeter installiert wird: UI-Ausgabe (enthaelt schon
+      # ServiceManager.exe) plus extensions\TelegramBotNotifier mit Telegram.Bot.dll.
+      # publish.ps1 -Strict macht aus einer abweichenden Baustein-Version einen Fehler.
+      - name: Assemble deployment folder
+        run: .\publish.ps1 -Version $env:SM_VERSION -SkipBuild -Strict
+
+      - name: Upload deployment folder
         uses: actions/upload-artifact@v4
         with:
-          name: ServiceManager-Release
+          name: ServiceManager-${{ steps.version.outputs.version }}
           path: |
-            ServiceManager.Service/bin/Release
-            ServiceManagerUI/bin/Release
+            publish
+            ServiceManager-${{ steps.version.outputs.version }}.zip
           if-no-files-found: error
           retention-days: 14
