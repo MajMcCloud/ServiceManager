@@ -22,12 +22,15 @@ The same two commands run in [CI](.github/workflows/ci.yml), which uploads the `
 
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)
-- [Notification Settings](#notification-settings)
+- [Notifications](#notifications)
+  - [Notification Settings](#notification-settings)
+  - [Notifications - Telegram](#notifications---telegram)
+  - [Notifications - Windows Event Log](#notifications---windows-event-log)
+  - [Notifications - Webhook](#notifications---webhook)
 - [Service Settings - Start](#service-settings---start)
 - [Service Settings - Shutdown](#service-settings---shutdown)
 - [Service Settings - Logging](#service-settings---logging)
 - [Live Console In and Output](#live-console-in-and-output)
-- [Notifications - Telegram](#notifications---telegram)
 
 ## MainWindow
 
@@ -40,7 +43,21 @@ Choose between Net Pipes and TCP connection for your Service Manager.
 
 <img src="Screens/Settings.png" />
 
-## Notification Settings
+## Notifications
+
+Notifications stay off until at least one provider is listed. They are configured in one place only:
+`Manager` -> `Open config` -> the `Notifications` tab.
+
+Three providers ship in the box, and each one is switched on per event, so the same event can go into the
+event log and to a webhook while Telegram only receives the errors:
+
+| Provider | Needs | Reachable |
+| --- | --- | --- |
+| [Telegram](#notifications---telegram) | internet access, a bot token | anywhere the ServiceManager has internet |
+| [Windows Event Log](#notifications---windows-event-log) | no network, administrator rights for the first entry | the machine the service runs on |
+| [Webhook](#notifications---webhook) | internet access or a local endpoint | any tool that accepts a request |
+
+### Notification Settings
 
 Pick every provider that should react to an event and decide per provider which events it receives.
 Add registers a provider, Remove drops it again, Configure opens the settings of the selected one.
@@ -49,7 +66,44 @@ An empty list switches notifications off, a provider that is not listed never re
 A settings file of an older version keeps working: its single provider and the global ticks become
 one entry of this list the first time the file is read.
 
+The seven events are the ones the ServiceManager reports: *On Start*, *On Stop* and *On Restart* belong to a
+managed service, *On Console Output* and *On Console Error* to its console, *On Server Start* and
+*On Server Shutdown* to the ServiceManager itself.
+
 <img src="Screens/Settings_3.png" />
+
+### Notifications - Telegram
+
+Example of telegram messages you will receive when used.
+
+<img src="Screens/Notifications_Telegram.png" />
+
+### Notifications - Windows Event Log
+
+The provider without any network: every event becomes an entry in the Windows Event Log and, when
+enabled, a balloon tip on the desktop. It keeps working without internet access and while the service
+runs with no user logged on - only the balloon tip needs an interactive session.
+
+Registering the event source writes into the registry, so the first entry needs administrator rights;
+the settings form says so while they are missing. Every kind of event gets its own event id and its
+own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
+
+### Notifications - Webhook
+
+One request to an endpoint of your choice. The body is written in the settings, so the same provider
+serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and an endpoint of your
+own.
+
+`{text}` `{details}` `{kind}` `{level}` `{service}` `{instance}` and `{timestamp}` are replaced.
+Inside a JSON body the values are escaped, so a console line containing a quote cannot break the
+message, while a plain text body receives them as they are. A placeholder the provider does not know
+is sent untouched, which keeps templates written for another tool working.
+
+Additional headers go one per line as `Name: value`, enough for an `Authorization` header of a hosted
+service or the `X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
+the console of the ServiceManager. The settings form has a test button that answers what the endpoint
+replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
+
 
 ## Service Settings - Start
 
@@ -83,38 +137,6 @@ Get directly output from your console applications and send back informations ov
 Example:
 
 <img src="Screens/livelogs_example.gif" />
-
-## Notifications - Telegram
-
-Example of telegram messages you will receive when used.
-
-<img src="Screens/Notifications_Telegram.png" />
-
-## Notifications - Windows Event Log
-
-The provider without any network: every event becomes an entry in the Windows Event Log and, when
-enabled, a balloon tip on the desktop. It keeps working without internet access and while the service
-runs with no user logged on - only the balloon tip needs an interactive session.
-
-Registering the event source writes into the registry, so the first entry needs administrator rights;
-the settings form says so while they are missing. Every kind of event gets its own event id and its
-own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
-
-## Notifications - Webhook
-
-One request to an endpoint of your choice. The body is written in the settings, so the same provider
-serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and an endpoint of your
-own.
-
-`{text}` `{details}` `{kind}` `{level}` `{service}` `{instance}` and `{timestamp}` are replaced.
-Inside a JSON body the values are escaped, so a console line containing a quote cannot break the
-message, while a plain text body receives them as they are. A placeholder the provider does not know
-is sent untouched, which keeps templates written for another tool working.
-
-Additional headers go one per line as `Name: value`, enough for `Authorization: Bearer ...` or the
-`X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
-the console of the ServiceManager. The settings form has a test button that answers what the endpoint
-replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
 
 Icons where used from:
 https://www.iconfinder.com/iconsets/ui-basic-glyph
