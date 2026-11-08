@@ -18,6 +18,7 @@
     <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj" />
     <ProjectReference Include="..\ServiceManager.Base\ServiceManager.Base.csproj" />
     <ProjectReference Include="..\Extensions\WebhookNotifier\ServiceManager.Extensions.WebhookNotifier.csproj" />
+    <ProjectReference Include="..\Extensions\SmtpNotifier\ServiceManager.Extensions.SmtpNotifier.csproj" />
   </ItemGroup>
 
 

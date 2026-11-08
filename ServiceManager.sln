@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.WebhookNotifier", "Extensions\WebhookNotifier\ServiceManager.Extensions.WebhookNotifier.csproj", "{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.SmtpNotifier", "Extensions\SmtpNotifier\ServiceManager.Extensions.SmtpNotifier.csproj", "{A32B1C00-0EC2-4B61-9AF8-71158774C618}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A32B1C00-0EC2-4B61-9AF8-71158774C618}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A32B1C00-0EC2-4B61-9AF8-71158774C618}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A32B1C00-0EC2-4B61-9AF8-71158774C618}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A32B1C00-0EC2-4B61-9AF8-71158774C618}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +107,7 @@ Global
 		{CFBE063F-8393-45AA-841F-0AC2F554871D} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 		{931E81A5-FEAD-408F-8E4E-B7D0AD995A44} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
+		{A32B1C00-0EC2-4B61-9AF8-71158774C618} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB8FBBF3-4399-40AF-94BD-A688100D132C}
