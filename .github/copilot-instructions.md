@@ -96,6 +96,18 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   documentation-only work in separate commits, that is what keeps the notes readable.
 * The release title names what the release brings ("Multiple notification providers") instead of
   repeating the version number.
+* `publish\` and the ZIP are ignored, so a release adds no commit of its own.
+* Once the tag exists, `version.props` moves one step ahead of it again. That is a commit of its
+  own: "Set the default build version to 2.1.1.2".
+* Publishing from this machine works without `gh`, which is not installed: the GitHub REST API
+  accepts the credential Git Credential Manager already holds for `github.com`, the same one that
+  makes `git push` work. Read it with `git credential fill`, never print it and never ask the
+  developer for a token. The release is `POST /repos/MajMcCloud/ServiceManager/releases`, the ZIP
+  is uploaded to `uploads.github.com`. Do not claim that the release cannot be created from here.
+* The description of the release is the content of `publish\RELEASE-NOTES.md` without its "Tag"
+  section, the asset is `ServiceManager-<version>.zip` from the project root.
+* Pushing the tag starts the CI, which builds the package with the version from the tag and keeps
+  it as an artefact. The workflow never creates the release itself.
 
 ## Working together
 
