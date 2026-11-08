@@ -3,8 +3,13 @@ using Newtonsoft.Json;
 using ServiceManager.Base;
 using ServiceManager.Base.data;
 using ServiceManager.Base.data.settings;
+using ServiceManager.Base.wcf;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
 
 namespace ServiceManager.Tests
 {
@@ -107,6 +112,72 @@ namespace ServiceManager.Tests
                 if (Directory.Exists(directory))
                     Directory.Delete(directory, true);
             }
+        }
+
+        [TestMethod]
+        public void probe_pipes_keeps_the_callback_channel_of_the_connected_client()
+        {
+            var pipeName = ProbePipeName();
+
+            var server = new Channel(true, pipeName);
+            var client = new Channel(false, pipeName);
+
+            try
+            {
+                server.Start();
+                client.Start();
+
+                var registered = WaitForCallbackChannel(server);
+
+                Assert.IsNotNull(registered, "the client hands over its callbacks when it connects");
+
+                Assert.IsTrue(Channel.ProbePipes("localhost", pipeName), "the running service answers the test");
+
+                Assert.AreSame(registered, server.ServerChannel, "a connection test must not take the live updates away from the connected client");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
+
+        [TestMethod]
+        public void probe_pipes_is_false_without_a_listening_service()
+        {
+            Assert.IsFalse(Channel.ProbePipes("localhost", ProbePipeName()));
+        }
+
+        [TestMethod]
+        public void probe_tcp_is_false_for_a_port_nobody_listens_on()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            listener.Stop();
+
+            Assert.IsFalse(Channel.ProbeTcp("localhost", port));
+        }
+
+        // WCF allows letters and digits in a pipe name only, and every run needs its own endpoint.
+        private static String ProbePipeName()
+        {
+            return "servicemanprobe" + Guid.NewGuid().ToString("N");
+        }
+
+        // Init is a one way call, so the service stores the channel some milliseconds later.
+        private static ICallbacks WaitForCallbackChannel(Channel server, int TimeoutMs = 5000)
+        {
+            var watch = Stopwatch.StartNew();
+
+            while (server.ServerChannel == null && watch.ElapsedMilliseconds < TimeoutMs)
+            {
+                Thread.Sleep(25);
+            }
+
+            return server.ServerChannel;
         }
     }
 }

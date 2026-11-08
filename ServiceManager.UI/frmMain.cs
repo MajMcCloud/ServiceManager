@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Management;
-using System.ServiceModel;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -389,44 +388,12 @@ namespace ServiceManager.UI
 
         private bool NetPipesTest(int processId)
         {
-
-            try
-            {
-                var m_ClientCallbacks = new Callbacks();
-
-                var channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = new TimeSpan(0, 0, 10), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, new EndpointAddress($"net.pipe://localhost/serviceman" + processId));
-
-                var m_clientChannel = channelFactory.CreateChannel();
-
-                m_clientChannel.Init();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-
+            return Channel.ProbePipes("localhost", "serviceman" + processId);
         }
 
         private bool NetTcpTest(String HostOrIP, int Port)
         {
-            try
-            {
-                var m_ClientCallbacks = new Callbacks();
-
-                var channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, new NetTcpBinding() { ReceiveTimeout = new TimeSpan(0, 0, 0, 0, 100), SendTimeout = new TimeSpan(0, 0, 0, 0, 100), MaxReceivedMessageSize = Int32.MaxValue, OpenTimeout = new TimeSpan(0, 0, 0, 0, 100), CloseTimeout = new TimeSpan(0, 0, 0, 0, 100) }, new EndpointAddress($"net.tcp://{HostOrIP}:{Port}/servicemanager"));
-
-                var m_clientChannel = channelFactory.CreateChannel();
-
-                m_clientChannel.Init();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return Channel.ProbeTcp(HostOrIP, Port);
         }
 
         private void StartWatching(String IPOrHost, int port)

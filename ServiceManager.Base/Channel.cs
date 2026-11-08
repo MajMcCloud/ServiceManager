@@ -68,6 +68,70 @@ namespace ServiceManager.Base
         }
 
 
+        // A test of an endpoint must never call Init: the service keeps one callback channel for
+        // the whole instance, so the throwaway channel of a test would take the live updates away
+        // from the UI that is connected. Ping answers over the same session and registers nothing.
+        public static bool ProbePipes(String Hostname, String PipeName)
+        {
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), new NetNamedPipeBinding() { OpenTimeout = new TimeSpan(0, 0, 0, 5), SendTimeout = new TimeSpan(0, 0, 0, 10), ReceiveTimeout = new TimeSpan(0, 0, 0, 10), CloseTimeout = new TimeSpan(0, 0, 0, 2), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
+        }
+
+        public static bool ProbeTcp(String Hostname, int Port)
+        {
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), new NetTcpBinding() { OpenTimeout = new TimeSpan(0, 0, 0, 5), SendTimeout = new TimeSpan(0, 0, 0, 10), ReceiveTimeout = new TimeSpan(0, 0, 0, 10), CloseTimeout = new TimeSpan(0, 0, 0, 2), MaxReceivedMessageSize = Int32.MaxValue }, new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
+        }
+
+        private static bool Probe(Func<DuplexChannelFactory<IManagerService>> CreateFactory)
+        {
+            DuplexChannelFactory<IManagerService> factory = null;
+
+            IManagerService client = null;
+
+            try
+            {
+                factory = CreateFactory();
+
+                client = factory.CreateChannel();
+
+                client.Ping();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                // The test runs once per menu entry, so a channel left behind would keep a session
+                // on the service for the whole lifetime of the UI.
+                if (client != null)
+                {
+                    try
+                    {
+                        ((ICommunicationObject)client).Close(new TimeSpan(0, 0, 0, 2));
+                    }
+                    catch
+                    {
+                        ((ICommunicationObject)client).Abort();
+                    }
+                }
+
+                if (factory != null)
+                {
+                    try
+                    {
+                        factory.Close(new TimeSpan(0, 0, 0, 2));
+                    }
+                    catch
+                    {
+                        factory.Abort();
+                    }
+                }
+            }
+        }
+
+
         private void Init()
         {
             if (IsServer)
