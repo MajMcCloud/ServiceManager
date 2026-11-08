@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
-[assembly: AssemblyTitle("ServiceManagerUI")]
+[assembly: AssemblyTitle("ServiceManager.UI")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceManagerUI")]
+[assembly: AssemblyProduct("ServiceManager.UI")]
 [assembly: AssemblyCopyright("Copyright © Florian Dahn 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

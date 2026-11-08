@@ -58,7 +58,7 @@ $Publish   = Join-Path $Root 'publish'
 $Config    = 'Release'
 $PropsFile = Join-Path $Root 'version.props'
 
-$UiProject      = Join-Path $Root 'ServiceManagerUI'
+$UiProject      = Join-Path $Root 'ServiceManager.UI'
 $ServiceProject = Join-Path $Root 'ServiceManager.Service'
 # Every folder under Extensions\ is a provider, none of them is entered by hand any more. The folder
 # inside the package matches the project name - with one exception: TelegramNotifier has always been

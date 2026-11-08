@@ -18,7 +18,7 @@ msbuild ServiceManager.sln /t:Restore /p:Configuration=Release
 msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release
 ```
 
-The same two commands run in [CI](.github/workflows/ci.yml), which uploads the `ServiceManager.Service\bin\Release` and `ServiceManagerUI\bin\Release` folders as build artifacts.
+which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bin\Release` folders as build artifacts.
 
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)

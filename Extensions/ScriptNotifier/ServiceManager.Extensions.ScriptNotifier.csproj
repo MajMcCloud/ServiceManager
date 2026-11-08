@@ -17,7 +17,7 @@
 	<DebugSymbols>true</DebugSymbols>
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
-	<OutputPath>..\..\ServiceManagerUI\bin\Debug\extensions\ScriptNotifier\</OutputPath>
+	<OutputPath>..\..\ServiceManager.UI\bin\Debug\extensions\ScriptNotifier\</OutputPath>
 	<DefineConstants>DEBUG;TRACE</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>

@@ -55,7 +55,7 @@
     <ManifestCertificateThumbprint>8D6D2F6B2357FF825CADB98A40180532EBE1F119</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ServiceManagerUI_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ServiceManager.UI_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -152,7 +152,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="ServiceManagerUI_TemporaryKey.pfx" />
+    <None Include="ServiceManager.UI_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
