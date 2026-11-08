@@ -351,5 +351,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/session-state
+
 # Release packages built by publish.ps1
 /*.zip
