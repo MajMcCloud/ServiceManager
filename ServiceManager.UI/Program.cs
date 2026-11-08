@@ -18,7 +18,7 @@ namespace ServiceManager.UI
         public static Dictionary<String, String> Parameters = new Dictionary<String, String>();
 
         /// <summary>
-        /// Der Haupteinstiegspunkt für die Anwendung.
+        /// The main entry point of the application.
         /// </summary>
         [STAThread]
         static void Main(String[] args)

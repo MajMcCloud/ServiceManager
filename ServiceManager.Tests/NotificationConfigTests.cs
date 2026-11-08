@@ -20,7 +20,7 @@ namespace ServiceManager.Tests
         /// <summary>A settings file exactly as the single provider version wrote it.</summary>
         private const String LegacyJson =
             "{" +
-            "\"InstanceName\":\"Test Instanz\"," +
+            "\"InstanceName\":\"Test instance\"," +
             "\"PluginId\":\"11111111-2222-3333-4444-555555555555\"," +
             "\"OnRestart\":true," +
             "\"OnStart\":true," +

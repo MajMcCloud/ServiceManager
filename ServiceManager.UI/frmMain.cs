@@ -726,11 +726,11 @@ namespace ServiceManager.UI
                 svi.Description = "Runs and protecting specific applications.";
                 svi.Context = install;
 
-                //Nicht verzögern, also so früh wie möglich starten
+                //No delayed auto start, the service comes up as early as possible
                 svi.DelayedAutoStart = false;
                 svi.Parent = spi;
 
-                //Internet wird benötigt
+                //The service reaches its clients over the network
                 svi.ServicesDependedOn = new string[] { "Tcpip", "Dhcp", "Dnscache" };
 
                 svi.FailCountResetTime = 60 * 60 * 24;

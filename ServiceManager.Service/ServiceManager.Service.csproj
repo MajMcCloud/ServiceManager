@@ -22,8 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <!-- Die Provider baut die UI in ihr Debug\extensions. Der Dienst sucht unter <BaseDirectory>\extensions,
-         also braucht er im Debug-Lauf dieselbe Mappe, sonst findet er keinen einzigen Provider. -->
+    <!-- The providers are built into the Debug\extensions folder of the UI. The service looks under
+         <BaseDirectory>\extensions, so a debug run needs that folder as well, otherwise it finds no provider at all. -->
     <PostBuildEvent>if exist "$(MSBuildThisFileDirectory)..\ServiceManager.UI\bin\$(Configuration)\extensions" xcopy /y /i /e /q "$(MSBuildThisFileDirectory)..\ServiceManager.UI\bin\$(Configuration)\extensions" "$(TargetDir)extensions\"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

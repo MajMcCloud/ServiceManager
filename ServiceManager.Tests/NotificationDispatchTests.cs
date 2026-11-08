@@ -22,7 +22,7 @@ namespace ServiceManager.Tests
             {
                 Kind = kind,
                 Text = text,
-                InstanceName = "Test Instanz",
+                InstanceName = "Test instance",
                 ServiceTitle = service,
                 Details = details
             };
@@ -66,13 +66,13 @@ namespace ServiceManager.Tests
 
             ExtensionLoader.SendNotification(
                 new List<Guid> { fixture.Id },
-                Event(NotificationKind.ConsoleError, "Test Instanz: Fehler in Dienst", "Dienst A", "exit code 1"));
+                Event(NotificationKind.ConsoleError, "Test instance: error in the service", "Service A", "exit code 1"));
 
             var lines = WaitForSent(fixture, 1);
 
             Assert.AreEqual(1, lines.Length, "the provider has to be reached");
             Assert.AreEqual(
-                String.Join("|", "message", "Test Instanz: Fehler in Dienst", "ConsoleError", "Dienst A", "exit code 1"),
+                String.Join("|", "message", "Test instance: error in the service", "ConsoleError", "Service A", "exit code 1"),
                 lines[0], "the structured overload has to be preferred and every field has to arrive");
         }
 
@@ -88,12 +88,12 @@ namespace ServiceManager.Tests
 
             ExtensionLoader.SendNotification(
                 new List<Guid> { fixture.Id },
-                Event(NotificationKind.ServiceStart, "Test Instanz: Dienst A gestartet", "Dienst A"));
+                Event(NotificationKind.ServiceStart, "Test instance: Service A started", "Service A"));
 
             var lines = WaitForSent(fixture, 1);
 
             Assert.AreEqual(1, lines.Length);
-            Assert.AreEqual("Test Instanz: Dienst A gestartet", lines[0], "an old provider sees exactly the text it saw before");
+            Assert.AreEqual("Test instance: Service A started", lines[0], "an old provider sees exactly the text it saw before");
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace ServiceManager.Tests
 
             ExtensionLoader.SendNotification(
                 new List<Guid> { fixture.Id, fixture.Id },
-                Event(NotificationKind.ConsoleOutput, "Test Instanz: Ausgabe"));
+                Event(NotificationKind.ConsoleOutput, "Test instance: output"));
 
             var lines = WaitForSent(fixture, 1);
 
@@ -123,12 +123,12 @@ namespace ServiceManager.Tests
 
             ExtensionLoader.SendNotification(
                 new List<Guid> { Guid.NewGuid(), fixture.Id },
-                Event(NotificationKind.ServerStart, "Test Instanz: Service Manager gestartet"));
+                Event(NotificationKind.ServerStart, "Test instance: Service Manager started"));
 
             var lines = WaitForSent(fixture, 1);
 
             Assert.AreEqual(1, lines.Length, "an id without an extension is dropped, the rest still goes out");
-            Assert.AreEqual("message|Test Instanz: Service Manager gestartet|ServerStart||", lines[0]);
+            Assert.AreEqual("message|Test instance: Service Manager started|ServerStart||", lines[0]);
         }
 
         [TestMethod]
@@ -139,7 +139,7 @@ namespace ServiceManager.Tests
 
             ExtensionLoader.SendNotification(
                 new List<Guid> { broken.Id, healthy.Id },
-                Event(NotificationKind.ConsoleError, "Test Instanz: Fehler"));
+                Event(NotificationKind.ConsoleError, "Test instance: error"));
 
             var lines = WaitForSent(healthy, 1);
 
@@ -152,8 +152,8 @@ namespace ServiceManager.Tests
         {
             var fixture = ExtensionFixture.Compile("none", (id, name) => ExtensionFixture.StructuredSource("NoneOne", id, name));
 
-            ExtensionLoader.SendNotification(new List<Guid>(), Event(NotificationKind.ConsoleOutput, "Test Instanz: Ausgabe"));
-            ExtensionLoader.SendNotification(null, Event(NotificationKind.ConsoleOutput, "Test Instanz: Ausgabe"));
+            ExtensionLoader.SendNotification(new List<Guid>(), Event(NotificationKind.ConsoleOutput, "Test instance: output"));
+            ExtensionLoader.SendNotification(null, Event(NotificationKind.ConsoleOutput, "Test instance: output"));
             ExtensionLoader.SendNotification(new List<Guid> { fixture.Id }, null);
 
             Thread.Sleep(250);
