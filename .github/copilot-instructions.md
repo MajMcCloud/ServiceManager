@@ -78,6 +78,8 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   their own commit first.
 * No AI or co-author trailers in commit messages.
 * `session-state` is ignored and stays out of commits.
+* Commits are created locally and never pushed on your own. Pushing is upload: ask first and
+  wait for a clear yes, the same way as for a release.
 
 ## Releases
 
