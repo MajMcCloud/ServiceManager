@@ -79,6 +79,21 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
 * No AI or co-author trailers in commit messages.
 * `session-state` is ignored and stays out of commits.
 
+## Releases
+
+* Never create a release on your own - not the tag, not the push of the tag, not the GitHub
+  release. Ask first and wait for a clear yes.
+* `publish.ps1` builds the package and writes `publish\RELEASE-NOTES.md`. The version is a
+  build parameter, `version.props` stays one step ahead of the last tag.
+* The notes are English and grouped in three sections, empty ones are left out: "New features",
+  "Changes" and "Bug fixes and corrections".
+* The script reads the sections from the commit subjects: "Fix", "Correct" or "Restore" at the
+  start means a bug fix, subjects about tests, CI, documentation or screenshots are changes, and
+  "Add", "Support" or "Introduce" means a new feature. Keep product features and test-only or
+  documentation-only work in separate commits, that is what keeps the notes readable.
+* The release title names what the release brings ("Multiple notification providers") instead of
+  repeating the version number.
+
 ## Working together
 
 * Propose options and agree on the approach before larger changes.

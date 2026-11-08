@@ -21,7 +21,7 @@
 	  2. msbuild /t:Restore + /t:Build /p:Configuration=Release /p:SMVersion=<version> /p:OutDir=Temp
 	  3. assemble publish\ (UI output + extensions\<every provider>)
 	  4. check the version of the finished parts
-	  5. ZIP + RELEASE-NOTES.md
+	  5. ZIP + RELEASE-NOTES.md (new features, changes, bug fixes)
 	  6. delete Temp
 	  7. print the next steps (committing and tagging is up to the developer)
 
@@ -177,6 +177,44 @@ function Get-LastTag
 	return $tag
 }
 
+# The notes are read by whoever installs the package, so the commits are not simply listed one after
+# the other: the first word of the subject says whether the commit brings something new, repairs
+# something or changes what is already there.
+function Split-ChangeLog
+{
+	param([String[]]$Subjects)
+
+	$groups = [Ordered]@{
+		'New features'              = New-Object System.Collections.Generic.List[String]
+		'Changes'                   = New-Object System.Collections.Generic.List[String]
+		'Bug fixes and corrections' = New-Object System.Collections.Generic.List[String]
+	}
+
+	foreach ($subject in $Subjects)
+	{
+		# A repaired bug stays a bug fix even if the subject also mentions a test.
+		if ($subject -match '^(Fix|Correct|Restore)\b')
+		{
+			$groups['Bug fixes and corrections'].Add($subject)
+		}
+		# Work on tests, CI, docs or screenshots brings nothing new to whoever installs the
+		# package, so it goes under Changes even when the subject starts with "Add".
+		elseif ($subject -match '\b(tests?|CI|documentation|screenshots?|readme)\b')
+		{
+			$groups['Changes'].Add($subject)
+		}
+		elseif ($subject -match '^(Add|Support|Introduce)\b')
+		{
+			$groups['New features'].Add($subject)
+		}
+		else
+		{
+			$groups['Changes'].Add($subject)
+		}
+	}
+
+	return $groups
+}
 
 # --------------------------------------------------------------------------------------
 # 1. Version
@@ -372,20 +410,32 @@ Write-Step 'Release notes'
 $sha  = & git -C $Root rev-parse --short HEAD
 $date = Get-Date -Format 'yyyy-MM-dd HH:mm'
 
-$log = if ($lastTag) { & git -C $Root log "$lastTag..HEAD" --pretty=format:'- %s' } else { & git -C $Root log --pretty=format:'- %s' -20 }
+$subjects = @(if ($lastTag) { & git -C $Root log "$lastTag..HEAD" --pretty=format:'%s' } else { & git -C $Root log --pretty=format:'%s' -20 })
 
-# git answers with one string per commit, which the notes only show as a block once they are joined.
-$changes = if ($log) { $log -join "`r`n" } else { '- no changes since the last tag' }
+$groups = Split-ChangeLog $subjects
 
 $notes = @(
     "## ServiceManager $Version",
     '',
     "As of: $date - commit $sha - .NET Framework 4.8.1",
-    '',
-    '### Changes',
-    '',
-    $changes,
-    '',
+    ''
+)
+
+foreach ($group in $groups.GetEnumerator())
+{
+    if ($group.Value.Count -eq 0) { continue }
+
+    $notes += @("### $($group.Key)", '')
+    $notes += ($group.Value | ForEach-Object { "- $_" })
+    $notes += ''
+}
+
+if ($subjects.Count -eq 0)
+{
+    $notes += @('- no changes since the last tag', '')
+}
+
+$notes += @(
     '### Deployment',
     '',
     '1. Unpack the ZIP into a single folder, e.g. C:\Program Files\ServiceManager.',
@@ -398,7 +448,9 @@ $notes = @(
     "    git tag v$Version",
     "    git push origin v$Version",
     ''
-) -join "`r`n"
+)
+
+$notes = $notes -join "`r`n"
 
 $notesFile = Join-Path $Publish 'RELEASE-NOTES.md'
 
@@ -445,7 +497,7 @@ Write-Host @"
 $persistHint
   3. Create the GitHub release: https://github.com/MajMcCloud/ServiceManager/releases/new
 	   Tag:          v$Version
-	   Title:        ServiceManager $Version
+	   Title:        what the release brings, e.g. "Multiple notification providers"
 	   Description:  the content of publish\RELEASE-NOTES.md
 	   Asset:        ServiceManager-$Version.zip
 "@
