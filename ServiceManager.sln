@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.SyslogNotifier", "Extensions\SyslogNotifier\ServiceManager.Extensions.SyslogNotifier.csproj", "{A460F9BD-310E-4449-A5AF-E376AA1EF245}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceManager.Extensions.ScriptNotifier", "Extensions\ScriptNotifier\ServiceManager.Extensions.ScriptNotifier.csproj", "{F563CC90-E1B7-4025-B647-B2B5A3366A3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{A460F9BD-310E-4449-A5AF-E376AA1EF245}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A460F9BD-310E-4449-A5AF-E376AA1EF245}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A460F9BD-310E-4449-A5AF-E376AA1EF245}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F563CC90-E1B7-4025-B647-B2B5A3366A3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F563CC90-E1B7-4025-B647-B2B5A3366A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F563CC90-E1B7-4025-B647-B2B5A3366A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F563CC90-E1B7-4025-B647-B2B5A3366A3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +121,7 @@ Global
 		{D5CD1DC1-D29F-4220-8C94-E05E1EF5F3D8} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 		{A32B1C00-0EC2-4B61-9AF8-71158774C618} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 		{A460F9BD-310E-4449-A5AF-E376AA1EF245} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
+		{F563CC90-E1B7-4025-B647-B2B5A3366A3E} = {780CE37D-09B1-49DF-BEFF-1AF57BB88225}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB8FBBF3-4399-40AF-94BD-A688100D132C}
