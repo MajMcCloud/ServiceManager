@@ -374,7 +374,8 @@ $date = Get-Date -Format 'yyyy-MM-dd HH:mm'
 
 $log = if ($lastTag) { & git -C $Root log "$lastTag..HEAD" --pretty=format:'- %s' } else { & git -C $Root log --pretty=format:'- %s' -20 }
 
-$changes = if ($log) { $log } else { '- no changes since the last tag' }
+# git answers with one string per commit, which the notes only show as a block once they are joined.
+$changes = if ($log) { $log -join "`r`n" } else { '- no changes since the last tag' }
 
 $notes = @(
     "## ServiceManager $Version",
@@ -394,8 +395,8 @@ $notes = @(
     '',
     '### Tag',
     '',
-    '    git tag v' + $Version,
-    '    git push origin v' + $Version,
+    "    git tag v$Version",
+    "    git push origin v$Version",
     ''
 ) -join "`r`n"
 
