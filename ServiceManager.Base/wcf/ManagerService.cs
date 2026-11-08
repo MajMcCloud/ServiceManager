@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ServiceManager.Base.wcf
 {
 
-    [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(ICallbacks), ProtectionLevel = System.Net.Security.ProtectionLevel.None)]
+    [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(ICallbacks))]
     public interface IManagerService
     {
 
@@ -59,7 +59,7 @@ namespace ServiceManager.Base.wcf
 
     }
 
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = false, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = true, UseSynchronizationContext = false)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = true, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = false, UseSynchronizationContext = false)]
     public class ManagerService : IManagerService
     {
         public ICallbacks CallbackChannel { get; set; }
@@ -240,7 +240,7 @@ namespace ServiceManager.Base.wcf
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
             String s = "SERVICE MANAGER: " + log;
-            analytics.Output += s + "\r\n";
+            analytics.AppendOutput(s + "\r\n");
 
             try
             {

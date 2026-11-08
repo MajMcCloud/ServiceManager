@@ -9,6 +9,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Principal;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.Threading;
 
 namespace ServiceManager.Tests
@@ -122,6 +125,9 @@ namespace ServiceManager.Tests
             var server = new Channel(true, pipeName);
             var client = new Channel(false, pipeName);
 
+            // The test host runs unelevated, an ordinary user connects here.
+            server.RequireAdministrator = false;
+
             try
             {
                 server.Start();
@@ -159,6 +165,109 @@ namespace ServiceManager.Tests
             listener.Stop();
 
             Assert.IsFalse(Channel.ProbeTcp("localhost", port));
+        }
+
+        [TestMethod]
+        public void channel_requires_an_administrator_by_default()
+        {
+            var channel = new Channel(true, "serviceman1234");
+
+            Assert.IsTrue(channel.RequireAdministrator);
+        }
+
+        [TestMethod]
+        public void server_refuses_a_caller_that_is_not_an_administrator()
+        {
+            if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
+            {
+                Assert.Inconclusive("an elevated test runner passes the policy, so nothing can be refused here");
+            }
+
+            var pipeName = ProbePipeName();
+
+            var server = new Channel(true, pipeName);
+            var client = new Channel(false, pipeName);
+
+            try
+            {
+                server.Start();
+                client.Start();
+
+                Assert.IsNull(WaitForCallbackChannel(server, 2000), "the service never stores the callbacks of a refused caller");
+
+                Assert.IsFalse(Channel.ProbePipes("localhost", pipeName), "the test call is refused as well");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
+
+        [TestMethod]
+        public void administrator_policy_rejects_a_missing_identity()
+        {
+            Assert.IsFalse(AdministratorAuthorizationManager.IsAdministrator(null));
+        }
+
+        [TestMethod]
+        public void administrator_policy_rejects_an_anonymous_caller()
+        {
+            Assert.IsFalse(AdministratorAuthorizationManager.IsAdministrator(WindowsIdentity.GetAnonymous()));
+        }
+
+        [TestMethod]
+        public void server_binding_caps_the_incoming_named_pipe_message()
+        {
+            var binding = (NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
+
+            Assert.AreEqual(64 * 1024, binding.MaxReceivedMessageSize, "nobody sends more than a command to the service");
+            Assert.AreEqual(binding.MaxReceivedMessageSize, binding.MaxBufferSize);
+        }
+
+        [TestMethod]
+        public void server_binding_caps_the_incoming_tcp_message()
+        {
+            var binding = (NetTcpBinding)Channel.CreateServerBinding(Runtime.eMode.Tcp);
+
+            Assert.AreEqual(64 * 1024, binding.MaxReceivedMessageSize);
+        }
+
+        [TestMethod]
+        public void client_binding_leaves_room_for_the_answers_of_the_service()
+        {
+            var binding = (NetNamedPipeBinding)Channel.CreateClientBinding(Runtime.eMode.NetPipes);
+
+            Assert.AreEqual(2 * 1024 * 1024, binding.MaxReceivedMessageSize, "the service sends back the whole console log");
+            Assert.AreEqual(binding.MaxReceivedMessageSize, binding.MaxBufferPoolSize, "the pool has to hold one whole answer");
+        }
+
+        [TestMethod]
+        public void server_binding_keeps_the_receive_timeout_open_for_an_idle_console()
+        {
+            var binding = Channel.CreateServerBinding(Runtime.eMode.NetPipes);
+
+            Assert.AreEqual(TimeSpan.MaxValue, binding.ReceiveTimeout, "a receive timeout would end the session of a console that does nothing");
+        }
+
+        [TestMethod]
+        public void probe_binding_gives_up_on_a_dead_endpoint_quickly()
+        {
+            var binding = Channel.CreateProbeBinding(Runtime.eMode.NetPipes);
+
+            Assert.AreEqual(TimeSpan.FromSeconds(5), binding.OpenTimeout);
+            Assert.AreEqual(TimeSpan.FromSeconds(10), binding.ReceiveTimeout);
+            Assert.AreEqual(TimeSpan.FromSeconds(2), binding.CloseTimeout);
+        }
+
+        [TestMethod]
+        public void server_binding_limits_the_reader_quotas()
+        {
+            var binding = (NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
+
+            Assert.AreEqual(32, binding.ReaderQuotas.MaxDepth);
+            Assert.AreEqual(1024 * 1024, binding.ReaderQuotas.MaxStringContentLength);
+            Assert.AreEqual(1024 * 1024, binding.ReaderQuotas.MaxArrayLength);
         }
 
         // WCF allows letters and digits in a pipe name only, and every run needs its own endpoint.

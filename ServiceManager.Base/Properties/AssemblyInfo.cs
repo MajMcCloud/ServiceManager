@@ -19,6 +19,8 @@ using System.Runtime.InteropServices;
 // COM aus zugreifen müssen, sollten Sie das ComVisible-Attribut für diesen Typ auf "True" festlegen.
 [assembly: ComVisible(false)]
 
+[assembly: InternalsVisibleTo("ServiceManager.Tests")]
+
 // Die folgende GUID bestimmt die ID der Typbibliothek, wenn dieses Projekt für COM verfügbar gemacht wird
 [assembly: Guid("f7e25e80-2ddf-4928-a4fa-0f235d353a16")]
 

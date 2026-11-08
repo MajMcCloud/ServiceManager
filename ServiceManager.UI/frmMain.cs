@@ -456,7 +456,8 @@ namespace ServiceManager.UI
                 tmRefresh.Enabled = false;
                 tmPing.Enabled = false;
 
-                MessageBox.Show("Connection failed!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Die Verbindung zum Dienst konnte nicht hergestellt werden.\r\n\r\nDer Dienst nimmt nur Verbindungen von Mitgliedern der Administratorsgruppe an. Bitte starten Sie die Anwendung mit \"Als Administrator ausführen\".",
+                    "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             };
 

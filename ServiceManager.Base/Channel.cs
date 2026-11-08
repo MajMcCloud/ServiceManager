@@ -7,6 +7,8 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +18,14 @@ namespace ServiceManager.Base
 {
     public class Channel
     {
+
+        private const int MaxIncomingMessageSize = 64 * 1024;
+
+        private const int MaxAnswerMessageSize = 2 * 1024 * 1024;
+
+        private const int MaxConcurrentSessions = 20;
+
+        private const int MaxConcurrentCalls = 16;
 
         public bool Failed { get; set; } = false;
 
@@ -30,6 +40,12 @@ namespace ServiceManager.Base
         public int Port { get; set; } = 50000;
 
         public eMode Mode { get; set; }
+
+        /// <summary>
+        /// Only members of the Administrators group may connect.
+        /// Set it to false to let ordinary users watch the logs.
+        /// </summary>
+        public bool RequireAdministrator { get; set; } = true;
 
         private ServiceHost host { get; set; }
 
@@ -73,12 +89,12 @@ namespace ServiceManager.Base
         // from the UI that is connected. Ping answers over the same session and registers nothing.
         public static bool ProbePipes(String Hostname, String PipeName)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), new NetNamedPipeBinding() { OpenTimeout = new TimeSpan(0, 0, 0, 5), SendTimeout = new TimeSpan(0, 0, 0, 10), ReceiveTimeout = new TimeSpan(0, 0, 0, 10), CloseTimeout = new TimeSpan(0, 0, 0, 2), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
         }
 
         public static bool ProbeTcp(String Hostname, int Port)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), new NetTcpBinding() { OpenTimeout = new TimeSpan(0, 0, 0, 5), SendTimeout = new TimeSpan(0, 0, 0, 10), ReceiveTimeout = new TimeSpan(0, 0, 0, 10), CloseTimeout = new TimeSpan(0, 0, 0, 2), MaxReceivedMessageSize = Int32.MaxValue }, new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
         }
 
         private static bool Probe(Func<DuplexChannelFactory<IManagerService>> CreateFactory)
@@ -148,7 +164,7 @@ namespace ServiceManager.Base
                         host.CloseTimeout = new TimeSpan(0, 0, 15);
                         
 
-                        var endpoint = host.AddServiceEndpoint(typeof(IManagerService), new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue, MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, this.PipeName);
+                        var endpoint = host.AddServiceEndpoint(typeof(IManagerService), CreateServerBinding(eMode.NetPipes), this.PipeName);
 
                         break;
                     case eMode.Tcp:
@@ -158,7 +174,7 @@ namespace ServiceManager.Base
                         host.OpenTimeout = new TimeSpan(0, 0, 15);
                         host.CloseTimeout = new TimeSpan(0, 0, 15);
 
-                        var endpoint2 = host.AddServiceEndpoint(typeof(IManagerService), new NetTcpBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = TimeSpan.MaxValue, MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, $"net.tcp://{this.Hostname}:{this.Port}/servicemanager");
+                        var endpoint2 = host.AddServiceEndpoint(typeof(IManagerService), CreateServerBinding(eMode.Tcp), $"net.tcp://{this.Hostname}:{this.Port}/servicemanager");
 
                         break;
                     default:
@@ -168,6 +184,23 @@ namespace ServiceManager.Base
                 }
 
                 Failed = false;
+
+                if (this.RequireAdministrator)
+                {
+                    ServiceAuthorizationBehavior authorization = host.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
+                    if (authorization != null)
+                    {
+                        authorization.ServiceAuthorizationManager = new AdministratorAuthorizationManager();
+                    }
+                }
+
+                if (host.Description.Behaviors.Find<ServiceThrottlingBehavior>() == null)
+                {
+                    ServiceThrottlingBehavior throttling = new ServiceThrottlingBehavior();
+                    throttling.MaxConcurrentSessions = MaxConcurrentSessions;
+                    throttling.MaxConcurrentCalls = MaxConcurrentCalls;
+                    host.Description.Behaviors.Add(throttling);
+                }
 
                 host.Opened += Host_Opened;
                 host.Closed += Host_Closed;
@@ -184,12 +217,12 @@ namespace ServiceManager.Base
             {
                 case eMode.NetPipes:
 
-                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, new NetNamedPipeBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = new TimeSpan(0, 0, 10), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, new EndpointAddress($"net.pipe://{this.Hostname}/" + this.PipeName));
+                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, CreateClientBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{this.Hostname}/" + this.PipeName));
 
                     break;
                 case eMode.Tcp:
 
-                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, new NetTcpBinding() { ReceiveTimeout = TimeSpan.MaxValue, SendTimeout = new TimeSpan(0, 0, 10), MaxReceivedMessageSize = Int32.MaxValue, MaxBufferSize = Int32.MaxValue }, new EndpointAddress($"net.tcp://{this.Hostname}:{this.Port}/servicemanager"));
+                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, CreateClientBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{this.Hostname}:{this.Port}/servicemanager"));
 
                     break;
                 default:
@@ -220,6 +253,78 @@ namespace ServiceManager.Base
 
             channelFactory.Faulted += ChannelFactory_Faulted;
             channelFactory.Closed += ChannelFactory_Closed;
+        }
+
+        internal static Binding CreateServerBinding(eMode mode)
+        {
+            Binding binding = CreateBinding(mode, MaxIncomingMessageSize);
+
+            // A duplex session has no traffic while it is idle, so a receive
+            // timeout would end the session of every idle console.
+            binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.SendTimeout = TimeSpan.MaxValue;
+
+            return binding;
+        }
+
+        internal static Binding CreateClientBinding(eMode mode)
+        {
+            Binding binding = CreateBinding(mode, MaxAnswerMessageSize);
+
+            binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.SendTimeout = TimeSpan.FromSeconds(10);
+
+            return binding;
+        }
+
+        internal static Binding CreateProbeBinding(eMode mode)
+        {
+            Binding binding = CreateBinding(mode, MaxIncomingMessageSize);
+
+            binding.OpenTimeout = TimeSpan.FromSeconds(5);
+            binding.SendTimeout = TimeSpan.FromSeconds(10);
+            binding.ReceiveTimeout = TimeSpan.FromSeconds(10);
+            binding.CloseTimeout = TimeSpan.FromSeconds(2);
+
+            return binding;
+        }
+
+        private static Binding CreateBinding(eMode mode, int maxMessageSize)
+        {
+            switch (mode)
+            {
+                case eMode.NetPipes:
+                {
+                    NetNamedPipeBinding binding = new NetNamedPipeBinding();
+                    binding.MaxReceivedMessageSize = maxMessageSize;
+                    binding.MaxBufferSize = maxMessageSize;
+                    binding.MaxBufferPoolSize = maxMessageSize;
+                    ApplyReaderQuotas(binding.ReaderQuotas);
+
+                    return binding;
+                }
+                case eMode.Tcp:
+                {
+                    NetTcpBinding binding = new NetTcpBinding();
+                    binding.MaxReceivedMessageSize = maxMessageSize;
+                    binding.MaxBufferSize = maxMessageSize;
+                    binding.MaxBufferPoolSize = maxMessageSize;
+                    ApplyReaderQuotas(binding.ReaderQuotas);
+
+                    return binding;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode));
+            }
+        }
+
+        private static void ApplyReaderQuotas(System.Xml.XmlDictionaryReaderQuotas quotas)
+        {
+            quotas.MaxDepth = 32;
+            quotas.MaxStringContentLength = 1024 * 1024;
+            quotas.MaxArrayLength = 1024 * 1024;
+            quotas.MaxBytesPerRead = 4096;
+            quotas.MaxNameTableCharCount = 16384;
         }
 
         private void Host_Opened(object sender, EventArgs e)
