@@ -18,8 +18,9 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
 * Code, comments, XML documentation, commit messages and documentation are English. No
   exceptions: the scripts (including `publish.ps1`) and the CI workflow are English too.
 * The developer is answered in German.
-* The UI is German (labels, messages, notification texts), because its users are German.
-  That text lives in the resource files and in the providers' message templates.
+* The UI is English: labels, messages and notification texts. The resource files hold no
+  localized text, the strings live in the Designer files and in the providers' message
+  templates, and they are English as well.
 
 ## Comments and documentation
 
