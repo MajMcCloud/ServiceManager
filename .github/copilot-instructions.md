@@ -35,11 +35,17 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
 * `if`, `for`, `foreach` and `using` are always written with braces.
 * Null checks use `if (x == null)` or `if (x != null)`, not pattern matching.
 * `var` only when the type is obvious, otherwise the type is written out.
+* Namespaces, classes and the folders holding them are PascalCase: `ServiceManager.Base.Wcf.Models`,
+  `ServiceManager.UI.Forms`, `FrmMain`. A folder is renamed together with the namespace segment it
+  stands for, and a form keeps one name everywhere: `FrmMain.cs`, `FrmMain.Designer.cs` and
+  `FrmMain.resx`, because the resource name has to match the type.
+* The `e` prefix of the enums stays (`eMode`, `eAccess`, `eStatus`): every one of them sits next to
+  a property called `Mode`, `Access` or `Status`, so the plain PascalCase name is taken.
 * New extension projects are named `<Name>Notifier` (the folder and the project share the
   name). The assembly name is set explicitly when it differs from the project name, as
   `TelegramBotNotifier.dll` shows.
 * New extension projects follow the structure of the existing ones: `Notifier.cs`,
-  `Config\Config.cs`, `forms\`, `Properties\`, `app.config`, `packages.config`.
+  `Config\Config.cs`, `Forms\`, `Properties\`, `app.config`, `packages.config`.
 * Anything that lists providers is sorted alphabetically, ignoring case: the menu, the table
   and the sections of the README, the provider dropdown and the active provider list in the
   settings form.
