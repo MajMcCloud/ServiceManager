@@ -90,7 +90,9 @@ namespace ServiceManager.UI
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
-            foreach (var extension in extensions)
+            // The list of providers grows with every extension dropped into the folder, so the choice is
+            // offered in the order the names read rather than in the order the files are found.
+            foreach (var extension in extensions.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase))
             {
 
                 cmbNotification_Extensions.Items.Add(new ExtensionItem(extension.Name, extension.Id));
@@ -128,33 +130,43 @@ namespace ServiceManager.UI
         }
 
         /// <summary>
-        /// Refills the provider list. A provider whose assembly disappeared is still listed, otherwise
-        /// saving would silently drop it and the user could no longer remove it.
+        /// Refills the provider list in alphabetical order. A provider whose assembly disappeared is still
+        /// listed, otherwise saving would silently drop it and the user could no longer remove it.
         /// </summary>
-        private void reloadTargets(int? select = null)
+        private void reloadTargets(NotificationTarget select = null)
         {
             var extensions = Extensions.Extensions.GetNotificationExtensions();
+
+            var entries = m_Targets.Select(target =>
+            {
+                var extension = extensions.FirstOrDefault(a => a.Id == target.PluginId);
+
+                var text = extension != null ? extension.Name : "unknown provider: " + target.PluginId;
+
+                return new TargetItem(target, text);
+            })
+            .OrderBy(a => a.Text, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+            // The order is not the one of the settings file, so the entry to keep is the provider itself.
+            var wanted = select ?? selectedTarget();
 
             m_LoadingTargets = true;
 
             lstNotifications_Providers.BeginUpdate();
             lstNotifications_Providers.Items.Clear();
 
-            foreach (var target in m_Targets)
+            foreach (var entry in entries)
             {
-                var extension = extensions.FirstOrDefault(a => a.Id == target.PluginId);
-
-                var text = extension != null ? extension.Name : "unknown provider: " + target.PluginId;
-
-                lstNotifications_Providers.Items.Add(new TargetItem(target, text));
+                lstNotifications_Providers.Items.Add(entry);
             }
 
             lstNotifications_Providers.EndUpdate();
 
-            var index = select ?? lstNotifications_Providers.SelectedIndex;
+            var index = entries.FindIndex(a => ReferenceEquals(a.Target, wanted));
 
-            if (index < 0 || index >= lstNotifications_Providers.Items.Count)
-                index = lstNotifications_Providers.Items.Count > 0 ? 0 : -1;
+            if (index < 0)
+                index = entries.Count > 0 ? 0 : -1;
 
             lstNotifications_Providers.SelectedIndex = index;
 
@@ -237,9 +249,11 @@ namespace ServiceManager.UI
 
             commitCheckboxes();
 
-            m_Targets.Add(new NotificationTarget() { PluginId = id });
+            var added = new NotificationTarget() { PluginId = id };
 
-            reloadTargets(m_Targets.Count - 1);
+            m_Targets.Add(added);
+
+            reloadTargets(added);
         }
 
         private void bnNotifications_Remove_Click(object sender, EventArgs e)
@@ -251,7 +265,7 @@ namespace ServiceManager.UI
 
             m_Targets.Remove(target);
 
-            reloadTargets(0);
+            reloadTargets();
         }
 
         private void lsvServices_MouseClick(object sender, MouseEventArgs e)

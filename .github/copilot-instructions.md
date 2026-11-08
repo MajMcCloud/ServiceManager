@@ -39,6 +39,9 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   `TelegramBotNotifier.dll` shows.
 * New extension projects follow the structure of the existing ones: `Notifier.cs`,
   `Config\Config.cs`, `forms\`, `Properties\`, `app.config`, `packages.config`.
+* Anything that lists providers is sorted alphabetically, ignoring case: the menu, the table
+  and the sections of the README, the provider dropdown and the active provider list in the
+  settings form.
 
 ## Tests
 

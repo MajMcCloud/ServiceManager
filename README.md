@@ -24,12 +24,12 @@ which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bi
 - [Network Settings](#network-settings)
 - [Notifications](#notifications)
   - [Notification Settings](#notification-settings)
-  - [Telegram](#notifications---telegram)
-  - [Windows Event Log](#notifications---windows-event-log)
-  - [Webhook](#notifications---webhook)
+  - [Script Hook](#notifications---script-hook)
   - [SMTP Mail](#notifications---smtp-mail)
   - [Syslog](#notifications---syslog)
-  - [Script Hook](#notifications---script-hook)
+  - [Telegram](#notifications---telegram)
+  - [Webhook](#notifications---webhook)
+  - [Windows Event Log](#notifications---windows-event-log)
 - [Service Settings - Start](#service-settings---start)
 - [Service Settings - Shutdown](#service-settings---shutdown)
 - [Service Settings - Logging](#service-settings---logging)
@@ -56,12 +56,12 @@ event log and to a webhook while Telegram only receives the errors:
 
 | Provider | Needs | Reachable |
 | --- | --- | --- |
-| [Telegram](#notifications---telegram) | internet access, a bot token | anywhere the ServiceManager has internet |
-| [Windows Event Log](#notifications---windows-event-log) | no network, administrator rights for the first entry | the machine the service runs on |
-| [Webhook](#notifications---webhook) | internet access or a local endpoint | any tool that accepts a request |
+| [Script Hook](#notifications---script-hook) | a program on the machine | whatever that program can do |
 | [SMTP Mail](#notifications---smtp-mail) | an SMTP server, or the pickup folder of IIS | any inbox |
 | [Syslog](#notifications---syslog) | a collector over UDP or TCP | a log server on the network |
-| [Script Hook](#notifications---script-hook) | a program on the machine | whatever that program can do |
+| [Telegram](#notifications---telegram) | internet access, a bot token | anywhere the ServiceManager has internet |
+| [Webhook](#notifications---webhook) | internet access or a local endpoint | any tool that accepts a request |
+| [Windows Event Log](#notifications---windows-event-log) | no network, administrator rights for the first entry | the machine the service runs on |
 
 ### Notification Settings
 
@@ -78,37 +78,20 @@ managed service, *On Console Output* and *On Console Error* to its console, *On 
 
 <img src="Screens/Settings_3.png" />
 
-### Notifications - Telegram
+### Notifications - Script Hook
 
-Example of telegram messages you will receive when used.
+A program on the machine receives the event: a batch file, a PowerShell script, a Node tool, anything that
+can be started. It is started directly rather than through a shell, so a path with a space or an ampersand in
+it stays one path.
 
-<img src="Screens/Notifications_Telegram.png" />
+The event is one json object, by default written to the standard input of the program. *Hand the event as one
+extra argument* hands the same object as the last argument instead, for a program that reads its arguments.
+The quoting follows the rules of the operating system, so a service name containing a quote cannot end the
+argument early. *Arguments* is written behind the program exactly as it stands in the settings, and a program
+that does not finish within the timeout is killed.
 
-### Notifications - Windows Event Log
-
-The provider without any network: every event becomes an entry in the Windows Event Log and, when
-enabled, a balloon tip on the desktop. It keeps working without internet access and while the service
-runs with no user logged on - only the balloon tip needs an interactive session.
-
-Registering the event source writes into the registry, so the first entry needs administrator rights;
-the settings form says so while they are missing. Every kind of event gets its own event id and its
-own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
-
-### Notifications - Webhook
-
-One request to an endpoint of your choice. The body is written in the settings, so the same provider
-serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and an endpoint of your
-own.
-
-`{text}` `{details}` `{kind}` `{level}` `{service}` `{instance}` and `{timestamp}` are replaced.
-Inside a JSON body the values are escaped, so a console line containing a quote cannot break the
-message, while a plain text body receives them as they are. A placeholder the provider does not know
-is sent untouched, which keeps templates written for another tool working.
-
-Additional headers go one per line as `Name: value`, enough for an `Authorization` header of a hosted
-service or the `X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
-the console of the ServiceManager. The settings form has a test button that answers what the endpoint
-replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
+A non zero exit code counts as a refusal and the first line of the answer goes into the console of the
+ServiceManager. The program is started once per event and never repeated.
 
 ### Notifications - SMTP Mail
 
@@ -141,20 +124,37 @@ A collector cuts a line around 1024 bytes, so the provider cuts the text itself 
 a cut line still names the service it came from. The test button of the form sends one line over the
 configured transport and answers what the collector did not accept.
 
-### Notifications - Script Hook
+### Notifications - Telegram
 
-A program on the machine receives the event: a batch file, a PowerShell script, a Node tool, anything that
-can be started. It is started directly rather than through a shell, so a path with a space or an ampersand in
-it stays one path.
+Example of telegram messages you will receive when used.
 
-The event is one json object, by default written to the standard input of the program. *Hand the event as one
-extra argument* hands the same object as the last argument instead, for a program that reads its arguments.
-The quoting follows the rules of the operating system, so a service name containing a quote cannot end the
-argument early. *Arguments* is written behind the program exactly as it stands in the settings, and a program
-that does not finish within the timeout is killed.
+<img src="Screens/Notifications_Telegram.png" />
 
-A non zero exit code counts as a refusal and the first line of the answer goes into the console of the
-ServiceManager. The program is started once per event and never repeated.
+### Notifications - Webhook
+
+One request to an endpoint of your choice. The body is written in the settings, so the same provider
+serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and an endpoint of your
+own.
+
+`{text}` `{details}` `{kind}` `{level}` `{service}` `{instance}` and `{timestamp}` are replaced.
+Inside a JSON body the values are escaped, so a console line containing a quote cannot break the
+message, while a plain text body receives them as they are. A placeholder the provider does not know
+is sent untouched, which keeps templates written for another tool working.
+
+Additional headers go one per line as `Name: value`, enough for an `Authorization` header of a hosted
+service or the `X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
+the console of the ServiceManager. The settings form has a test button that answers what the endpoint
+replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
+
+### Notifications - Windows Event Log
+
+The provider without any network: every event becomes an entry in the Windows Event Log and, when
+enabled, a balloon tip on the desktop. It keeps working without internet access and while the service
+runs with no user logged on - only the balloon tip needs an interactive session.
+
+Registering the event source writes into the registry, so the first entry needs administrator rights;
+the settings form says so while they are missing. Every kind of event gets its own event id and its
+own category, which lets the Event Viewer filter on a single kind, e.g. all console errors.
 
 
 ## Service Settings - Start
