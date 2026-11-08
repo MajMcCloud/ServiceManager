@@ -353,5 +353,8 @@ MigrationBackup/
 .ionide/
 /session-state
 
+# Build folder created by publish.ps1
+/Temp/
+
 # Release packages built by publish.ps1
 /*.zip

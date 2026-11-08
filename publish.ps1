@@ -11,13 +11,19 @@
 	ServiceManager.UI.exe. The extension loader looks under <BaseDirectory>\extensions, which is why the
 	output of every extension belongs in that same folder.
 
+	The release is built into Temp\ rather than into the bin folders of the projects. Those folders hold
+	the state Visual Studio works with, deleting them forces a full rebuild afterwards and fails on a
+	locked DLL while the UI runs. Temp is created fresh, so it cannot hold foreign files either, and it
+	is removed again once the ZIP is written.
+
 	Steps:
 	  1. ask for the version (or use -Version)
-	  2. clear the output folders, msbuild /t:Restore + /t:Rebuild /p:Configuration=Release /p:SMVersion=<version>
+	  2. msbuild /t:Restore + /t:Build /p:Configuration=Release /p:SMVersion=<version> /p:OutDir=Temp
 	  3. assemble publish\ (UI output + extensions\<every provider>)
 	  4. check the version of the finished parts
 	  5. ZIP + RELEASE-NOTES.md
-	  6. print the next steps (committing and tagging is up to the developer)
+	  6. delete Temp
+	  7. print the next steps (committing and tagging is up to the developer)
 
 .PARAMETER Version
 	Four part version, e.g. 2.1.0.0. Without the parameter the script asks for it.
@@ -29,7 +35,7 @@
 	Leave the .pdb files out of publish\ and the ZIP.
 
 .PARAMETER SkipBuild
-	Reuse the last release build instead of building it again.
+	Reuse the last build from the bin folders of the projects instead of building into Temp.
 
 .PARAMETER Strict
 	Turn a deviating file version into an error. Meant for the CI, so a package never slips through
@@ -55,6 +61,7 @@ $ErrorActionPreference = 'Stop'
 $Root      = $PSScriptRoot
 $Solution  = Join-Path $Root 'ServiceManager.sln'
 $Publish   = Join-Path $Root 'publish'
+$Temp      = Join-Path $Root 'Temp'
 $Config    = 'Release'
 $PropsFile = Join-Path $Root 'version.props'
 
@@ -65,6 +72,11 @@ $ServiceProject = Join-Path $Root 'ServiceManager.Service'
 # installed as TelegramBotNotifier, and that is where the settings.cfg of existing installations sits.
 $FolderNames = @{ 'TelegramNotifier' = 'TelegramBotNotifier' }
 
+# Without -SkipBuild the release is built into Temp\<project name>, with it the last build in the bin
+# folders is reused. Both layouts are settled here, the rest of the script only knows the folders it
+# has to read from.
+$BuildRoot = if ($SkipBuild) { $null } else { $Temp }
+
 $ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
 	ForEach-Object {
 		$csproj = Get-ChildItem $_.FullName -Filter '*.csproj' -File | Select-Object -First 1
@@ -73,7 +85,7 @@ $ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
 
 		[PSCustomObject]@{
 			Project = $_.FullName
-			Release = Join-Path $_.FullName "bin\$Config"
+			Release = if ($BuildRoot) { Join-Path $BuildRoot $csproj.BaseName } else { Join-Path $_.FullName "bin\$Config" }
 			Folder  = if ($FolderNames.ContainsKey($_.Name)) { $FolderNames[$_.Name] } else { $_.Name }
 			Dll     = $csproj.BaseName + '.dll'
 		}
@@ -81,8 +93,8 @@ $ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
 
 if (-not $ExtensionProjects) { throw "No provider found under Extensions\." }
 
-$UiRelease      = Join-Path $UiProject      "bin\$Config"
-$ServiceRelease = Join-Path $ServiceProject "bin\$Config"
+$UiRelease      = if ($BuildRoot) { Join-Path $BuildRoot 'ServiceManager.UI' }      else { Join-Path $UiProject      "bin\$Config" }
+$ServiceRelease = if ($BuildRoot) { Join-Path $BuildRoot 'ServiceManager.Service' } else { Join-Path $ServiceProject "bin\$Config" }
 
 
 # ClickOnce leftovers and runtime debris have no place in a deployment.
@@ -218,23 +230,14 @@ if ($SkipBuild)
 }
 else
 {
-	# A rebuild does not delete foreign files: since 2021 bin\Release holds a ConfigBase.dll of the
-	# former external project, which has nothing to do with the current one.
-	Write-Step 'Clearing the output folders'
+	# Temp is created fresh, so it cannot hold foreign files. Those used to be removed with the folders:
+	# since 2021 bin\Release holds a ConfigBase.dll of the former external project, which has nothing
+	# to do with the current one.
+	Write-Step 'Preparing Temp'
 
-	foreach ($project in @($UiProject, $ServiceProject) + $ExtensionProjects.Project)
-	{
-		foreach ($sub in @('bin', 'obj'))
-		{
-			$path = Join-Path $project $sub
+	if (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }
 
-			if (Test-Path $path)
-			{
-				Remove-Item $path -Recurse -Force
-				Write-Host "  removed: $($path.Substring($Root.Length + 1))"
-			}
-		}
-	}
+	New-Item $Temp -ItemType Directory | Out-Null
 
 	$msbuild = Find-MsBuild
 
@@ -244,11 +247,13 @@ else
 
 	if ($LASTEXITCODE -ne 0) { throw "Restore failed (exit $LASTEXITCODE)" }
 
-	Write-Step "Rebuild $Version"
+	Write-Step "Build $Version into $($Temp.Substring($Root.Length + 1))"
 
-	& $msbuild $Solution /t:Rebuild "/p:Configuration=$Config" "/p:SMVersion=$Version" /v:minimal /nologo
+	# OutDir is a global property, so it wins over the OutputPath of every project, and
+	# GenerateProjectSpecificOutputFolder turns it into one folder per project below Temp.
+	& $msbuild $Solution /t:Build "/p:Configuration=$Config" "/p:SMVersion=$Version" "/p:OutDir=$Temp" /p:GenerateProjectSpecificOutputFolder=true /v:minimal /nologo
 
-	if ($LASTEXITCODE -ne 0) { throw "Rebuild failed (exit $LASTEXITCODE)" }
+	if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)" }
 }
 
 foreach ($path in @($UiRelease) + $ExtensionProjects.Release)
@@ -412,7 +417,20 @@ Write-Host "  package: $([IO.Path]::GetFileName($zip)) ($size MB)"
 
 
 # --------------------------------------------------------------------------------------
-# 6. Next steps
+# 6. Remove Temp
+# --------------------------------------------------------------------------------------
+
+Write-Step 'Cleaning up'
+
+if (Test-Path $Temp)
+{
+	Remove-Item $Temp -Recurse -Force
+	Write-Host "  removed: $($Temp.Substring($Root.Length + 1))"
+}
+
+
+# --------------------------------------------------------------------------------------
+# 7. Next steps
 # --------------------------------------------------------------------------------------
 
 Write-Step 'Next steps'
