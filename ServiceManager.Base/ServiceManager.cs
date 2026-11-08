@@ -194,7 +194,7 @@ namespace ServiceManager.Base
             catch
             {
                 item.ForceRestart = false;
-                sa.Error += "SERVICE MANAGER: START FAILED\r\n";
+                sa.AppendError("SERVICE MANAGER: START FAILED\r\n");
                 sa.ProcessID = 0;
                 sa.Started = null;
                 sa.Exited = DateTime.Now;
@@ -298,7 +298,7 @@ namespace ServiceManager.Base
 
             try
             {
-                sa.Output += input + "\r\n";
+                sa.AppendOutput(input + "\r\n");
 
                 var t = new Thread(new ThreadStart(() =>
                 {
@@ -330,7 +330,7 @@ namespace ServiceManager.Base
 
             Notify(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data, s.Title, e.Data);
 
-            sa.Error += (e.Data ?? "") + "\r\n";
+            sa.AppendError((e.Data ?? "") + "\r\n");
         }
 
         private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -368,7 +368,7 @@ namespace ServiceManager.Base
                     }
                 }
 
-                sa.Output += e.Data + "\r\n";
+                sa.AppendOutput(e.Data + "\r\n");
             }
 
             if (Connection.ServerChannel == null || Connection.Failed)

@@ -51,6 +51,49 @@ namespace ServiceManager.Base.data
 
         public String Error { get; set; } = "";
 
+
+        /// <summary>
+        /// One stream never grows past this many characters.
+        /// </summary>
+        public const int MaxStreamLength = 256 * 1024;
+
+
+        /// <summary>
+        /// Adds text to the output and drops the oldest lines when the limit is reached.
+        /// </summary>
+        public void AppendOutput(String text)
+        {
+            this.Output = TrimToTail(this.Output + text);
+        }
+
+
+        /// <summary>
+        /// Adds text to the error stream and drops the oldest lines when the limit is reached.
+        /// </summary>
+        public void AppendError(String text)
+        {
+            this.Error = TrimToTail(this.Error + text);
+        }
+
+        private static String TrimToTail(String value)
+        {
+            if (value.Length <= MaxStreamLength)
+            {
+                return value;
+            }
+
+            String tail = value.Substring(value.Length - MaxStreamLength);
+
+            // Cut on a line boundary so the first line of the tail is not a fragment.
+            int lineBreak = tail.IndexOf('\n');
+            if (lineBreak >= 0)
+            {
+                tail = tail.Substring(lineBreak + 1);
+            }
+
+            return tail;
+        }
+
         public int Restarts { get; set; } = 0;
 
         public DateTime LastSaved { get; set; }
