@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [ main ]
-    # Tags ausloesen, damit ein Release-Bau die Versionsnummer aus dem Tag bekommt.
-    # Der Bestand traegt "v2.0.1.27", der neueste "2.1.0.0" - beides soll laufen.
+    # Trigger on tags so a release build takes its version from the tag.
+    # The existing tags read "v2.0.1.27", the newest one "2.1.0.0" - both have to work.
     tags: [ 'v*', '[0-9]*' ]
   pull_request:
     branches: [ main ]
@@ -27,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # publish.ps1 schreibt die Release-Notizen aus git log <letzter Tag>..HEAD.
+          # publish.ps1 writes the release notes from git log <last tag>..HEAD.
           fetch-depth: 0
 
       - name: Add MSBuild to PATH
@@ -43,14 +43,14 @@ jobs:
           }
 
           if ( $v -notmatch '^\d+\.\d+\.\d+\.\d+$' ) {
-            Write-Error "Erwartet werden vier Zahlen als Version, bekommen: $v"
+            Write-Error "Expected four numbers as the version, got: $v"
             exit 1
           }
 
           "version=$v" >> $env:GITHUB_OUTPUT
           "SM_VERSION=$v" >> $env:GITHUB_ENV
 
-          if ( $env:GITHUB_REF_TYPE -eq 'tag' ) { Write-Host "Version $v vom Tag" } else { Write-Host "Version $v aus version.props" }
+          if ( $env:GITHUB_REF_TYPE -eq 'tag' ) { Write-Host "Version $v from the tag" } else { Write-Host "Version $v from version.props" }
 
       - name: Restore NuGet packages
         run: msbuild ServiceManager.sln /t:Restore /p:Configuration=Release /p:SMVersion=$env:SM_VERSION /v:minimal /nologo
@@ -61,9 +61,9 @@ jobs:
       - name: Run tests
         run: dotnet test ServiceManager.Tests/ServiceManager.Tests.csproj -c Release --no-build -v minimal
 
-      # Ein Ordner, genau so, wie spaeter installiert wird: UI-Ausgabe (enthaelt schon
-      # ServiceManager.exe) plus extensions\TelegramBotNotifier mit Telegram.Bot.dll.
-      # publish.ps1 -Strict macht aus einer abweichenden Baustein-Version einen Fehler.
+      # One folder, exactly the way it is installed later: the UI output (already holds
+      # ServiceManager.exe) plus extensions\TelegramBotNotifier with Telegram.Bot.dll.
+      # publish.ps1 -Strict turns a deviating version of a part into an error.
       - name: Assemble deployment folder
         run: .\publish.ps1 -Version $env:SM_VERSION -SkipBuild -Strict
 

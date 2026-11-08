@@ -1,45 +1,45 @@
 ﻿<#
 .SYNOPSIS
-	Baut eine Release-Deployment-Mappe: Version abfragen, Release bauen, publish\ + ZIP + Release-Notizen.
+	Builds a release deployment folder: ask for the version, build the release, publish\ + ZIP + release notes.
 
 .DESCRIPTION
-	Die Version ist ein Build-Parameter (siehe Directory.Build.targets / version.props im Root), es wird
-	pro Release also keine Projekt- oder Quelldatei angefasst.
+	The version is a build parameter (see Directory.Build.targets / version.props in the root), so a
+	release never touches a project file or a source file.
 
-	Der Deployment-Ordner ist bewusst ein einzelner Ordner: frmMain.cs installiert den Windows-Dienst mit
-	"/assemblypath=<Application.StartupPath>\ServiceManager.exe", der Dienst muss also neben
-	ServiceManager.UI.exe liegen. Der Extension-Loader sucht unter <BaseDirectory>\extensions, deshalb
-	gehoert auch die Ausgabe jeder Extension in denselben Ordner.
+	The deployment folder is one single folder on purpose: frmMain.cs installs the Windows service with
+	"/assemblypath=<Application.StartupPath>\ServiceManager.exe", so the service has to sit next to
+	ServiceManager.UI.exe. The extension loader looks under <BaseDirectory>\extensions, which is why the
+	output of every extension belongs in that same folder.
 
-	Schritte:
-	  1. Version abfragen (oder -Version verwenden)
-	  2. Ausgabemappen loeschen, msbuild /t:Restore + /t:Rebuild /p:Configuration=Release /p:SMVersion=<version>
-	  3. publish\ zusammenbauen (UI-Ausgabe + extensions\<jeder Provider>)
-	  4. Version der fertigen Bausteine nachpruefen
+	Steps:
+	  1. ask for the version (or use -Version)
+	  2. clear the output folders, msbuild /t:Restore + /t:Rebuild /p:Configuration=Release /p:SMVersion=<version>
+	  3. assemble publish\ (UI output + extensions\<every provider>)
+	  4. check the version of the finished parts
 	  5. ZIP + RELEASE-NOTES.md
-	  6. naechste Schritte ausgeben (Committen und Taggen uebernimmt der Entwickler)
+	  6. print the next steps (committing and tagging is up to the developer)
 
 .PARAMETER Version
-	Vierstellige Version, z. B. 2.1.0.0. Ohne den Parameter fragt das Skript.
+	Four part version, e.g. 2.1.0.0. Without the parameter the script asks for it.
 
 .PARAMETER Persist
-	Die Version zusaetzlich in version.props schreiben, damit Visual Studio und CI dieselbe Nummer bauen.
+	Write the version into version.props as well, so Visual Studio and CI build the same number.
 
 .PARAMETER SkipPdb
-	.pdb-Dateien aus publish\ und dem ZIP weglassen.
+	Leave the .pdb files out of publish\ and the ZIP.
 
 .PARAMETER SkipBuild
-	Den letzten Release-Build wiederverwenden statt neu zu bauen.
+	Reuse the last release build instead of building it again.
 
 .PARAMETER Strict
-	Aus einer abweichenden Dateiversion einen Fehler machen. Fuer die CI, damit ein Paket nie mit
-	vermischten Versionsnummern durchrauscht.
+	Turn a deviating file version into an error. Meant for the CI, so a package never slips through
+	with mixed version numbers.
 
 .EXAMPLE
 	.\publish.ps1
 	.\publish.ps1 -Version 2.1.0.0 -Persist
 	.\publish.ps1 -SkipPdb
-	.\publish.ps1 -Version 2.1.0.1 -SkipBuild -Strict   # so nutzt die CI das Skript
+	.\publish.ps1 -Version 2.1.0.1 -SkipBuild -Strict   # this is how the CI uses the script
 #>
 [CmdletBinding()]
 param(
@@ -60,9 +60,9 @@ $PropsFile = Join-Path $Root 'version.props'
 
 $UiProject      = Join-Path $Root 'ServiceManagerUI'
 $ServiceProject = Join-Path $Root 'ServiceManager.Service'
-# Jeder Ordner unter Extensions\ ist ein Provider, keiner wird mehr von Hand eingetragen. Der Ordner
-# im Paket entspricht dem Projektnamen - mit einer Ausnahme: TelegramNotifier war immer als
-# TelegramBotNotifier installiert, und genau dort liegt die settings.cfg bestehender Installationen.
+# Every folder under Extensions\ is a provider, none of them is entered by hand any more. The folder
+# inside the package matches the project name - with one exception: TelegramNotifier has always been
+# installed as TelegramBotNotifier, and that is where the settings.cfg of existing installations sits.
 $FolderNames = @{ 'TelegramNotifier' = 'TelegramBotNotifier' }
 
 $ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
@@ -79,19 +79,19 @@ $ExtensionProjects = Get-ChildItem (Join-Path $Root 'Extensions') -Directory |
 		}
 	}
 
-if (-not $ExtensionProjects) { throw "Kein Provider unter Extensions\ gefunden." }
+if (-not $ExtensionProjects) { throw "No provider found under Extensions\." }
 
 $UiRelease      = Join-Path $UiProject      "bin\$Config"
 $ServiceRelease = Join-Path $ServiceProject "bin\$Config"
 
 
-# ClickOnce-Reste und Laufzeitabfall haben in einem Deployment nichts verloren.
+# ClickOnce leftovers and runtime debris have no place in a deployment.
 $ExcludeDirs  = @('app.publish', 'logs')
 $ExcludeFiles = @('ConfigBase.dll', 'ConfigBase.pdb', 'errors.txt')
 
 
 # --------------------------------------------------------------------------------------
-# Helfer
+# Helpers
 # --------------------------------------------------------------------------------------
 
 function Write-Step([String]$text)
@@ -118,7 +118,7 @@ function Find-MsBuild
 		if (Test-Path $candidate) { return $candidate }
 	}
 
-	throw 'MSBuild nicht gefunden. Das Skript aus einer Developer Command Prompt starten oder Visual Studio installieren.'
+	throw 'MSBuild not found. Start the script from a Developer Command Prompt or install Visual Studio.'
 }
 
 function Get-DefaultVersion
@@ -140,7 +140,7 @@ function Test-VersionFormat([String]$value)
 {
 	if ($value -notmatch '^\d+\.\d+\.\d+\.\d+$')
 	{
-		Write-Host "Erwartet vier Zahlen, z. B. 2.1.0.0 (eingegeben: `"$value`")" -ForegroundColor Red
+		Write-Host "Expected four numbers, e.g. 2.1.0.0 (entered: `"$value`")" -ForegroundColor Red
 		return $false
 	}
 
@@ -148,8 +148,8 @@ function Test-VersionFormat([String]$value)
 
 	if ($bad)
 	{
-		# AssemblyVersion ist pro Stelle auf Int16 begrenzt, darueber lehnt die CLR das Assembly ab.
-		Write-Host "AssemblyVersion darf pro Stelle max. 65535 sein: $value" -ForegroundColor Red
+		# AssemblyVersion is limited to Int16 per part, above that the CLR refuses the assembly.
+		Write-Host "AssemblyVersion may hold max. 65535 per part: $value" -ForegroundColor Red
 		return $false
 	}
 
@@ -171,17 +171,17 @@ function Get-LastTag
 # --------------------------------------------------------------------------------------
 
 Write-Host 'ServiceManager Publish' -ForegroundColor Green
-Write-Host "Projektmappe: $Root"
+Write-Host "Project folder: $Root"
 
 $default = Get-DefaultVersion
 $lastTag = Get-LastTag
 
-Write-Step 'Versionsquellen'
+Write-Step 'Version sources'
 Write-Host "  version.props:`t$default"
 
-if ($lastTag) { Write-Host "  letzter Tag:`t$lastTag" }
+if ($lastTag) { Write-Host "  last tag:`t$lastTag" }
 
-Write-Host '  Hinweis: Die Version ist ein Build-Parameter (/p:SMVersion), keine Dateianderung pro Release.'
+Write-Host '  Note: the version is a build parameter (/p:SMVersion), not a file change per release.'
 
 if (-not $Version)
 {
@@ -189,14 +189,14 @@ if (-not $Version)
 	$suggested = "$($v.Major).$($v.Minor).$($v.Build).$($v.Revision + 1)"
 
 	Write-Host ''
-	$Version = (Read-Host "Neue Version (4-stellig, Standard $suggested)").Trim()
+	$Version = (Read-Host "New version (4 parts, default $suggested)").Trim()
 
 	if ([String]::IsNullOrWhiteSpace($Version)) { $Version = $suggested }
 }
 
 if (-not (Test-VersionFormat $Version)) { exit 1 }
 
-Write-Host "`nNeue Version: $Version" -ForegroundColor Green
+Write-Host "`nNew version: $Version" -ForegroundColor Green
 
 if ($Persist)
 {
@@ -204,7 +204,7 @@ if ($Persist)
 
 	[System.IO.File]::WriteAllText($PropsFile, $text, (New-Object System.Text.UTF8Encoding($true)))
 
-	Write-Host "  version.props auf $Version gesetzt"
+	Write-Host "  version.props set to $Version"
 }
 
 
@@ -214,13 +214,13 @@ if ($Persist)
 
 if ($SkipBuild)
 {
-	Write-Step 'Build uebersprungen'
+	Write-Step 'Build skipped'
 }
 else
 {
-	# Ein Rebuild loescht keine Fremddateien: in bin\Release liegt seit 2021 ein ConfigBase.dll des
-	# ehemaligen externen Projekts, das mit dem jetzigen nichts mehr zu tun hat.
-	Write-Step 'Ausgabemappen saubermachen'
+	# A rebuild does not delete foreign files: since 2021 bin\Release holds a ConfigBase.dll of the
+	# former external project, which has nothing to do with the current one.
+	Write-Step 'Clearing the output folders'
 
 	foreach ($project in @($UiProject, $ServiceProject) + $ExtensionProjects.Project)
 	{
@@ -231,7 +231,7 @@ else
 			if (Test-Path $path)
 			{
 				Remove-Item $path -Recurse -Force
-				Write-Host "  entfernt: $($path.Substring($Root.Length + 1))"
+				Write-Host "  removed: $($path.Substring($Root.Length + 1))"
 			}
 		}
 	}
@@ -242,32 +242,32 @@ else
 
 	& $msbuild $Solution /t:Restore "/p:Configuration=$Config" "/p:SMVersion=$Version" /v:minimal /nologo
 
-	if ($LASTEXITCODE -ne 0) { throw "Restore fehlgeschlagen (Exit $LASTEXITCODE)" }
+	if ($LASTEXITCODE -ne 0) { throw "Restore failed (exit $LASTEXITCODE)" }
 
 	Write-Step "Rebuild $Version"
 
 	& $msbuild $Solution /t:Rebuild "/p:Configuration=$Config" "/p:SMVersion=$Version" /v:minimal /nologo
 
-	if ($LASTEXITCODE -ne 0) { throw "Rebuild fehlgeschlagen (Exit $LASTEXITCODE)" }
+	if ($LASTEXITCODE -ne 0) { throw "Rebuild failed (exit $LASTEXITCODE)" }
 }
 
 foreach ($path in @($UiRelease) + $ExtensionProjects.Release)
 {
-	if (-not (Test-Path $path)) { throw "Erwartete Ausgabe fehlt: $path" }
+	if (-not (Test-Path $path)) { throw "Expected output is missing: $path" }
 }
 
 
 # --------------------------------------------------------------------------------------
-# 3. publish\ zusammenbauen
+# 3. Assemble publish\
 # --------------------------------------------------------------------------------------
 
-Write-Step 'publish\ zusammenbauen'
+Write-Step 'Assembling the publish folder'
 
 if (Test-Path $Publish) { Remove-Item $Publish -Recurse -Force }
 
 New-Item $Publish -ItemType Directory | Out-Null
 
-# Die UI-Ausgabe enthaelt schon ServiceManager.exe und alle referenzierten Bibliotheken.
+# The UI output already holds ServiceManager.exe and every referenced library.
 $copied = 0
 
 Get-ChildItem $UiRelease -Recurse -File |
@@ -287,7 +287,7 @@ Get-ChildItem $UiRelease -Recurse -File |
 		$copied++
 	}
 
-# Jeder Provider gehoert nach <BaseDirectory>\extensions\<Ordner>, nur dort findet der Loader ihn.
+# Every provider belongs in <BaseDirectory>\extensions\<folder>, that is the only place the loader finds it.
 foreach ($extension in $ExtensionProjects)
 {
 	$ExtTarget = Join-Path $Publish "extensions\$($extension.Folder)"
@@ -301,19 +301,19 @@ foreach ($extension in $ExtensionProjects)
 	Write-Host "  Provider: extensions\$($extension.Folder)"
 }
 
-Write-Host "  $copied Dateien uebernommen"
+Write-Host "  $copied files copied"
 
 if (Test-Path $ServiceRelease)
 {
-	Write-Host "  Service-Ausgabe liegt ueber die UI-Referenz bereits in publish\, eigenes Verzeichnis: $($ServiceRelease.Substring($Root.Length + 1))"
+	Write-Host "  The service output is already inside publish\ through the UI reference, own folder: $($ServiceRelease.Substring($Root.Length + 1))"
 }
 
 
 # --------------------------------------------------------------------------------------
-# 4. Version der Bausteine nachpruefen
+# 4. Check the version of the parts
 # --------------------------------------------------------------------------------------
 
-Write-Step 'Dateiversionen im Paket'
+Write-Step 'File versions inside the package'
 
 $checked = @()
 $mismatch = $false
@@ -329,7 +329,7 @@ foreach ($file in $packageFiles)
 
 	if (-not (Test-Path $path))
 	{
-		Write-Host "  fehlt im Paket: $file" -ForegroundColor Red
+		Write-Host "  missing in the package: $file" -ForegroundColor Red
 		$mismatch = $true
 		continue
 	}
@@ -339,7 +339,7 @@ foreach ($file in $packageFiles)
 	if ($info.FileVersion -ne $Version) { $mismatch = $true }
 
 	$checked += [PSCustomObject]@{
-		Datei   = Split-Path $file -Leaf
+		Name    = Split-Path $file -Leaf
 		Version = $info.FileVersion
 	}
 }
@@ -348,44 +348,44 @@ $checked | Format-Table -AutoSize | Out-String | Write-Host
 
 if ($mismatch)
 {
-	if ($Strict) { throw "Mindestens eine Baustein traegt nicht $Version - Paket verworfen." }
+	if ($Strict) { throw "At least one part does not carry $Version - package discarded." }
 
-	Write-Host "  Warnung: mindestens eine Datei traegt nicht $Version." -ForegroundColor Yellow
+	Write-Host "  warning: at least one file does not carry $Version." -ForegroundColor Yellow
 }
 else
 {
-	Write-Host "  alle Bausteine tragen $Version" -ForegroundColor Green
+	Write-Host "  every part carries $Version" -ForegroundColor Green
 }
 
 
 # --------------------------------------------------------------------------------------
-# 5. Release-Notizen + ZIP
+# 5. Release notes + ZIP
 # --------------------------------------------------------------------------------------
 
-Write-Step 'Release-Notizen'
+Write-Step 'Release notes'
 
 $sha  = & git -C $Root rev-parse --short HEAD
-$date = Get-Date -Format 'dd.MM.yyyy HH:mm'
+$date = Get-Date -Format 'yyyy-MM-dd HH:mm'
 
 $log = if ($lastTag) { & git -C $Root log "$lastTag..HEAD" --pretty=format:'- %s' } else { & git -C $Root log --pretty=format:'- %s' -20 }
 
-$changes = if ($log) { $log } else { '- keine Aenderungen seit dem letzten Tag' }
+$changes = if ($log) { $log } else { '- no changes since the last tag' }
 
 $notes = @(
     "## ServiceManager $Version",
     '',
-    "Stand: $date - Commit $sha - .NET Framework 4.8.1",
+    "As of: $date - commit $sha - .NET Framework 4.8.1",
     '',
-    '### Aenderungen',
+    '### Changes',
     '',
     $changes,
     '',
     '### Deployment',
     '',
-    '1. ZIP in einen Ordner entpacken, z. B. C:\Program Files\ServiceManager.',
-    '2. ServiceManager.UI.exe als Administrator starten.',
-    '3. Dienst installieren: der UI-Dialog nutzt <Startpfad>\ServiceManager.exe, beide Programme muessen im selben Ordner bleiben.',
-    '4. Extension-Einstellungen liegen pro Provider unter extensions\<Ordner>\settings.cfg.',
+    '1. Unpack the ZIP into a single folder, e.g. C:\Program Files\ServiceManager.',
+    '2. Start ServiceManager.UI.exe as an administrator.',
+    '3. Install the service: the UI dialog uses <start path>\ServiceManager.exe, both programs have to stay in the same folder.',
+    '4. Every provider keeps its settings in extensions\<folder>\settings.cfg.',
     '',
     '### Tag',
     '',
@@ -398,7 +398,7 @@ $notesFile = Join-Path $Publish 'RELEASE-NOTES.md'
 
 [System.IO.File]::WriteAllText($notesFile, $notes, (New-Object System.Text.UTF8Encoding($true)))
 
-Write-Host '  geschrieben: publish\RELEASE-NOTES.md'
+Write-Host '  written: publish\RELEASE-NOTES.md'
 
 $zip = Join-Path $Root "ServiceManager-$Version.zip"
 
@@ -408,26 +408,26 @@ Compress-Archive -Path (Join-Path $Publish '*') -DestinationPath $zip -Compressi
 
 $size = [Math]::Round((Get-Item $zip).Length / 1MB, 2)
 
-Write-Host "  Paket: $([IO.Path]::GetFileName($zip)) ($size MB)"
+Write-Host "  package: $([IO.Path]::GetFileName($zip)) ($size MB)"
 
 
 # --------------------------------------------------------------------------------------
-# 6. naechste Schritte
+# 6. Next steps
 # --------------------------------------------------------------------------------------
 
-Write-Step 'Als Naechstes'
+Write-Step 'Next steps'
 
-$persistHint = if ($Persist) { '  2. version.props committen: git add version.props' } else { '  2. (version.props wurde nicht geaendert - das passiert nur mit -Persist)' }
+$persistHint = if ($Persist) { '  2. commit version.props: git add version.props' } else { '  2. (version.props was not changed - that only happens with -Persist)' }
 
 Write-Host @"
-  1. Taggen und pushen:
+  1. Tag and push:
 	   git tag v$Version
 	   git push origin main v$Version
 $persistHint
-  3. GitHub Release anlegen: https://github.com/MajMcCloud/ServiceManager/releases/new
+  3. Create the GitHub release: https://github.com/MajMcCloud/ServiceManager/releases/new
 	   Tag:          v$Version
-	   Titel:        ServiceManager $Version
-	   Beschreibung: Inhalt von publish\RELEASE-NOTES.md
+	   Title:        ServiceManager $Version
+	   Description:  the content of publish\RELEASE-NOTES.md
 	   Asset:        ServiceManager-$Version.zip
 "@
 
