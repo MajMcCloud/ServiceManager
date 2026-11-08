@@ -50,6 +50,7 @@
             this.lblRunMode = new System.Windows.Forms.Label();
             this.rrbMode_TCP = new System.Windows.Forms.RadioButton();
             this.rrbMode_NetPipes = new System.Windows.Forms.RadioButton();
+            this.chkRequireAdministrator = new System.Windows.Forms.CheckBox();
             this.tabNotifications = new System.Windows.Forms.TabPage();
             this.txtNotifications_InstanceName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -175,6 +176,7 @@
             // tabSettings
             // 
             this.tabSettings.Controls.Add(this.bnSettings_Save);
+            this.tabSettings.Controls.Add(this.chkRequireAdministrator);
             this.tabSettings.Controls.Add(this.nudStartup_Delay);
             this.tabSettings.Controls.Add(this.lblDelayUnit);
             this.tabSettings.Controls.Add(this.lblDelay);
@@ -188,6 +190,15 @@
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.Size = new System.Drawing.Size(758, 401);
             this.tabSettings.Text = "Settings";
+            // 
+            // chkRequireAdministrator
+            // 
+            this.chkRequireAdministrator.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkRequireAdministrator.Location = new System.Drawing.Point(32, 180);
+            this.chkRequireAdministrator.Name = "chkRequireAdministrator";
+            this.chkRequireAdministrator.AutoSize = true;
+            this.chkRequireAdministrator.TabIndex = 4;
+            this.chkRequireAdministrator.Text = "Only administrators may connect";
             // 
             // bnSettings_Save
             // 
@@ -516,6 +527,7 @@
         private System.Windows.Forms.NumericUpDown nudStartup_Delay;
         private System.Windows.Forms.Label lblDelayUnit;
         private System.Windows.Forms.Label lblDelay;
+        private System.Windows.Forms.CheckBox chkRequireAdministrator;
         private System.Windows.Forms.TabPage tabNotifications;
         private System.Windows.Forms.Button rbnNotifications_Save;
         private System.Windows.Forms.ComboBox cmbNotification_Extensions;

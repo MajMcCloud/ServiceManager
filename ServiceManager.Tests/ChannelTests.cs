@@ -58,6 +58,8 @@ namespace ServiceManager.Tests
             Assert.AreEqual(Runtime.eMode.NetPipes, runtime.Mode);
             Assert.AreEqual(50000, runtime.TCPPort);
             Assert.AreEqual(0, runtime.Startup_Delay);
+
+            Assert.IsTrue(runtime.RequireAdministrator, "a fresh installation is closed for ordinary users");
         }
 
         [TestMethod]
@@ -101,6 +103,7 @@ namespace ServiceManager.Tests
                 cfg.RuntimeSettings.Mode = Runtime.eMode.Tcp;
                 cfg.RuntimeSettings.TCPPort = 50555;
                 cfg.RuntimeSettings.Startup_Delay = 15;
+                cfg.RuntimeSettings.RequireAdministrator = false;
 
                 cfg.save(path);
 
@@ -109,6 +112,31 @@ namespace ServiceManager.Tests
                 Assert.AreEqual(Runtime.eMode.Tcp, again.RuntimeSettings.Mode);
                 Assert.AreEqual(50555, again.RuntimeSettings.TCPPort);
                 Assert.AreEqual(15, again.RuntimeSettings.Startup_Delay);
+
+                Assert.IsFalse(again.RuntimeSettings.RequireAdministrator, "the setting is read back the way it was written");
+            }
+            finally
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
+            }
+        }
+
+        [TestMethod]
+        public void settings_file_without_the_administrator_property_keeps_the_service_closed()
+        {
+            var directory = Path.Combine(Path.GetTempPath(), "servicemanager-tests", Guid.NewGuid().ToString("N"));
+            var path = Path.Combine(directory, "default.cfg");
+
+            try
+            {
+                Directory.CreateDirectory(directory);
+
+                File.WriteAllText(path, "{\"RuntimeSettings\":{\"Mode\":0,\"TCPPort\":50000,\"Startup_Delay\":0}}");
+
+                var cfg = ServiceConfig.load(path);
+
+                Assert.IsTrue(cfg.RuntimeSettings.RequireAdministrator, "an older file leaves the service closed for ordinary users");
             }
             finally
             {

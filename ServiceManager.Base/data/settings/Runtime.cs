@@ -26,11 +26,17 @@ namespace ServiceManager.Base.data.settings
         /// </summary>
         public int Startup_Delay { get; set; }
 
+        /// <summary>
+        /// Only members of the Administrators group may connect to the service.
+        /// </summary>
+        public bool RequireAdministrator { get; set; }
+
         public Runtime()
         {
             this.Mode = eMode.NetPipes;
             this.TCPPort = 50000;
             this.Startup_Delay = 0;
+            this.RequireAdministrator = true;
         }
 
     }

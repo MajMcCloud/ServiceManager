@@ -64,6 +64,8 @@ namespace ServiceManager.Base
                     throw new ArgumentOutOfRangeException(nameof(this.Config.RuntimeSettings.Mode));
             }
 
+            Connection.RequireAdministrator = this.Config.RuntimeSettings.RequireAdministrator;
+
             try
             {
                 Connection.Start();

@@ -84,6 +84,8 @@ namespace ServiceManager.UI
 
             nudStartup_Delay.Value = slist.RuntimeSettings.Startup_Delay;
 
+            chkRequireAdministrator.Checked = slist.RuntimeSettings.RequireAdministrator;
+
 
             //Notification Settings
             txtNotifications_InstanceName.Text = slist.Notifications.InstanceName;
@@ -385,6 +387,8 @@ namespace ServiceManager.UI
             }
 
             slist.RuntimeSettings.Startup_Delay = (int)nudStartup_Delay.Value;
+
+            slist.RuntimeSettings.RequireAdministrator = chkRequireAdministrator.Checked;
 
             slist.save();
 
