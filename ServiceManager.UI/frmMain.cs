@@ -63,7 +63,7 @@ namespace ServiceManager.UI
             if (e.Button != MouseButtons.Right)
                 return;
 
-            var dataItem = lsvServices.HitTest(e.Location)?.Item;
+            var dataItem = HitTestRow(e.Location);
 
             if (dataItem == null) return;
 
@@ -87,10 +87,27 @@ namespace ServiceManager.UI
             if (e.Button != MouseButtons.Left)
                 return;
 
-            if (lsvServices.HitTest(e.Location)?.Item == null)
+            if (HitTestRow(e.Location) == null)
                 return;
 
             tsmiMenu_Livelogs_Click(sender, e);
+        }
+
+        // HitTest only answers inside the columns, so a click right of the last column finds no row.
+        // Comparing the vertical bounds covers the whole row.
+        private ListViewItem HitTestRow(Point location)
+        {
+            foreach (ListViewItem item in lsvServices.Items)
+            {
+                Rectangle bounds = item.Bounds;
+
+                if (location.Y >= bounds.Top && location.Y < bounds.Bottom)
+                {
+                    return item;
+                }
+            }
+
+            return null;
         }
 
         private void rmServiceRefresh_Tick(object sender, EventArgs e)

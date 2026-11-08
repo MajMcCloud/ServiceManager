@@ -210,6 +210,7 @@
             listViewDetailColumn5,
             listViewDetailColumn6});
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
+            this.lsvServices.FullRowSelect = true;
             this.lsvServices.MultiSelect = true;
             this.lsvServices.HideSelection = false;
             this.lsvServices.Name = "lsvServices";
