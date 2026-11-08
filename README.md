@@ -7,7 +7,7 @@ Developed with C# using the standard WinForms controls.
 
 The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
 
-Authentication is not integrated yet. => Todo List
+Only a member of the local Administrators group may connect, over both transports. See [Network Security](#network-security).
 
 ## Build
 
@@ -22,6 +22,7 @@ which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bi
 
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)
+- [Network Security](#network-security)
 - [Notifications](#notifications)
   - [Notification Settings](#notification-settings)
   - [Script Hook](#notifications---script-hook)
@@ -44,7 +45,34 @@ which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bi
 
 Choose between Net Pipes and TCP connection for your Service Manager.
 
+*Only administrators may connect* decides whether the ServiceManager answers a client whose user is not a member
+of the local Administrators group. It is on by default, and the service has to be restarted after changing it.
+
 <img src="Screens/Settings.png" />
+
+## Network Security
+
+Both transports check the caller: every request over Net Pipes or over TCP has to come from a process whose user
+is a member of the local Administrators group. A request from anyone else is refused before a single managed
+service can be read or started.
+
+The Net Pipe is created with an access control list, but that list alone is not enough: a service running as
+`NT AUTHORITY\NETWORK SERVICE` or `NT AUTHORITY\SERVICE` sits outside the usual user ACL and can still open the
+pipe, and a TCP endpoint has no such list at all. The check therefore runs on every call rather than only while
+the connection is opened.
+
+What that means in practice:
+
+- Start the UI elevated, through *Run as administrator*. A UI that is not elevated can no longer connect, and it
+  says so when the connection fails.
+- A script that talks to the ServiceManager has to run elevated as well.
+- Switch the checkbox off to hand the endpoint to a normal user account again. The setting is stored as
+  `RequireAdministrator` in `default.cfg`, and a settings file of an older version keeps the service closed.
+
+The endpoints also limit what a caller can send: 64 KB per message on the service side, with a bounded depth and
+size for the XML reader, and at most 20 open sessions and 16 calls at the same time. The console and error output
+the service keeps in memory is limited to the last 256 KB per stream, oldest lines first, so a chatty console can
+no longer grow the process without bounds.
 
 ## Notifications
 
