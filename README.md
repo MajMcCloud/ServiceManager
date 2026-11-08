@@ -52,20 +52,26 @@ of the local Administrators group. It is on by default, and the service has to b
 
 ## Network Security
 
-Both transports check the caller: every request over Net Pipes or over TCP has to come from a process whose user
-is a member of the local Administrators group. A request from anyone else is refused before a single managed
-service can be read or started.
+Both transports check the caller before a single managed service can be read or started. Three rules exist:
 
-The Net Pipe is created with an access control list, but that list alone is not enough: a service running as
-`NT AUTHORITY\NETWORK SERVICE` or `NT AUTHORITY\SERVICE` sits outside the usual user ACL and can still open the
-pipe, and a TCP endpoint has no such list at all. The check therefore runs on every call rather than only while
-the connection is opened.
+| Rule | Who may connect | Used by |
+|------|-----------------|---------|
+| Administrators | members of the local Administrators group | the installed service, this is the default |
+| OwnUser | the account that runs the service | the test run inside the UI |
+| Everyone | any process that can reach the endpoint | only when the checkbox is switched off |
+
+A request that does not match its rule is refused before the service call runs. The check runs on every call
+rather than only while the connection is opened: WCF protects a named pipe with its own default security, but a
+service running as `NT AUTHORITY\NETWORK SERVICE` or `NT AUTHORITY\SERVICE` sits outside the usual user ACL and can
+still open the pipe, and a TCP endpoint has no such list at all.
 
 What that means in practice:
 
-- Start the UI elevated, through *Run as administrator*. A UI that is not elevated can no longer connect, and it
-  says so when the connection fails.
+- Start the UI elevated, through *Run as administrator*. A UI that is not elevated can no longer connect to the
+  installed service, and it says so when the connection fails.
 - A script that talks to the ServiceManager has to run elevated as well.
+- *Testing* -> *Start testing* needs no administrator rights. That run hosts the service inside the UI process and
+  answers the account of that process only, so the endpoint stays closed for every other local account.
 - Switch the checkbox off to hand the endpoint to a normal user account again. The setting is stored as
   `RequireAdministrator` in `default.cfg`, and a settings file of an older version keeps the service closed.
 

@@ -42,10 +42,25 @@ namespace ServiceManager.Base
         public eMode Mode { get; set; }
 
         /// <summary>
-        /// Only members of the Administrators group may connect.
-        /// Set it to false to let ordinary users watch the logs.
+        /// Who may connect to the endpoint.
         /// </summary>
-        public bool RequireAdministrator { get; set; } = true;
+        public enum eAccess
+        {
+            /// <summary>Members of the local Administrators group only.</summary>
+            Administrators = 0,
+
+            /// <summary>The account that runs the service itself.</summary>
+            OwnUser = 1,
+
+            /// <summary>Every local user, the escape hatch of the settings.</summary>
+            Everyone = 2
+        }
+
+        /// <summary>
+        /// Who may connect. Administrators is the rule of the installed service, OwnUser is what
+        /// a test run inside the UI needs, Everyone lets ordinary users watch the logs as well.
+        /// </summary>
+        public eAccess Access { get; set; } = eAccess.Administrators;
 
         private ServiceHost host { get; set; }
 
@@ -185,12 +200,12 @@ namespace ServiceManager.Base
 
                 Failed = false;
 
-                if (this.RequireAdministrator)
+                if (this.Access != eAccess.Everyone)
                 {
                     ServiceAuthorizationBehavior authorization = host.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
                     if (authorization != null)
                     {
-                        authorization.ServiceAuthorizationManager = new AdministratorAuthorizationManager();
+                        authorization.ServiceAuthorizationManager = CreateAuthorizationManager();
                     }
                 }
 
@@ -325,6 +340,16 @@ namespace ServiceManager.Base
             quotas.MaxArrayLength = 1024 * 1024;
             quotas.MaxBytesPerRead = 4096;
             quotas.MaxNameTableCharCount = 16384;
+        }
+
+        internal ServiceAuthorizationManager CreateAuthorizationManager()
+        {
+            if (this.Access == eAccess.OwnUser)
+            {
+                return new OwnUserAuthorizationManager();
+            }
+
+            return new AdministratorAuthorizationManager();
         }
 
         private void Host_Opened(object sender, EventArgs e)

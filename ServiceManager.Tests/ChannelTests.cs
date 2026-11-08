@@ -153,8 +153,8 @@ namespace ServiceManager.Tests
             var server = new Channel(true, pipeName);
             var client = new Channel(false, pipeName);
 
-            // The test host runs unelevated, an ordinary user connects here.
-            server.RequireAdministrator = false;
+            // The test host runs unelevated, so the endpoint accepts the account that runs it.
+            server.Access = Channel.eAccess.OwnUser;
 
             try
             {
@@ -200,7 +200,7 @@ namespace ServiceManager.Tests
         {
             var channel = new Channel(true, "serviceman1234");
 
-            Assert.IsTrue(channel.RequireAdministrator);
+            Assert.AreEqual(Channel.eAccess.Administrators, channel.Access);
         }
 
         [TestMethod]
@@ -242,6 +242,73 @@ namespace ServiceManager.Tests
         public void administrator_policy_rejects_an_anonymous_caller()
         {
             Assert.IsFalse(AdministratorAuthorizationManager.IsAdministrator(WindowsIdentity.GetAnonymous()));
+        }
+
+        [TestMethod]
+        public void own_user_policy_accepts_the_account_of_the_service()
+        {
+            var policy = new OwnUserAuthorizationManager();
+
+            Assert.IsTrue(policy.IsOwnUser(WindowsIdentity.GetCurrent()));
+        }
+
+        [TestMethod]
+        public void own_user_policy_rejects_an_anonymous_caller()
+        {
+            var policy = new OwnUserAuthorizationManager();
+
+            Assert.IsFalse(policy.IsOwnUser(WindowsIdentity.GetAnonymous()));
+        }
+
+        [TestMethod]
+        public void own_user_policy_rejects_a_missing_identity()
+        {
+            var policy = new OwnUserAuthorizationManager();
+
+            Assert.IsFalse(policy.IsOwnUser(null));
+        }
+
+        [TestMethod]
+        public void administrators_access_selects_the_administrator_policy()
+        {
+            var channel = new Channel(true, "serviceman1234");
+
+            Assert.IsInstanceOfType(channel.CreateAuthorizationManager(), typeof(AdministratorAuthorizationManager));
+        }
+
+        [TestMethod]
+        public void own_user_access_selects_the_own_user_policy()
+        {
+            var channel = new Channel(true, "serviceman1234");
+            channel.Access = Channel.eAccess.OwnUser;
+
+            Assert.IsInstanceOfType(channel.CreateAuthorizationManager(), typeof(OwnUserAuthorizationManager));
+        }
+
+        [TestMethod]
+        public void own_user_policy_lets_the_account_of_the_service_connect()
+        {
+            var pipeName = ProbePipeName();
+
+            var server = new Channel(true, pipeName);
+            server.Access = Channel.eAccess.OwnUser;
+
+            var client = new Channel(false, pipeName);
+
+            try
+            {
+                server.Start();
+                client.Start();
+
+                Assert.IsNotNull(WaitForCallbackChannel(server), "the test run of the UI reaches its own service");
+
+                Assert.IsTrue(Channel.ProbePipes("localhost", pipeName), "the test call is accepted as well");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
         }
 
         [TestMethod]

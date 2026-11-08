@@ -21,6 +21,13 @@ namespace ServiceManager.Base
 
         public Analytics Analytics { get; set; }
 
+        /// <summary>
+        /// Who may connect to the endpoint. Left empty, the service follows the settings file.
+        /// A test run inside the UI hands OwnUser, so that a developer without elevated rights
+        /// can watch its own process.
+        /// </summary>
+        public Channel.eAccess? Access { get; set; } = null;
+
 
         Channel Connection { get; set; }
 
@@ -64,7 +71,7 @@ namespace ServiceManager.Base
                     throw new ArgumentOutOfRangeException(nameof(this.Config.RuntimeSettings.Mode));
             }
 
-            Connection.RequireAdministrator = this.Config.RuntimeSettings.RequireAdministrator;
+            Connection.Access = this.Access ?? (this.Config.RuntimeSettings.RequireAdministrator ? Channel.eAccess.Administrators : Channel.eAccess.Everyone);
 
             try
             {

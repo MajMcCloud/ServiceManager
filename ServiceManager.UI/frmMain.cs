@@ -624,6 +624,10 @@ namespace ServiceManager.UI
 
             this.Manager = new ServiceManager.Base.ServiceManager();
 
+            // The test run hosts the service inside this process, so the endpoint has to take the
+            // account of the UI: testing does not need an elevated Visual Studio.
+            this.Manager.Access = Channel.eAccess.OwnUser;
+
             this.Manager.Start();
 
             
