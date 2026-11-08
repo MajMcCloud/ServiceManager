@@ -45,17 +45,17 @@
   <ItemGroup>
     <Compile Include="Config\Config.cs" />
     <Compile Include="EventLogNotifier.cs" />
-    <Compile Include="forms\frmConfig.cs">
+    <Compile Include="Forms\FrmConfig.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="forms\frmConfig.Designer.cs">
-      <DependentUpon>frmConfig.cs</DependentUpon>
+    <Compile Include="Forms\FrmConfig.Designer.cs">
+      <DependentUpon>FrmConfig.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="forms\frmConfig.resx">
-      <DependentUpon>frmConfig.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\FrmConfig.resx">
+      <DependentUpon>FrmConfig.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

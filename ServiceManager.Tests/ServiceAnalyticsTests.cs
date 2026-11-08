@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceManager.Base.data;
+using ServiceManager.Base.Data;
 using System;
 
 namespace ServiceManager.Tests

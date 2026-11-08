@@ -1,4 +1,4 @@
-﻿using ServiceManager.Base.wcf;
+﻿using ServiceManager.Base.Wcf;
 using System;
 using System.Collections.Generic;
 using System.Linq;

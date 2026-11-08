@@ -82,55 +82,55 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="forms\frmConnectTo.cs">
+    <Compile Include="Forms\FrmConnectTo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="forms\frmConnectTo.Designer.cs">
-      <DependentUpon>frmConnectTo.cs</DependentUpon>
+    <Compile Include="Forms\FrmConnectTo.Designer.cs">
+      <DependentUpon>FrmConnectTo.cs</DependentUpon>
     </Compile>
-    <Compile Include="forms\frmLogs.cs">
+    <Compile Include="Forms\FrmLogs.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="forms\frmLogs.Designer.cs">
-      <DependentUpon>frmLogs.cs</DependentUpon>
+    <Compile Include="Forms\FrmLogs.Designer.cs">
+      <DependentUpon>FrmLogs.cs</DependentUpon>
     </Compile>
-    <Compile Include="forms\frmNewService.cs">
+    <Compile Include="Forms\FrmNewService.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="forms\frmNewService.Designer.cs">
-      <DependentUpon>frmNewService.cs</DependentUpon>
+    <Compile Include="Forms\FrmNewService.Designer.cs">
+      <DependentUpon>FrmNewService.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmMain.cs">
+    <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmMain.Designer.cs">
-      <DependentUpon>frmMain.cs</DependentUpon>
+    <Compile Include="FrmMain.Designer.cs">
+      <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmManage.cs">
+    <Compile Include="FrmManage.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmManage.Designer.cs">
-      <DependentUpon>frmManage.cs</DependentUpon>
+    <Compile Include="FrmManage.Designer.cs">
+      <DependentUpon>FrmManage.cs</DependentUpon>
     </Compile>
     <Compile Include="installer\ServiceInstallerEx.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="forms\frmConnectTo.resx">
-      <DependentUpon>frmConnectTo.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\FrmConnectTo.resx">
+      <DependentUpon>FrmConnectTo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="forms\frmLogs.resx">
-      <DependentUpon>frmLogs.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\FrmLogs.resx">
+      <DependentUpon>FrmLogs.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="forms\frmNewService.resx">
-      <DependentUpon>frmNewService.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\FrmNewService.resx">
+      <DependentUpon>FrmNewService.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmMain.resx">
-      <DependentUpon>frmMain.cs</DependentUpon>
+    <EmbeddedResource Include="FrmMain.resx">
+      <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmManage.resx">
-      <DependentUpon>frmManage.cs</DependentUpon>
+    <EmbeddedResource Include="FrmManage.resx">
+      <DependentUpon>FrmManage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

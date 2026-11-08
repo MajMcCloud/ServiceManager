@@ -1,4 +1,4 @@
-﻿using ServiceManager.Base.wcf;
+﻿using ServiceManager.Base.Wcf;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static ServiceManager.Base.data.settings.Runtime;
+using static ServiceManager.Base.Data.Settings.Runtime;
 
 namespace ServiceManager.Base
 {

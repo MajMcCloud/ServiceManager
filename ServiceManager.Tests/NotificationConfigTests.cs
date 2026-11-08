@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using ServiceManager.Base.data.settings;
+using ServiceManager.Base.Data.Settings;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;

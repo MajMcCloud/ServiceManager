@@ -1,4 +1,4 @@
-﻿using ServiceManager.Base.data;
+﻿using ServiceManager.Base.Data;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -58,11 +58,11 @@ namespace ServiceManager.Base
 
             switch (this.Config.RuntimeSettings.Mode)
             {
-                case data.settings.Runtime.eMode.NetPipes:
+                case Data.Settings.Runtime.eMode.NetPipes:
                     Connection = new Channel(true, "serviceman" + Process.GetCurrentProcess().Id.ToString());
                     break;
 
-                case data.settings.Runtime.eMode.Tcp:
+                case Data.Settings.Runtime.eMode.Tcp:
                     Connection = new Channel(true, "localhost", this.Config.RuntimeSettings.TCPPort);
                     break;
 

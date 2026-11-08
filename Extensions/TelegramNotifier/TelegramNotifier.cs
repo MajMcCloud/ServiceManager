@@ -1,5 +1,5 @@
 ﻿using ServiceManager.Extensions.TelegramNotifier.Config;
-using ServiceManager.Extensions.TelegramNotifier.forms;
+using ServiceManager.Extensions.TelegramNotifier.Forms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,7 +79,7 @@ namespace ServiceManager.Extensions.TelegramNotifier
 
         public void Configure()
         {
-            frmConfig frm = new frmConfig();
+            FrmConfig frm = new FrmConfig();
 
             frm.ShowDialog();
         }

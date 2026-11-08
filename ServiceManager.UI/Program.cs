@@ -52,7 +52,7 @@ namespace ServiceManager.UI
             Application.ThreadException += Application_ThreadException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            Application.Run(new frmMain());
+            Application.Run(new FrmMain());
         }
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

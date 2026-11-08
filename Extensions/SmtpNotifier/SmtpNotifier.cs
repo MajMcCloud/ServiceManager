@@ -1,4 +1,4 @@
-using ServiceManager.Extensions.SmtpNotifier.forms;
+using ServiceManager.Extensions.SmtpNotifier.Forms;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -68,7 +68,7 @@ namespace ServiceManager.Extensions.SmtpNotifier
 
         public void Configure()
         {
-            using (frmConfig frm = new frmConfig())
+            using (FrmConfig frm = new FrmConfig())
             {
                 frm.ShowDialog();
             }

@@ -1,5 +1,5 @@
 using ServiceManager.Extensions.Interfaces;
-using ServiceManager.Extensions.ScriptNotifier.forms;
+using ServiceManager.Extensions.ScriptNotifier.Forms;
 using System;
 using System.Threading.Tasks;
 
@@ -68,7 +68,7 @@ namespace ServiceManager.Extensions.ScriptNotifier
 
         public void Configure()
         {
-            using (frmConfig frm = new frmConfig())
+            using (FrmConfig frm = new FrmConfig())
             {
                 frm.ShowDialog();
             }

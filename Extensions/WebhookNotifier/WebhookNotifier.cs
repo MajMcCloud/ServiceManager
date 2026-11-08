@@ -1,5 +1,5 @@
 using ServiceManager.Extensions.Interfaces;
-using ServiceManager.Extensions.WebhookNotifier.forms;
+using ServiceManager.Extensions.WebhookNotifier.Forms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -322,7 +322,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
         public void Configure()
         {
-            using (frmConfig frm = new frmConfig())
+            using (FrmConfig frm = new FrmConfig())
             {
                 frm.ShowDialog();
             }

@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using ServiceManager.Base;
-using ServiceManager.Base.data;
-using ServiceManager.Base.data.settings;
-using ServiceManager.Base.wcf;
+using ServiceManager.Base.Data;
+using ServiceManager.Base.Data.Settings;
+using ServiceManager.Base.Wcf;
 using System;
 using System.Diagnostics;
 using System.IO;
