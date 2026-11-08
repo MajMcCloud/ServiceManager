@@ -24,9 +24,12 @@ The same two commands run in [CI](.github/workflows/ci.yml), which uploads the `
 - [Network Settings](#network-settings)
 - [Notifications](#notifications)
   - [Notification Settings](#notification-settings)
-  - [Notifications - Telegram](#notifications---telegram)
-  - [Notifications - Windows Event Log](#notifications---windows-event-log)
-  - [Notifications - Webhook](#notifications---webhook)
+  - [Telegram](#notifications---telegram)
+  - [Windows Event Log](#notifications---windows-event-log)
+  - [Webhook](#notifications---webhook)
+  - [SMTP Mail](#notifications---smtp-mail)
+  - [Syslog](#notifications---syslog)
+  - [Script Hook](#notifications---script-hook)
 - [Service Settings - Start](#service-settings---start)
 - [Service Settings - Shutdown](#service-settings---shutdown)
 - [Service Settings - Logging](#service-settings---logging)
@@ -48,7 +51,7 @@ Choose between Net Pipes and TCP connection for your Service Manager.
 Notifications stay off until at least one provider is listed. They are configured in one place only:
 `Manager` -> `Open config` -> the `Notifications` tab.
 
-Three providers ship in the box, and each one is switched on per event, so the same event can go into the
+Six providers ship in the box, and each one is switched on per event, so the same event can go into the
 event log and to a webhook while Telegram only receives the errors:
 
 | Provider | Needs | Reachable |
@@ -56,6 +59,9 @@ event log and to a webhook while Telegram only receives the errors:
 | [Telegram](#notifications---telegram) | internet access, a bot token | anywhere the ServiceManager has internet |
 | [Windows Event Log](#notifications---windows-event-log) | no network, administrator rights for the first entry | the machine the service runs on |
 | [Webhook](#notifications---webhook) | internet access or a local endpoint | any tool that accepts a request |
+| [SMTP Mail](#notifications---smtp-mail) | an SMTP server, or the pickup folder of IIS | any inbox |
+| [Syslog](#notifications---syslog) | a collector over UDP or TCP | a log server on the network |
+| [Script Hook](#notifications---script-hook) | a program on the machine | whatever that program can do |
 
 ### Notification Settings
 
@@ -103,6 +109,52 @@ Additional headers go one per line as `Name: value`, enough for an `Authorizatio
 service or the `X-...` header of a flow. A failed delivery is repeated as often as configured, the reason lands in
 the console of the ServiceManager. The settings form has a test button that answers what the endpoint
 replied, and it can accept a self signed certificate - for this one endpoint, not for the process.
+
+### Notifications - SMTP Mail
+
+One mail per event through the SMTP server of the installation. Port 25 unencrypted and 587 with STARTTLS
+are what a mail server offers, 465 is not supported. Username and password stay empty for a server that
+takes the machine as it is.
+
+The subject names the prefix, the level, the instance and the service, so a mail rule can pick the errors out
+before anyone reads them. The body stays plain text: the fields as a small table and the console line below
+it, because a mail client hides every console line it mistakes for a tag. The same event inside *Seconds
+between identical mails* is mailed once, which keeps a service that crashes every few seconds from filling
+the inbox.
+
+*Pickup directory* needs no server at all: the mail is written into the drop folder of the local SMTP service,
+which is also the way to look at a message without sending it anywhere. The form has a test button that
+writes a real mail through the configured settings.
+
+### Notifications - Syslog
+
+One line per event to a collector such as rsyslog, Graylog or the journal of a NAS. UDP is the usual
+transport and needs no handshake, TCP reaches a collector that answers and reports what it did not take.
+
+The line starts with the priority in angle brackets, which is the facility times eight plus the severity of
+the event: an error on local0 reads 131, a warning 132. A facility outside 0 to 23 falls back to local0.
+RFC 3164 is what an older collector expects, RFC 5424 adds the version and the zone of the sender. The stamp
+is the time of the event rather than the time of sending, so the collector sees the order the events happened
+in even when a delivery had to be repeated.
+
+A collector cuts a line around 1024 bytes, so the provider cuts the text itself and keeps the header whole -
+a cut line still names the service it came from. The test button of the form sends one line over the
+configured transport and answers what the collector did not accept.
+
+### Notifications - Script Hook
+
+A program on the machine receives the event: a batch file, a PowerShell script, a Node tool, anything that
+can be started. It is started directly rather than through a shell, so a path with a space or an ampersand in
+it stays one path.
+
+The event is one json object, by default written to the standard input of the program. *Hand the event as one
+extra argument* hands the same object as the last argument instead, for a program that reads its arguments.
+The quoting follows the rules of the operating system, so a service name containing a quote cannot end the
+argument early. *Arguments* is written behind the program exactly as it stands in the settings, and a program
+that does not finish within the timeout is killed.
+
+A non zero exit code counts as a refusal and the first line of the answer goes into the console of the
+ServiceManager. The program is started once per event and never repeated.
 
 
 ## Service Settings - Start
