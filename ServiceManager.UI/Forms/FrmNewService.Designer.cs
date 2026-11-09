@@ -172,7 +172,6 @@
             this.tabMain.Controls.Add(this.tabLogging);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
-            this.tabMain.SelectedIndex = 1;
             this.tabMain.Size = new System.Drawing.Size(691, 419);
             this.tabMain.TabIndex = 6;
             // 

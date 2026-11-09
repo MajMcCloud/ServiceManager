@@ -150,7 +150,6 @@
             this.tabMain.Controls.Add(this.tabNotifications);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
-            this.tabMain.SelectedIndex = 2;
             this.tabMain.Size = new System.Drawing.Size(766, 427);
             this.tabMain.TabIndex = 4;
             // 
