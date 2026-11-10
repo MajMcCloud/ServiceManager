@@ -1,4 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using ServiceManager.Base.Data;
 using System;
 using System.Collections.Generic;
@@ -108,18 +110,32 @@ namespace ServiceManager.Tests
         {
             // The analytics cross the WCF boundary as JSON, and an enum without a converter is a number
             // there. Renaming a status is free, changing its number relabels every running installation.
-            Assert.AreEqual(-1, (int)ServiceAnalytics.eStatus.unknown);
+            var expected = new Dictionary<String, int>
+            {
+                { "unknown", -1 },
+                { "starting", 1 },
+                { "started", 2 },
+                { "running", 3 },
+                { "shutting_down", 4 },
+                { "offline", 5 },
+                { "start_failed", 6 },
+                { "failed", 7 },
+                { "updated", 8 },
+                { "waiting_for_dependency", 9 }
+            };
 
-            Assert.AreEqual(1, (int)ServiceAnalytics.eStatus.starting);
-            Assert.AreEqual(2, (int)ServiceAnalytics.eStatus.started);
-            Assert.AreEqual(3, (int)ServiceAnalytics.eStatus.running);
-            Assert.AreEqual(4, (int)ServiceAnalytics.eStatus.shutting_down);
-            Assert.AreEqual(5, (int)ServiceAnalytics.eStatus.offline);
-            Assert.AreEqual(6, (int)ServiceAnalytics.eStatus.start_failed);
-            Assert.AreEqual(7, (int)ServiceAnalytics.eStatus.failed);
-            Assert.AreEqual(8, (int)ServiceAnalytics.eStatus.updated);
+            foreach (var pair in expected)
+            {
+                Assert.IsTrue(Enum.IsDefined(typeof(ServiceAnalytics.eStatus), pair.Key), pair.Key + " has to stay a status");
 
-            Assert.AreEqual(9, (int)ServiceAnalytics.eStatus.waiting_for_dependency);
+                var analytics = new ServiceAnalytics();
+
+                analytics.Status = (ServiceAnalytics.eStatus)Enum.Parse(typeof(ServiceAnalytics.eStatus), pair.Key);
+
+                var json = JObject.Parse(JsonConvert.SerializeObject(analytics));
+
+                Assert.AreEqual(pair.Value, (int)json["Status"], pair.Key + " has to keep the number " + pair.Value);
+            }
         }
 
         // Every line has the same length, so the tail can be measured line by line.
