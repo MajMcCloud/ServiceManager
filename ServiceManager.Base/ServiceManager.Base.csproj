@@ -59,6 +59,7 @@
     <Compile Include="ManagerServiceBase.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Progress\ProgressReport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceManager.cs" />
     <Compile Include="Wcf\AdministratorAuthorizationManager.cs" />

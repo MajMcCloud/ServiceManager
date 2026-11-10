@@ -41,6 +41,11 @@ which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bi
 
 <img src="Screens/Mainwindow.png" />
 
+The operations that can take a while run behind a progress dialog: installing and removing the service,
+starting, stopping and restarting it, connecting to a ServiceManager and starting or ending a test run. The
+window stays responsive while they work. An operation runs to its end, the dialog cannot be closed before it
+is through: stopping half way would leave the service or the connection half changed.
+
 
 ## Network Settings
 

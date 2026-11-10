@@ -1,8 +1,10 @@
 ﻿using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
+using ServiceManager.Base.Progress;
 using ServiceManager.Extensions;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
+using ServiceManager.UI.Progress;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -504,7 +506,14 @@ namespace ServiceManager.UI
                 return true;
             }
 
-            var result = writer.Apply(Program.ServiceName, slist.WindowsSettings, accountChanged);
+            WindowsServiceWriteResult result = null;
+
+            ProgressRunner.Run(this, "Service settings", progress =>
+            {
+                progress.Report(ProgressReport.Running("Applying the service settings..."));
+
+                result = writer.Apply(Program.ServiceName, slist.WindowsSettings, accountChanged);
+            });
 
             if (!result.Success)
             {
@@ -532,7 +541,14 @@ namespace ServiceManager.UI
                 return;
             }
 
-            var restart = writer.Restart(Program.ServiceName);
+            WindowsServiceWriteResult restart = null;
+
+            ProgressRunner.Run(this, "Service settings", progress =>
+            {
+                progress.Report(ProgressReport.Running("Restarting the service..."));
+
+                restart = writer.Restart(Program.ServiceName);
+            });
 
             if (!restart.Success)
             {

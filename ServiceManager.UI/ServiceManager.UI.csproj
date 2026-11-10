@@ -100,6 +100,12 @@
     <Compile Include="Forms\FrmNewService.Designer.cs">
       <DependentUpon>FrmNewService.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmProgress.Designer.cs">
+      <DependentUpon>FrmProgress.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -117,6 +123,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Progress\ProgressRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\FrmConnectTo.resx">
       <DependentUpon>FrmConnectTo.cs</DependentUpon>

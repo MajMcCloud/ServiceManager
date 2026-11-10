@@ -1,10 +1,12 @@
 ﻿using ServiceManager.Base;
 using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
+using ServiceManager.Base.Progress;
 using ServiceManager.Base.Wcf;
 using ServiceManager.Base.Wcf.Models;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
+using ServiceManager.UI.Progress;
 using System;
 using System.Collections.Generic;
 using System.Configuration.Install;
@@ -299,9 +301,18 @@ namespace ServiceManager.UI
             if (frm.ShowDialog() != DialogResult.OK)
                 return;
 
+            String host = frm.IPOrHost;
+            int port = frm.Port;
 
+            // Opening the channel waits for the whole timeout when nothing answers, so the attempt runs behind the dialog.
+            runWithProgress("Connection", progress =>
+            {
+                progress.Report(ProgressReport.Running($"Contacting {host}:{port}..."));
 
-            StartWatching(frm.IPOrHost, frm.Port);
+                NetTcpTest(host, port);
+            });
+
+            StartWatching(host, port);
         }
 
         private void Item_CheckedChanged(object sender, EventArgs e)
@@ -413,6 +424,56 @@ namespace ServiceManager.UI
         private bool NetTcpTest(String HostOrIP, int Port)
         {
             return Channel.ProbeTcp(HostOrIP, Port);
+        }
+
+        /// <summary>
+        /// Runs work on a worker thread behind the progress dialog. The refresh timers stay off while it
+        /// runs: they would call over the same connection the work is using and write the list the user
+        /// is watching while it is being changed.
+        /// </summary>
+        private void runWithProgress(String title, Action<IProgress<ProgressReport>> work)
+        {
+            bool refresh = tmRefresh.Enabled;
+            bool ping = tmPing.Enabled;
+            bool service = rmServiceRefresh.Enabled;
+
+            tmRefresh.Enabled = false;
+            tmPing.Enabled = false;
+            rmServiceRefresh.Enabled = false;
+
+            try
+            {
+                ProgressRunner.Run(this, title, work);
+            }
+            finally
+            {
+                tmRefresh.Enabled = refresh;
+                tmPing.Enabled = ping;
+                rmServiceRefresh.Enabled = service;
+            }
+        }
+
+        /// <summary>
+        /// Runs one operation over a list of services and reports every step. The rows are collected
+        /// before, the list belongs to the window and the work runs on another thread.
+        /// </summary>
+        private void runForServices(IProgress<ProgressReport> progress, List<Guid> ids, List<String> names, String verb, Action<IManagerService, Guid> operation)
+        {
+            lock (_sync)
+            {
+                Channel connection = this.WatchConnection;
+                if (connection == null)
+                {
+                    return;
+                }
+
+                for (int index = 0; index < ids.Count; index++)
+                {
+                    progress.Report(ProgressReport.Step(verb + " " + names[index] + "...", index + 1, ids.Count));
+
+                    connection.TryCatch(a => operation(a, ids[index]));
+                }
+            }
         }
 
         private void StartWatching(String IPOrHost, int port)
@@ -647,7 +708,12 @@ namespace ServiceManager.UI
             // account of the UI: testing does not need an elevated Visual Studio.
             this.Manager.Access = Channel.eAccess.OwnUser;
 
-            this.Manager.Start();
+            runWithProgress("Test run", progress =>
+            {
+                progress.Report(ProgressReport.Running("Starting the services..."));
+
+                this.Manager.Start();
+            });
 
             
 
@@ -683,10 +749,12 @@ namespace ServiceManager.UI
                 return;
             }
 
-            var t = new Task(() =>
+            runWithProgress("Test run", progress =>
             {
                 try
                 {
+                    progress.Report(ProgressReport.Running("Stopping the services..."));
+
                     this.Manager.Shutdown();
 
                     this.Manager.Stop();
@@ -696,8 +764,6 @@ namespace ServiceManager.UI
 
                 }
             });
-
-            t.Start();
 
 
 
@@ -780,10 +846,17 @@ namespace ServiceManager.UI
 
                 //svi.StartOnInstall = true;
 
-                System.Collections.Specialized.ListDictionary state = new System.Collections.Specialized.ListDictionary();
-                svi.Install(state);
+                runWithProgress("Service installation", progress =>
+                {
+                    progress.Report(ProgressReport.Running("Installing the service..."));
 
-                svi.UpdateServiceConfig(null, null);
+                    System.Collections.Specialized.ListDictionary state = new System.Collections.Specialized.ListDictionary();
+                    svi.Install(state);
+
+                    progress.Report(ProgressReport.Running("Applying the service settings..."));
+
+                    svi.UpdateServiceConfig(null, null);
+                });
 
                 tmRefresh_Tick(null, null);
 
@@ -810,7 +883,13 @@ namespace ServiceManager.UI
                 InstallContext Context = new InstallContext("", null);
                 ServiceInstallerObj.Context = Context;
                 ServiceInstallerObj.ServiceName = Program.ServiceName;
-                ServiceInstallerObj.Uninstall(null);
+
+                runWithProgress("Service removal", progress =>
+                {
+                    progress.Report(ProgressReport.Running("Removing the service..."));
+
+                    ServiceInstallerObj.Uninstall(null);
+                });
 
                 tmRefresh_Tick(null, null);
 
@@ -833,41 +912,55 @@ namespace ServiceManager.UI
         {
             ServiceController[] services = ServiceController.GetServices();
 
-            bool connect = false;
-
             try
             {
                 ServiceController sc = services.FirstOrDefault(a => a.ServiceName == Program.ServiceName);
                 if (sc == null) return;
 
-
-                sc.Start();
-
-                if (MessageBox.Show("Connect to service ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                // The question comes first: the wait and the probe belonging to it run behind the progress dialog.
+                if (MessageBox.Show("Connect to service ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 {
-                    connect = true;
+                    sc.Start();
+
+                    tmRefresh_Tick(null, null);
+
+                    return;
                 }
 
-                if (connect)
+                int processId = 0;
+                bool pipes = false;
+
+                runWithProgress("Service start", progress =>
                 {
+                    progress.Report(ProgressReport.Running("Starting the service..."));
+
+                    sc.Start();
+
+                    progress.Report(ProgressReport.Running("Waiting for the service to start..."));
+
                     sc.WaitForStatus(ServiceControllerStatus.Running, new TimeSpan(0, 0, 30));
+
+                    progress.Report(ProgressReport.Running("Reading the process of the service..."));
 
                     ManagementObject service = new ManagementObject(@"Win32_service.Name='" + Program.ServiceName + "'");
                     object o = service.GetPropertyValue("ProcessId");
-                    int processId = (int)((UInt32)o);
+                    processId = (int)((UInt32)o);
 
-                    if (NetPipesTest(processId))
-                    {
-                        StartWatching(processId);
-                    }
-                    else
-                    {
-                        StartWatching("localhost", 50000);
-                    }
+                    progress.Report(ProgressReport.Running("Contacting the service..."));
+
+                    pipes = NetPipesTest(processId);
+                });
+
+                if (pipes)
+                {
+                    StartWatching(processId);
+                }
+                else
+                {
+                    StartWatching("localhost", 50000);
                 }
 
                 tmRefresh_Tick(null, null);
-
             }
             catch
             {
@@ -888,8 +981,16 @@ namespace ServiceManager.UI
                 object o = service.GetPropertyValue("ProcessId");
                 int processId = (int)((UInt32)o);
 
-                sc.Stop();
-                sc.Start();
+                runWithProgress("Service restart", progress =>
+                {
+                    progress.Report(ProgressReport.Running("Stopping the service..."));
+
+                    sc.Stop();
+
+                    progress.Report(ProgressReport.Running("Starting the service..."));
+
+                    sc.Start();
+                });
 
                 tmRefresh_Tick(null, null);
             }
@@ -913,7 +1014,12 @@ namespace ServiceManager.UI
                 object o = service.GetPropertyValue("ProcessId");
                 processId = (int)((UInt32)o);
 
-                sc.Stop();
+                runWithProgress("Service stop", progress =>
+                {
+                    progress.Report(ProgressReport.Running("Stopping the service..."));
+
+                    sc.Stop();
+                });
 
                 tmRefresh_Tick(null, null);
             }
@@ -1057,22 +1163,24 @@ namespace ServiceManager.UI
             if (this.WatchConnection == null)
                 return;
 
-            lock (_sync)
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.SelectedItems)
             {
-                foreach (var i in lsvServices.SelectedItems)
+                var item = i as ListViewItem;
+
+                if (item.SubItems[3].Text == "running")
                 {
-                    var item = i as ListViewItem;
-                    var id = (Guid)item.Tag;
-
-                    if (item.SubItems[3].Text == "running")
-                    {
-                        if (MessageBox.Show($"Restart service {item.SubItems[1].Text} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                            return;
-                    }
-
-                    this.WatchConnection.TryCatch(a => a.RestartService(id));
+                    if (MessageBox.Show($"Restart service {item.SubItems[1].Text} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        return;
                 }
+
+                ids.Add((Guid)item.Tag);
+                names.Add(item.SubItems[1].Text);
             }
+
+            runWithProgress("Service restart", progress => runForServices(progress, ids, names, "Restarting", (a, id) => a.RestartService(id)));
         }
 
         private void tsmiMenu_Shutdown_Click(object sender, EventArgs e)
@@ -1085,17 +1193,18 @@ namespace ServiceManager.UI
             if (MessageBox.Show("Shutdown service?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
-            lock (_sync)
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.SelectedItems)
             {
-                foreach (var i in lsvServices.SelectedItems)
-                {
-                    var item = i as ListViewItem;
-                    var id = (Guid)item.Tag;
+                var item = i as ListViewItem;
 
-                    this.WatchConnection.TryCatch(a => a.ShutdownService(id));
-                }
-
+                ids.Add((Guid)item.Tag);
+                names.Add(item.SubItems[1].Text);
             }
+
+            runWithProgress("Service shutdown", progress => runForServices(progress, ids, names, "Shutting down", (a, id) => a.ShutdownService(id)));
         }
 
 
@@ -1232,17 +1341,18 @@ namespace ServiceManager.UI
             if (lsvServices.Items.Count == 0)
                 return;
 
-            lock (_sync)
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.Items)
             {
-                foreach (var i in lsvServices.Items)
-                {
-                    var item = i as ListViewItem;
-                    var id = (Guid)item.Tag;
+                var item = i as ListViewItem;
 
-                    this.WatchConnection.TryCatch(a => a.StartService(id));
-                }
-
+                ids.Add((Guid)item.Tag);
+                names.Add(item.SubItems[1].Text);
             }
+
+            runWithProgress("Starting services", progress => runForServices(progress, ids, names, "Starting", (a, id) => a.StartService(id)));
         }
 
         private void rmiServices_StopAll_Click(object sender, EventArgs e)
@@ -1253,17 +1363,18 @@ namespace ServiceManager.UI
             if (lsvServices.Items.Count == 0)
                 return;
 
-            lock (_sync)
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.Items)
             {
-                foreach (var i in lsvServices.Items)
-                {
-                    var item = i as ListViewItem;
-                    var id = (Guid)item.Tag;
+                var item = i as ListViewItem;
 
-                    this.WatchConnection.TryCatch(a => a.ShutdownService(id));
-                }
-
+                ids.Add((Guid)item.Tag);
+                names.Add(item.SubItems[1].Text);
             }
+
+            runWithProgress("Stopping services", progress => runForServices(progress, ids, names, "Stopping", (a, id) => a.ShutdownService(id)));
         }
 
         private void rmiServices_OpenAllLiveLogs_Click(object sender, EventArgs e)
