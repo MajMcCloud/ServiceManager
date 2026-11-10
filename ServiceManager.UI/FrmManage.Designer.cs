@@ -83,7 +83,11 @@
             this.txtService_Password = new System.Windows.Forms.TextBox();
             this.lblService_Dependencies = new System.Windows.Forms.Label();
             this.cmbService_Dependencies = new System.Windows.Forms.ComboBox();
-            this.txtService_Dependencies = new System.Windows.Forms.TextBox();
+            this.lsvService_Dependencies = new System.Windows.Forms.ListView();
+            this.colDependency_Title = new System.Windows.Forms.ColumnHeader();
+            this.colDependency_Name = new System.Windows.Forms.ColumnHeader();
+            this.colDependency_State = new System.Windows.Forms.ColumnHeader();
+            this.bnService_Dependencies_Select = new System.Windows.Forms.Button();
             this.lblService_Hint = new System.Windows.Forms.Label();
             this.cmsMenu.SuspendLayout();
             this.tabMain.SuspendLayout();
@@ -342,7 +346,8 @@
             this.grpWindowsService.Controls.Add(this.txtService_Password);
             this.grpWindowsService.Controls.Add(this.lblService_Dependencies);
             this.grpWindowsService.Controls.Add(this.cmbService_Dependencies);
-            this.grpWindowsService.Controls.Add(this.txtService_Dependencies);
+            this.grpWindowsService.Controls.Add(this.lsvService_Dependencies);
+            this.grpWindowsService.Controls.Add(this.bnService_Dependencies_Select);
             this.grpWindowsService.Controls.Add(this.lblService_Hint);
             this.grpWindowsService.Location = new System.Drawing.Point(30, 12);
             this.grpWindowsService.Name = "grpWindowsService";
@@ -435,14 +440,46 @@
             this.cmbService_Dependencies.TabIndex = 9;
             this.cmbService_Dependencies.SelectedIndexChanged += new System.EventHandler(this.cmbService_Dependencies_SelectedIndexChanged);
             // 
-            // txtService_Dependencies
+            // lsvService_Dependencies
             // 
-            this.txtService_Dependencies.Location = new System.Drawing.Point(19, 183);
-            this.txtService_Dependencies.Multiline = true;
-            this.txtService_Dependencies.Name = "txtService_Dependencies";
-            this.txtService_Dependencies.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtService_Dependencies.Size = new System.Drawing.Size(321, 95);
-            this.txtService_Dependencies.TabIndex = 10;
+            this.lsvService_Dependencies.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colDependency_Title,
+            this.colDependency_Name,
+            this.colDependency_State});
+            this.lsvService_Dependencies.FullRowSelect = true;
+            this.lsvService_Dependencies.HideSelection = false;
+            this.lsvService_Dependencies.Location = new System.Drawing.Point(19, 183);
+            this.lsvService_Dependencies.MultiSelect = false;
+            this.lsvService_Dependencies.Name = "lsvService_Dependencies";
+            this.lsvService_Dependencies.Size = new System.Drawing.Size(480, 95);
+            this.lsvService_Dependencies.TabIndex = 10;
+            this.lsvService_Dependencies.UseCompatibleStateImageBehavior = false;
+            this.lsvService_Dependencies.View = System.Windows.Forms.View.Details;
+            // 
+            // colDependency_Title
+            // 
+            this.colDependency_Title.Text = "Display name";
+            this.colDependency_Title.Width = 200;
+            // 
+            // colDependency_Name
+            // 
+            this.colDependency_Name.Text = "Service name";
+            this.colDependency_Name.Width = 160;
+            // 
+            // colDependency_State
+            // 
+            this.colDependency_State.Text = "Status";
+            this.colDependency_State.Width = 100;
+            // 
+            // bnService_Dependencies_Select
+            // 
+            this.bnService_Dependencies_Select.Location = new System.Drawing.Point(507, 183);
+            this.bnService_Dependencies_Select.Name = "bnService_Dependencies_Select";
+            this.bnService_Dependencies_Select.Size = new System.Drawing.Size(90, 23);
+            this.bnService_Dependencies_Select.TabIndex = 11;
+            this.bnService_Dependencies_Select.Text = "Select...";
+            this.bnService_Dependencies_Select.UseVisualStyleBackColor = true;
+            this.bnService_Dependencies_Select.Click += new System.EventHandler(this.bnService_Dependencies_Select_Click);
             // 
             // lblService_Hint
             // 
@@ -450,8 +487,8 @@
             this.lblService_Hint.Location = new System.Drawing.Point(365, 27);
             this.lblService_Hint.Name = "lblService_Hint";
             this.lblService_Hint.Size = new System.Drawing.Size(315, 120);
-            this.lblService_Hint.TabIndex = 11;
-            this.lblService_Hint.Text = "Dependencies can delay startup at boot. Stopping a dependency may also require stopping ServiceManager and its managed applications. Custom: enter one Windows service name per line.";
+            this.lblService_Hint.TabIndex = 12;
+            this.lblService_Hint.Text = "Dependencies can delay startup at boot. Stopping a dependency may also require stopping ServiceManager and its managed applications. Custom: use Select... to pick the services.";
             // 
             // tabNotifications
             // 
@@ -703,7 +740,11 @@
         private System.Windows.Forms.TextBox txtService_Password;
         private System.Windows.Forms.Label lblService_Dependencies;
         private System.Windows.Forms.ComboBox cmbService_Dependencies;
-        private System.Windows.Forms.TextBox txtService_Dependencies;
+        private System.Windows.Forms.ListView lsvService_Dependencies;
+        private System.Windows.Forms.ColumnHeader colDependency_Title;
+        private System.Windows.Forms.ColumnHeader colDependency_Name;
+        private System.Windows.Forms.ColumnHeader colDependency_State;
+        private System.Windows.Forms.Button bnService_Dependencies_Select;
         private System.Windows.Forms.Label lblService_Hint;
         private System.Windows.Forms.TabPage tabNotifications;
         private System.Windows.Forms.Button rbnNotifications_Save;

@@ -106,6 +106,12 @@
     <Compile Include="Forms\FrmProgress.Designer.cs">
       <DependentUpon>FrmProgress.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmServicePicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmServicePicker.Designer.cs">
+      <DependentUpon>FrmServicePicker.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,6 +139,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmNewService.resx">
       <DependentUpon>FrmNewService.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmServicePicker.resx">
+      <DependentUpon>FrmServicePicker.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>

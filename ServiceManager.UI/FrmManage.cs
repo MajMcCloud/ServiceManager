@@ -1,6 +1,7 @@
 ﻿using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Progress;
+using ServiceManager.Base.Windows;
 using ServiceManager.Extensions;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
@@ -46,8 +47,10 @@ namespace ServiceManager.UI
         private NotificationTarget m_DisplayedTarget;
 
         private List<String> m_CustomDependencies = new List<String>();
-        private WindowsService.eDependencyMode m_DisplayedDependencyMode;
         private bool m_LoadingWindowsSettings;
+
+        /// <summary>Reads the services of the machine once per dialog, the list and the picker share it.</summary>
+        private WindowsServiceLister m_ServiceLister;
 
         public FrmManage()
         {
@@ -413,7 +416,6 @@ namespace ServiceManager.UI
             cmbService_Account.Items.Clear();
             cmbService_Dependencies.Items.Clear();
             m_CustomDependencies = (windows.CustomDependencies ?? new List<String>()).ToList();
-            m_DisplayedDependencyMode = windows.DependenciesMode;
 
             foreach (WindowsService.eStartMode mode in Enum.GetValues(typeof(WindowsService.eStartMode)))
             {
@@ -436,7 +438,6 @@ namespace ServiceManager.UI
 
             txtService_User.Text = windows.UserName ?? String.Empty;
             txtService_Password.Clear();
-            txtService_Dependencies.Text = String.Join(Environment.NewLine, m_CustomDependencies);
             m_LoadingWindowsSettings = false;
 
             applyAccountFields();
@@ -467,11 +468,6 @@ namespace ServiceManager.UI
                 && (windows.Account != account || !String.Equals(windows.UserName, userName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("Enter a password when selecting a different user account.");
-            }
-
-            if (dependencies == WindowsService.eDependencyMode.Custom)
-            {
-                m_CustomDependencies = readCustomDependencies();
             }
 
             var updated = new WindowsService
@@ -566,13 +562,65 @@ namespace ServiceManager.UI
             txtService_Password.Enabled = user;
         }
 
-        private List<String> readCustomDependencies()
+        /// <summary>
+        /// The services of the machine, read once and kept. A machine that does not answer offers an empty
+        /// list, the configured dependencies stay visible either way.
+        /// </summary>
+        private List<WindowsServiceInfo> getServices()
         {
-            return txtService_Dependencies.Lines
-                .Select(a => a.Trim())
-                .Where(a => a.Length > 0)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            if (m_ServiceLister == null)
+            {
+                m_ServiceLister = new WindowsServiceLister();
+            }
+
+            try
+            {
+                return m_ServiceLister.ListServices(true);
+            }
+            catch (Exception)
+            {
+                return new List<WindowsServiceInfo>();
+            }
+        }
+
+        /// <summary>
+        /// Shows the dependencies of the selected mode with the title of the service in front of its name. A
+        /// service that is not installed any more stays in the list, that is something to see before saving.
+        /// </summary>
+        private void fillDependencyList(WindowsService.eDependencyMode mode)
+        {
+            List<String> names;
+
+            if (mode == WindowsService.eDependencyMode.StandardNetwork)
+            {
+                names = WindowsService.StandardNetworkDependencies.ToList();
+            }
+            else if (mode == WindowsService.eDependencyMode.Custom)
+            {
+                names = m_CustomDependencies;
+            }
+            else
+            {
+                names = new List<String>();
+            }
+
+            var all = getServices();
+
+            lsvService_Dependencies.BeginUpdate();
+            lsvService_Dependencies.Items.Clear();
+
+            foreach (String name in names)
+            {
+                var info = all.FirstOrDefault(m => String.Equals(m.ServiceName, name, StringComparison.OrdinalIgnoreCase));
+                ListViewItem item = new ListViewItem(info != null ? info.DisplayName : name);
+
+                item.SubItems.Add(name);
+                item.SubItems.Add(info != null ? info.Status : "Not installed");
+
+                lsvService_Dependencies.Items.Add(item);
+            }
+
+            lsvService_Dependencies.EndUpdate();
         }
 
         private void applyDependencyFields()
@@ -584,16 +632,8 @@ namespace ServiceManager.UI
 
             var mode = selectedChoice(cmbService_Dependencies, WindowsService.eDependencyMode.StandardNetwork);
 
-            if (m_DisplayedDependencyMode == WindowsService.eDependencyMode.Custom)
-            {
-                m_CustomDependencies = readCustomDependencies();
-            }
-
-            m_DisplayedDependencyMode = mode;
-            txtService_Dependencies.ReadOnly = mode != WindowsService.eDependencyMode.Custom;
-            txtService_Dependencies.Text = mode == WindowsService.eDependencyMode.StandardNetwork
-                ? String.Join(Environment.NewLine, WindowsService.StandardNetworkDependencies)
-                : mode == WindowsService.eDependencyMode.Custom ? String.Join(Environment.NewLine, m_CustomDependencies) : String.Empty;
+            bnService_Dependencies_Select.Enabled = mode == WindowsService.eDependencyMode.Custom;
+            fillDependencyList(mode);
             lblService_Hint.Visible = mode != WindowsService.eDependencyMode.None;
         }
 
@@ -605,6 +645,20 @@ namespace ServiceManager.UI
         private void cmbService_Dependencies_SelectedIndexChanged(object sender, EventArgs e)
         {
             applyDependencyFields();
+        }
+
+        private void bnService_Dependencies_Select_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new FrmServicePicker(getServices(), m_CustomDependencies))
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                m_CustomDependencies = dialog.SelectedNames;
+                fillDependencyList(WindowsService.eDependencyMode.Custom);
+            }
         }
 
         private static void selectChoice(ComboBox combo, Object value)
