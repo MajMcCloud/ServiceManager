@@ -32,6 +32,7 @@ namespace ServiceManager.Extensions.SmtpNotifier
 
                 case NotificationKind.ServiceStop:
                 case NotificationKind.ServiceRestart:
+                case NotificationKind.DependencyWait:
                     return "warning";
 
                 default:

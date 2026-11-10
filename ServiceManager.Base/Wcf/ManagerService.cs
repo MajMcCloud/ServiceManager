@@ -121,6 +121,12 @@ namespace ServiceManager.Base.Wcf
                 return;
             }
 
+            if (analytics.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                ServiceLog(serviceId, "Service is already waiting for a dependency.");
+                return;
+            }
+
             Manager.StartService(service);
 
             ServiceLog(serviceId, "Service has been started.");
@@ -139,6 +145,11 @@ namespace ServiceManager.Base.Wcf
                 analytics.Exiting = DateTime.Now;
                 Manager.ServiceEnd(service);
             }
+            else if (analytics.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                //The wait has to end first, otherwise the start below is ignored as a duplicate
+                Manager.ServiceEnd(service);
+            }
 
             //Does not restart automatically
             if (!service.ForceRestart)
@@ -154,7 +165,7 @@ namespace ServiceManager.Base.Wcf
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
-            if (!analytics.IsRunning)
+            if (!analytics.IsRunning && analytics.Status != ServiceAnalytics.eStatus.waiting_for_dependency)
             {
                 ServiceLog(serviceId, "Service is already offline.");
                 return;
@@ -169,8 +180,9 @@ namespace ServiceManager.Base.Wcf
             if (analytics.IsRunning)
             {
                 analytics.Exiting = DateTime.Now;
-                Manager.ServiceEnd(service);
             }
+
+            Manager.ServiceEnd(service);
 
             if (!analytics.IsRunning)
                 ServiceLog(serviceId, "Service has been ended.");

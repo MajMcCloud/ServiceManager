@@ -62,6 +62,14 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
+            this.tabDependencies = new System.Windows.Forms.TabPage();
+            this.lsvDependencies = new System.Windows.Forms.ListView();
+            this.colDependency_Title = new System.Windows.Forms.ColumnHeader();
+            this.colDependency_Name = new System.Windows.Forms.ColumnHeader();
+            this.colDependency_State = new System.Windows.Forms.ColumnHeader();
+            this.bnDependencies_Select = new System.Windows.Forms.Button();
+            this.chkDependencies_WaitOnRestart = new System.Windows.Forms.CheckBox();
+            this.label15 = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabBasic.SuspendLayout();
             this.tabStart.SuspendLayout();
@@ -69,6 +77,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
             this.tabLogging.SuspendLayout();
+            this.tabDependencies.SuspendLayout();
             this.SuspendLayout();
             // 
             // bnSave
@@ -170,6 +179,7 @@
             this.tabMain.Controls.Add(this.tabStart);
             this.tabMain.Controls.Add(this.tabShutdown);
             this.tabMain.Controls.Add(this.tabLogging);
+            this.tabMain.Controls.Add(this.tabDependencies);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
             this.tabMain.Size = new System.Drawing.Size(691, 419);
@@ -397,6 +407,76 @@
             this.label12.TabIndex = 10;
             this.label12.Text = "Log console outputs to disk";
             // 
+            // tabDependencies
+            // 
+            this.tabDependencies.Controls.Add(this.lsvDependencies);
+            this.tabDependencies.Controls.Add(this.bnDependencies_Select);
+            this.tabDependencies.Controls.Add(this.chkDependencies_WaitOnRestart);
+            this.tabDependencies.Controls.Add(this.label15);
+            this.tabDependencies.Location = new System.Drawing.Point(4, 22);
+            this.tabDependencies.Name = "tabDependencies";
+            this.tabDependencies.Size = new System.Drawing.Size(683, 393);
+            this.tabDependencies.TabIndex = 4;
+            this.tabDependencies.Text = "Dependencies";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(22, 22);
+            this.label15.Name = "label15";
+            this.label15.TabIndex = 9;
+            this.label15.Text = "Windows services that have to run first";
+            // 
+            // lsvDependencies
+            // 
+            this.lsvDependencies.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colDependency_Title,
+            this.colDependency_Name,
+            this.colDependency_State});
+            this.lsvDependencies.FullRowSelect = true;
+            this.lsvDependencies.HideSelection = false;
+            this.lsvDependencies.Location = new System.Drawing.Point(22, 45);
+            this.lsvDependencies.MultiSelect = false;
+            this.lsvDependencies.Name = "lsvDependencies";
+            this.lsvDependencies.Size = new System.Drawing.Size(639, 250);
+            this.lsvDependencies.TabIndex = 10;
+            this.lsvDependencies.UseCompatibleStateImageBehavior = false;
+            this.lsvDependencies.View = System.Windows.Forms.View.Details;
+            // 
+            // colDependency_Title
+            // 
+            this.colDependency_Title.Text = "Display name";
+            this.colDependency_Title.Width = 240;
+            // 
+            // colDependency_Name
+            // 
+            this.colDependency_Name.Text = "Service name";
+            this.colDependency_Name.Width = 200;
+            // 
+            // colDependency_State
+            // 
+            this.colDependency_State.Text = "Status";
+            this.colDependency_State.Width = 120;
+            // 
+            // bnDependencies_Select
+            // 
+            this.bnDependencies_Select.Location = new System.Drawing.Point(22, 301);
+            this.bnDependencies_Select.Name = "bnDependencies_Select";
+            this.bnDependencies_Select.Size = new System.Drawing.Size(75, 23);
+            this.bnDependencies_Select.TabIndex = 11;
+            this.bnDependencies_Select.Text = "Select";
+            this.bnDependencies_Select.Click += new System.EventHandler(this.bnDependencies_Select_Click);
+            // 
+            // chkDependencies_WaitOnRestart
+            // 
+            this.chkDependencies_WaitOnRestart.AutoSize = true;
+            this.chkDependencies_WaitOnRestart.Checked = true;
+            this.chkDependencies_WaitOnRestart.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkDependencies_WaitOnRestart.Location = new System.Drawing.Point(110, 304);
+            this.chkDependencies_WaitOnRestart.Name = "chkDependencies_WaitOnRestart";
+            this.chkDependencies_WaitOnRestart.TabIndex = 12;
+            this.chkDependencies_WaitOnRestart.Text = "Wait for the dependencies after an automatic restart";
+            // 
             // FrmNewService
             // 
             this.AllowDrop = true;
@@ -425,6 +505,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).EndInit();
             this.tabLogging.ResumeLayout(false);
             this.tabLogging.PerformLayout();
+            this.tabDependencies.ResumeLayout(false);
+            this.tabDependencies.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -465,5 +547,13 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.CheckBox chkLogs_ToMemory;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TabPage tabDependencies;
+        private System.Windows.Forms.ListView lsvDependencies;
+        private System.Windows.Forms.ColumnHeader colDependency_Title;
+        private System.Windows.Forms.ColumnHeader colDependency_Name;
+        private System.Windows.Forms.ColumnHeader colDependency_State;
+        private System.Windows.Forms.Button bnDependencies_Select;
+        private System.Windows.Forms.CheckBox chkDependencies_WaitOnRestart;
+        private System.Windows.Forms.Label label15;
     }
 }

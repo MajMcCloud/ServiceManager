@@ -28,6 +28,7 @@ namespace ServiceManager.Extensions.SyslogNotifier
 
                 case NotificationKind.ServiceStop:
                 case NotificationKind.ServiceRestart:
+                case NotificationKind.DependencyWait:
                     return 4;
 
                 default:

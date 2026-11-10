@@ -102,6 +102,37 @@ namespace ServiceManager.Base.Data
 
         public eStatus Status { get; set; }
 
+
+        /// <summary>
+        /// The status as English text. The enum name is not what a person should read in the service list.
+        /// </summary>
+        public static String StatusText(eStatus status)
+        {
+            switch (status)
+            {
+                case eStatus.starting:
+                    return "starting";
+                case eStatus.started:
+                    return "started";
+                case eStatus.running:
+                    return "running";
+                case eStatus.shutting_down:
+                    return "shutting down";
+                case eStatus.offline:
+                    return "offline";
+                case eStatus.start_failed:
+                    return "start failed";
+                case eStatus.failed:
+                    return "failed";
+                case eStatus.updated:
+                    return "updated";
+                case eStatus.waiting_for_dependency:
+                    return "waiting for dependency";
+                default:
+                    return "unknown";
+            }
+        }
+
         public enum eStatus
         {
             unknown = -1,
@@ -112,7 +143,8 @@ namespace ServiceManager.Base.Data
             offline = 5,
             start_failed = 6,
             failed = 7,
-            updated = 8
+            updated = 8,
+            waiting_for_dependency = 9
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using ServiceManager.Base.Data;
+using ServiceManager.Base.Windows;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,12 @@ namespace ServiceManager.Base
 
         Channel Connection { get; set; }
 
+        /// <summary>
+        /// Asks the machine whether a Windows service runs. Replaced by a fake where the dependency wait
+        /// is tested without a service control manager.
+        /// </summary>
+        public IWindowsServiceStatus WindowsStatus { get; set; }
+
         public List<Guid> LiveLogs { get; set; }
 
         public List<Process> RunningProcesses { get; set; }
@@ -41,6 +48,8 @@ namespace ServiceManager.Base
             LiveLogs = new List<Guid>();
 
             RunningProcesses = new List<Process>();
+
+            WindowsStatus = new WindowsServiceStatus();
         }
 
 
@@ -151,6 +160,17 @@ namespace ServiceManager.Base
         /// <param name="item"></param>
         public void StartService(ServiceItem item)
         {
+            StartService(item, true);
+        }
+
+        /// <summary>
+        /// Starts the service. A service whose Windows dependencies are not up yet does not start right away,
+        /// it waits for them on its own thread rather than holding up the caller.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="respectDependencies">False when an automatic restart carries on without the wait.</param>
+        public void StartService(ServiceItem item, bool respectDependencies)
+        {
             if (item == null)
             {
                 return;
@@ -162,6 +182,105 @@ namespace ServiceManager.Base
             {
                 sa.ServiceID = item.ID;
                 Analytics.Services.Add(sa);
+            }
+
+            if (respectDependencies)
+            {
+                var missing = WindowsDependencyWait.FirstMissing(item.WindowsDependencies, this.WindowsStatus);
+
+                if (missing != null)
+                {
+                    WaitForDependency(item, sa, missing);
+
+                    return;
+                }
+            }
+
+            StartProcess(item, sa);
+        }
+
+        /// <summary>
+        /// Puts the service into the waiting state and lets a thread watch the machine until the dependency is
+        /// up, the wait has run out, or the user took the service offline again.
+        /// </summary>
+        private void WaitForDependency(ServiceItem item, ServiceAnalytics sa, String missing)
+        {
+            //A wait is already running, a second caller has nothing to add
+            if (sa.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                return;
+            }
+
+            sa.Status = ServiceAnalytics.eStatus.waiting_for_dependency;
+            sa.ProcessID = 0;
+            sa.AppendError(WindowsDependencyWait.WaitError(missing));
+
+            Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+
+            Notify(NotificationKind.DependencyWait, WindowsDependencyWait.WaitText(this.Config.Notifications.InstanceName, item.Title, missing), item.Title, missing);
+
+            Thread th = new Thread(new ThreadStart(() => WaitForDependencies(item, sa)));
+
+            th.IsBackground = true;
+            th.Start();
+        }
+
+        private void WaitForDependencies(ServiceItem item, ServiceAnalytics sa)
+        {
+            var started = DateTime.Now;
+            var timeout = this.Config?.RuntimeSettings?.Dependency_Wait_Timeout ?? WindowsDependencyWait.Default_Timeout_Seconds;
+
+            while (true)
+            {
+                //The manager stopped, or the waiting service was taken offline
+                if (!this.IsRunning || sa.Status != ServiceAnalytics.eStatus.waiting_for_dependency)
+                {
+                    return;
+                }
+
+                var missing = WindowsDependencyWait.FirstMissing(item.WindowsDependencies, this.WindowsStatus);
+
+                if (missing == null)
+                {
+                    StartProcess(item, sa);
+
+                    return;
+                }
+
+                if (WindowsDependencyWait.HasTimedOut(started, timeout, DateTime.Now))
+                {
+                    DependencyWaitFailed(item, sa, missing, timeout);
+
+                    return;
+                }
+
+                Thread.Sleep(WindowsDependencyWait.Poll_Milliseconds);
+            }
+        }
+
+        private void DependencyWaitFailed(ServiceItem item, ServiceAnalytics sa, String missing, int timeout)
+        {
+            sa.Status = ServiceAnalytics.eStatus.start_failed;
+            sa.ProcessID = 0;
+            sa.Started = null;
+            sa.Exited = DateTime.Now;
+            sa.Exiting = null;
+            sa.AppendError(WindowsDependencyWait.TimeoutError(missing, timeout));
+
+            Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+
+            Notify(NotificationKind.DependencyWait, WindowsDependencyWait.TimeoutText(this.Config.Notifications.InstanceName, item.Title, missing, timeout), item.Title, missing);
+        }
+
+        /// <summary>
+        /// Starts the process and add some event hooks.
+        /// </summary>
+        private void StartProcess(ServiceItem item, ServiceAnalytics sa)
+        {
+            //The wait and a manual start can reach this point at the same time, only one of them gets the process
+            if (sa.IsRunning)
+            {
+                return;
             }
 
             Notify(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item.Title);
@@ -234,6 +353,16 @@ namespace ServiceManager.Base
         public void ServiceEnd(ServiceItem item)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
+
+            //There is no process to end while the service holds back, taking it offline is what stops the wait
+            if (sa.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                sa.Status = ServiceAnalytics.eStatus.offline;
+
+                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+
+                return;
+            }
 
             Process proc;
 
@@ -467,7 +596,7 @@ namespace ServiceManager.Base
 
             sa.Restarts++;
 
-            StartService(service);
+            StartService(service, service.Wait_On_Restart);
 
             Notify(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted", s.Title);
         }

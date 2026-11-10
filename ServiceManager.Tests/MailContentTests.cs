@@ -45,6 +45,7 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual("warning", MailContent.Severity(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", MailContent.Severity(NotificationKind.ServiceRestart));
+            Assert.AreEqual("warning", MailContent.Severity(NotificationKind.DependencyWait));
 
             Assert.AreEqual("info", MailContent.Severity(NotificationKind.ServerStart));
             Assert.AreEqual("info", MailContent.Severity(NotificationKind.ServerShutdown));

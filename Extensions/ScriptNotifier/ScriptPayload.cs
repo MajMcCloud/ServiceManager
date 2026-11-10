@@ -25,6 +25,7 @@ namespace ServiceManager.Extensions.ScriptNotifier
 
                 case NotificationKind.ServiceStop:
                 case NotificationKind.ServiceRestart:
+                case NotificationKind.DependencyWait:
                     return "warning";
 
                 default:

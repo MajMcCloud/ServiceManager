@@ -39,7 +39,8 @@ namespace ServiceManager.Tests
             NotificationKind.ServiceStop,
             NotificationKind.ServiceRestart,
             NotificationKind.ConsoleOutput,
-            NotificationKind.ConsoleError
+            NotificationKind.ConsoleError,
+            NotificationKind.DependencyWait
         };
 
 
@@ -117,6 +118,15 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
+        public void migratedSettings_getTheDependencyFlagOnBecauseTheOldFileNeverHadOne()
+        {
+            var settings = JsonConvert.DeserializeObject<Notifications>(LegacyJson);
+
+            Assert.IsTrue(settings.Targets[0].IsEnabled(NotificationKind.DependencyWait),
+                "a flag the settings file does not know about keeps its default");
+        }
+
+        [TestMethod]
         public void everyKindMapsToItsOwnFlagAndToNoOther()
         {
             foreach (var kind in AllKinds)
@@ -166,12 +176,12 @@ namespace ServiceManager.Tests
             // kind travels as a number through the dispatch. A shift here would silently move the
             // selection of every installed configuration, so both the names and the numbers are fixed.
             CollectionAssert.AreEqual(
-                new[] { "ServerStart", "ServerShutdown", "ServiceStart", "ServiceStop", "ServiceRestart", "ConsoleOutput", "ConsoleError" },
+                new[] { "ServerStart", "ServerShutdown", "ServiceStart", "ServiceStop", "ServiceRestart", "ConsoleOutput", "ConsoleError", "DependencyWait" },
                 Enum.GetNames(typeof(NotificationKind)),
                 "renaming or inserting a kind changes the meaning of every stored event selection");
 
             CollectionAssert.AreEqual(
-                new[] { 0, 1, 2, 3, 4, 5, 6 },
+                new[] { 0, 1, 2, 3, 4, 5, 6, 7 },
                 Enum.GetValues(typeof(NotificationKind)).Cast<int>().ToArray(),
                 "the numeric values are what a settings file and an older provider see");
         }
@@ -216,6 +226,9 @@ namespace ServiceManager.Tests
                     break;
                 case NotificationKind.ConsoleError:
                     target.OnConsoleError = value;
+                    break;
+                case NotificationKind.DependencyWait:
+                    target.OnDependencyWait = value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind));

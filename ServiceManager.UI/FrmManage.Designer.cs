@@ -45,6 +45,9 @@
             this.tabWindowsService = new System.Windows.Forms.TabPage();
             this.bnWindowsService_Save = new System.Windows.Forms.Button();
             this.nudStartup_Delay = new System.Windows.Forms.NumericUpDown();
+            this.nudDependency_Wait_Timeout = new System.Windows.Forms.NumericUpDown();
+            this.lblDependencyTimeoutUnit = new System.Windows.Forms.Label();
+            this.lblDependencyTimeout = new System.Windows.Forms.Label();
             this.lblDelayUnit = new System.Windows.Forms.Label();
             this.lblDelay = new System.Windows.Forms.Label();
             this.nud_TCPPort = new System.Windows.Forms.NumericUpDown();
@@ -63,6 +66,7 @@
             this.chkNotifications_OnServerShutdown = new System.Windows.Forms.CheckBox();
             this.chkNotifications_OnServerStart = new System.Windows.Forms.CheckBox();
             this.chkNotifications_OnStart = new System.Windows.Forms.CheckBox();
+            this.chkNotifications_OnDependencyWait = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.cmbNotification_Extensions = new System.Windows.Forms.ComboBox();
@@ -96,6 +100,7 @@
             this.tabWindowsService.SuspendLayout();
             this.grpWindowsService.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDependency_Wait_Timeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).BeginInit();
             this.tabNotifications.SuspendLayout();
             this.SuspendLayout();
@@ -196,6 +201,9 @@
             // 
             // tabSettings
             // 
+            this.tabSettings.Controls.Add(this.nudDependency_Wait_Timeout);
+            this.tabSettings.Controls.Add(this.lblDependencyTimeoutUnit);
+            this.tabSettings.Controls.Add(this.lblDependencyTimeout);
             this.tabSettings.Controls.Add(this.bnSettings_Save);
             this.tabSettings.Controls.Add(this.chkRequireAdministrator);
             this.tabSettings.Controls.Add(this.nudStartup_Delay);
@@ -257,6 +265,34 @@
             this.lblDelay.AutoSize = true;
             this.lblDelay.TabIndex = 1;
             this.lblDelay.Text = "Delay services start by ";
+            // 
+            // lblDependencyTimeout
+            // 
+            this.lblDependencyTimeout.Location = new System.Drawing.Point(32, 214);
+            this.lblDependencyTimeout.Name = "lblDependencyTimeout";
+            this.lblDependencyTimeout.AutoSize = true;
+            this.lblDependencyTimeout.TabIndex = 1;
+            this.lblDependencyTimeout.Text = "Wait for a dependency for ";
+            // 
+            // lblDependencyTimeoutUnit
+            // 
+            this.lblDependencyTimeoutUnit.Location = new System.Drawing.Point(239, 215);
+            this.lblDependencyTimeoutUnit.Name = "lblDependencyTimeoutUnit";
+            this.lblDependencyTimeoutUnit.AutoSize = true;
+            this.lblDependencyTimeoutUnit.TabIndex = 1;
+            this.lblDependencyTimeoutUnit.Text = "seconds (0 = do not wait)";
+            // 
+            // nudDependency_Wait_Timeout
+            // 
+            this.nudDependency_Wait_Timeout.Location = new System.Drawing.Point(158, 214);
+            this.nudDependency_Wait_Timeout.Maximum = new decimal(new int[] {
+            3600,
+            0,
+            0,
+            0});
+            this.nudDependency_Wait_Timeout.Name = "nudDependency_Wait_Timeout";
+            this.nudDependency_Wait_Timeout.Size = new System.Drawing.Size(75, 20);
+            this.nudDependency_Wait_Timeout.TabIndex = 5;
             // 
             // nud_TCPPort
             // 
@@ -506,6 +542,7 @@
             this.tabNotifications.Controls.Add(this.chkNotifications_OnServerShutdown);
             this.tabNotifications.Controls.Add(this.chkNotifications_OnServerStart);
             this.tabNotifications.Controls.Add(this.chkNotifications_OnStart);
+            this.tabNotifications.Controls.Add(this.chkNotifications_OnDependencyWait);
             this.tabNotifications.Controls.Add(this.label2);
             this.tabNotifications.Controls.Add(this.label1);
             this.tabNotifications.Controls.Add(this.cmbNotification_Extensions);
@@ -594,6 +631,15 @@
             this.chkNotifications_OnStart.AutoSize = true;
             this.chkNotifications_OnStart.TabIndex = 10;
             this.chkNotifications_OnStart.Text = "On Start";
+            // 
+            // chkNotifications_OnDependencyWait
+            // 
+            this.chkNotifications_OnDependencyWait.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkNotifications_OnDependencyWait.Location = new System.Drawing.Point(190, 340);
+            this.chkNotifications_OnDependencyWait.Name = "chkNotifications_OnDependencyWait";
+            this.chkNotifications_OnDependencyWait.AutoSize = true;
+            this.chkNotifications_OnDependencyWait.TabIndex = 10;
+            this.chkNotifications_OnDependencyWait.Text = "On Dependency Wait";
             // 
             // label2
             // 
@@ -696,6 +742,7 @@
             this.grpWindowsService.ResumeLayout(false);
             this.grpWindowsService.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDependency_Wait_Timeout)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).EndInit();
             this.tabNotifications.ResumeLayout(false);
             this.tabNotifications.PerformLayout();
@@ -726,6 +773,9 @@
         private System.Windows.Forms.NumericUpDown nudStartup_Delay;
         private System.Windows.Forms.Label lblDelayUnit;
         private System.Windows.Forms.Label lblDelay;
+        private System.Windows.Forms.NumericUpDown nudDependency_Wait_Timeout;
+        private System.Windows.Forms.Label lblDependencyTimeoutUnit;
+        private System.Windows.Forms.Label lblDependencyTimeout;
         private System.Windows.Forms.CheckBox chkRequireAdministrator;
         private System.Windows.Forms.TabPage tabWindowsService;
         private System.Windows.Forms.Button bnWindowsService_Save;
@@ -752,6 +802,7 @@
         
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkNotifications_OnStart;
+        private System.Windows.Forms.CheckBox chkNotifications_OnDependencyWait;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkNotifications_OnConsoleError;
         private System.Windows.Forms.CheckBox chkNotifications_OnConsoleOutput;

@@ -211,7 +211,7 @@ namespace ServiceManager.UI
                     //    itm.SubItems.Add(a.IsRunning ? "running" : "offline");
                     //}
 
-                    itm.SubItems.Add(a.Status.ToString());
+                    itm.SubItems.Add(ServiceAnalytics.StatusText(a.Status));
 
                     itm.SubItems.Add(a.Restarts.ToString());
                     itm.SubItems.Add(item.ForceRestart ? "yes" : "no");
@@ -581,7 +581,7 @@ namespace ServiceManager.UI
                 if (item == null)
                     return;
 
-                if (en.Status == ServiceAnalytics.eStatus.offline)
+                if (en.Status == ServiceAnalytics.eStatus.offline || en.Status == eStatus.waiting_for_dependency)
                 {
                     item.ImageIndex = -1;
                 }
@@ -594,6 +594,13 @@ namespace ServiceManager.UI
 
                         item.SubItems[1].Text = "-";
                         item.SubItems[3].Text = "offline";
+
+                        break;
+
+                    case eStatus.waiting_for_dependency:
+
+                        item.SubItems[1].Text = "-";
+                        item.SubItems[3].Text = ServiceAnalytics.StatusText(en.Status);
 
                         break;
 
@@ -618,7 +625,7 @@ namespace ServiceManager.UI
 
                     default:
 
-                        item.SubItems[3].Text = en.Status.ToString();
+                        item.SubItems[3].Text = ServiceAnalytics.StatusText(en.Status);
 
                         break;
 

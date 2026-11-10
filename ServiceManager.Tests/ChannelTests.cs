@@ -58,6 +58,7 @@ namespace ServiceManager.Tests
             Assert.AreEqual(Runtime.eMode.NetPipes, runtime.Mode);
             Assert.AreEqual(50000, runtime.TCPPort);
             Assert.AreEqual(0, runtime.Startup_Delay);
+            Assert.AreEqual(120, runtime.Dependency_Wait_Timeout, "a service holds back for two minutes by default");
 
             Assert.IsTrue(runtime.RequireAdministrator, "a fresh installation is closed for ordinary users");
         }
@@ -104,6 +105,7 @@ namespace ServiceManager.Tests
                 cfg.RuntimeSettings.TCPPort = 50555;
                 cfg.RuntimeSettings.Startup_Delay = 15;
                 cfg.RuntimeSettings.RequireAdministrator = false;
+                cfg.RuntimeSettings.Dependency_Wait_Timeout = 90;
 
                 cfg.save(path);
 
@@ -112,6 +114,7 @@ namespace ServiceManager.Tests
                 Assert.AreEqual(Runtime.eMode.Tcp, again.RuntimeSettings.Mode);
                 Assert.AreEqual(50555, again.RuntimeSettings.TCPPort);
                 Assert.AreEqual(15, again.RuntimeSettings.Startup_Delay);
+                Assert.AreEqual(90, again.RuntimeSettings.Dependency_Wait_Timeout);
 
                 Assert.IsFalse(again.RuntimeSettings.RequireAdministrator, "the setting is read back the way it was written");
             }
@@ -137,6 +140,29 @@ namespace ServiceManager.Tests
                 var cfg = ServiceConfig.load(path);
 
                 Assert.IsTrue(cfg.RuntimeSettings.RequireAdministrator, "an older file leaves the service closed for ordinary users");
+            }
+            finally
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
+            }
+        }
+
+        [TestMethod]
+        public void settings_file_without_the_dependency_property_keeps_the_default_wait()
+        {
+            var directory = Path.Combine(Path.GetTempPath(), "servicemanager-tests", Guid.NewGuid().ToString("N"));
+            var path = Path.Combine(directory, "default.cfg");
+
+            try
+            {
+                Directory.CreateDirectory(directory);
+
+                File.WriteAllText(path, "{\"RuntimeSettings\":{\"Mode\":0,\"TCPPort\":50000,\"Startup_Delay\":0}}");
+
+                var cfg = ServiceConfig.load(path);
+
+                Assert.AreEqual(120, cfg.RuntimeSettings.Dependency_Wait_Timeout, "an older file does not turn the wait off");
             }
             finally
             {

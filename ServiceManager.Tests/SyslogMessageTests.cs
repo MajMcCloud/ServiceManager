@@ -56,6 +56,7 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual(4, SyslogMessage.SeverityOf(NotificationKind.ServiceStop));
             Assert.AreEqual(4, SyslogMessage.SeverityOf(NotificationKind.ServiceRestart));
+            Assert.AreEqual(4, SyslogMessage.SeverityOf(NotificationKind.DependencyWait));
 
             Assert.AreEqual(6, SyslogMessage.SeverityOf(NotificationKind.ServerStart));
             Assert.AreEqual(6, SyslogMessage.SeverityOf(NotificationKind.ServerShutdown));

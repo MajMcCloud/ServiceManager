@@ -122,6 +122,7 @@ namespace ServiceManager.Extensions.EventLogNotifier
 
                 case NotificationKind.ServiceStop:
                 case NotificationKind.ServiceRestart:
+                case NotificationKind.DependencyWait:
                     return EventLogEntryType.Warning;
 
                 default:

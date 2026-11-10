@@ -120,6 +120,15 @@ namespace ServiceManager.UI.Forms
                     tsmiService_Shutdown.Enabled = true;
 
                     break;
+                case Base.Data.ServiceAnalytics.eStatus.waiting_for_dependency:
+
+                    tsmiStatus.Image = Properties.Resources.led_off;
+                    tsmiStatus.Text = "Service is waiting for a dependency.";
+
+                    tsmiService_Restart.Text = "Start service";
+                    tsmiService_Shutdown.Enabled = true;
+
+                    break;
                 case Base.Data.ServiceAnalytics.eStatus.offline:
                 case Base.Data.ServiceAnalytics.eStatus.start_failed:
                 case Base.Data.ServiceAnalytics.eStatus.failed:

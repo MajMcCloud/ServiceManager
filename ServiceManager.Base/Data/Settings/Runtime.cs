@@ -31,12 +31,19 @@ namespace ServiceManager.Base.Data.Settings
         /// </summary>
         public bool RequireAdministrator { get; set; }
 
+        /// <summary>
+        /// How long a service waits for a Windows dependency that is not running, in seconds. Zero starts
+        /// nothing while a dependency is missing.
+        /// </summary>
+        public int Dependency_Wait_Timeout { get; set; }
+
         public Runtime()
         {
             this.Mode = eMode.NetPipes;
             this.TCPPort = 50000;
             this.Startup_Delay = 0;
             this.RequireAdministrator = true;
+            this.Dependency_Wait_Timeout = 120;
         }
 
     }

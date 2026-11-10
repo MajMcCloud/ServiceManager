@@ -113,6 +113,8 @@ namespace ServiceManager.UI
 
             nudStartup_Delay.Value = slist.RuntimeSettings.Startup_Delay;
 
+            nudDependency_Wait_Timeout.Value = slist.RuntimeSettings.Dependency_Wait_Timeout;
+
             chkRequireAdministrator.Checked = slist.RuntimeSettings.RequireAdministrator;
 
 
@@ -233,6 +235,7 @@ namespace ServiceManager.UI
             target.OnConsoleError = chkNotifications_OnConsoleError.Checked;
             target.OnServerStart = chkNotifications_OnServerStart.Checked;
             target.OnServerShutdown = chkNotifications_OnServerShutdown.Checked;
+            target.OnDependencyWait = chkNotifications_OnDependencyWait.Checked;
         }
 
         /// <summary>Shows the events the selected provider asked for.</summary>
@@ -255,6 +258,7 @@ namespace ServiceManager.UI
             chkNotifications_OnConsoleError.Checked = target.OnConsoleError;
             chkNotifications_OnServerStart.Checked = target.OnServerStart;
             chkNotifications_OnServerShutdown.Checked = target.OnServerShutdown;
+            chkNotifications_OnDependencyWait.Checked = target.OnDependencyWait;
         }
 
         private void lstNotifications_Providers_SelectedIndexChanged(object sender, EventArgs e)
@@ -768,6 +772,8 @@ namespace ServiceManager.UI
             }
 
             slist.RuntimeSettings.Startup_Delay = (int)nudStartup_Delay.Value;
+
+            slist.RuntimeSettings.Dependency_Wait_Timeout = (int)nudDependency_Wait_Timeout.Value;
 
             slist.RuntimeSettings.RequireAdministrator = chkRequireAdministrator.Checked;
 

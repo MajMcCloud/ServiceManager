@@ -73,6 +73,7 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual("warning", ScriptPayload.Level(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", ScriptPayload.Level(NotificationKind.ServiceRestart));
+            Assert.AreEqual("warning", ScriptPayload.Level(NotificationKind.DependencyWait));
 
             Assert.AreEqual("info", ScriptPayload.Level(NotificationKind.ServerStart));
             Assert.AreEqual("info", ScriptPayload.Level(NotificationKind.ServerShutdown));

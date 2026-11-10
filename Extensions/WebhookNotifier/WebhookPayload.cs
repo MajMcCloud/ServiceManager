@@ -94,6 +94,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
                 case NotificationKind.ServiceStop:
                 case NotificationKind.ServiceRestart:
+                case NotificationKind.DependencyWait:
                     return "warning";
 
                 default:

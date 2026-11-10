@@ -126,6 +126,7 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual("warning", WebhookPayload.Level(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", WebhookPayload.Level(NotificationKind.ServiceRestart));
+            Assert.AreEqual("warning", WebhookPayload.Level(NotificationKind.DependencyWait));
 
             Assert.AreEqual("info", WebhookPayload.Level(NotificationKind.ServerStart));
             Assert.AreEqual("info", WebhookPayload.Level(NotificationKind.ServerShutdown));

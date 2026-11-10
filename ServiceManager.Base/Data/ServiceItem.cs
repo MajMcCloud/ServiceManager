@@ -21,6 +21,16 @@ namespace ServiceManager.Base.Data
 
         public bool ForceRestart { get; set; }
 
+        /// <summary>
+        /// Windows services that have to run before this service is started.
+        /// </summary>
+        public List<String> WindowsDependencies { get; set; } = new List<String>();
+
+        /// <summary>
+        /// Wait for the Windows dependencies after an automatic restart as well.
+        /// </summary>
+        public bool Wait_On_Restart { get; set; } = true;
+
         public int Shutdown_Timeout { get; set; }
 
         public bool Shutdown_ENTER_Send { get; set; }
