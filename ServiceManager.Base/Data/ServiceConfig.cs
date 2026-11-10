@@ -14,6 +14,8 @@ namespace ServiceManager.Base.Data
 
         public Runtime RuntimeSettings { get; set; }
 
+        public WindowsService WindowsSettings { get; set; }
+
         public Notifications Notifications { get; set; }
 
 
@@ -22,6 +24,7 @@ namespace ServiceManager.Base.Data
         {
             this.ServiceList = new List<ServiceItem>();
             this.RuntimeSettings = new Runtime();
+            this.WindowsSettings = new WindowsService();
             this.Notifications = new Notifications();
         }
 

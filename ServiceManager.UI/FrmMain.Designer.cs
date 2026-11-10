@@ -60,6 +60,7 @@
             this.rmiService = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiService_Install = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiService_Uninstall = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiService_Settings = new System.Windows.Forms.ToolStripMenuItem();
             this.radMenuSeparatorItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.rmiService_Start = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiService_Restart = new System.Windows.Forms.ToolStripMenuItem();
@@ -272,6 +273,7 @@
             this.rmiService.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiService_Install,
             this.rmiService_Uninstall,
+            this.rmiService_Settings,
             this.radMenuSeparatorItem2,
             this.rmiService_Start,
             this.rmiService_Restart,
@@ -291,6 +293,12 @@
             this.rmiService_Uninstall.Name = "rmiService_Uninstall";
             this.rmiService_Uninstall.Text = "Uninstall service";
             this.rmiService_Uninstall.Click += new System.EventHandler(this.rmiService_Uninstall_Click);
+            // 
+            // rmiService_Settings
+            // 
+            this.rmiService_Settings.Name = "rmiService_Settings";
+            this.rmiService_Settings.Text = "Service settings";
+            this.rmiService_Settings.Click += new System.EventHandler(this.rmiService_Settings_Click);
             // 
             // radMenuSeparatorItem2
             // 
@@ -508,6 +516,7 @@
         private System.Windows.Forms.ToolStripMenuItem rmiTesting_End;
         private System.Windows.Forms.ToolStripMenuItem rmiService_Install;
         private System.Windows.Forms.ToolStripMenuItem rmiService_Uninstall;
+        private System.Windows.Forms.ToolStripMenuItem rmiService_Settings;
         private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem2;
         private System.Windows.Forms.ToolStripMenuItem rmiService_Start;
         private System.Windows.Forms.ToolStripMenuItem rmiService_Restart;

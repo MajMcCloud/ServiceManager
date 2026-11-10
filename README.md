@@ -23,6 +23,7 @@ which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bi
 - [Main Window](#mainwindow)
 - [Network Settings](#network-settings)
 - [Network Security](#network-security)
+- [Windows Service Settings](#windows-service-settings)
 - [Notifications](#notifications)
   - [Notification Settings](#notification-settings)
   - [Script Hook](#notifications---script-hook)
@@ -79,6 +80,37 @@ The endpoints also limit what a caller can send: 64 KB per message on the servic
 size for the XML reader, and at most 20 open sessions and 16 calls at the same time. The console and error output
 the service keeps in memory is limited to the last 256 KB per stream, oldest lines first, so a chatty console can
 no longer grow the process without bounds.
+
+## Windows Service Settings
+
+Open `Service` -> `Service settings`, or the `Windows service` tab under `Manager` -> `Open config`.
+This tab has its own Save button, separate from the connection and runtime settings on the Settings tab.
+These settings configure the local Windows service, not a remotely connected instance or an individual
+managed application. Applying them to an installed service requires administrator rights. Installing or
+uninstalling the service needs them as well; without them the application names the missing rights instead
+of repeating the Windows error.
+
+- **Start mode:** Automatic, Automatic (delayed start), Manual or Disabled.
+- **Log on as:** Local System, Local Service, Network Service or a named user (`DOMAIN\User` or
+  `.\User`). A user account needs the *Log on as a service* right; ServiceManager grants it when
+  applying or installing the service. File, configuration and application access rights must still
+  be granted separately. A domain policy can override local logon rights.
+- **New password:** leave blank to keep the stored password. Selecting a different user account
+  requires a new password. Passwords are protected with DPAPI for this machine in `config\default.cfg`;
+  another machine cannot decrypt them. Machine-scoped DPAPI does not replace file access controls:
+  restrict access to the configuration file and its backups.
+- **Dependencies:** None, Standard network (`Tcpip`, `Dhcp`, `Dnscache`) or Custom. Custom takes one
+  Windows service name per line, not its display name. The standard list is shown read-only.
+
+Saving applies changes immediately to an installed service and stores the same values for reinstallation.
+Failures are shown and the dialog stays open; after a partial application, check the Windows service
+configuration before retrying. If the service is not installed yet, saving only stores its future settings.
+An account change offers to restart a running service, except when the new start mode is Disabled.
+A restart also stops its managed applications. Startup and dependency changes alone need no restart.
+
+Dependencies can delay ServiceManager at boot. Stopping a dependency may also require stopping
+ServiceManager and its managed applications. Older settings files retain the previous defaults:
+Automatic, Local System and the three standard network dependencies.
 
 ## Notifications
 

@@ -42,6 +42,8 @@
             this.bnAddService = new System.Windows.Forms.Button();
             this.tabSettings = new System.Windows.Forms.TabPage();
             this.bnSettings_Save = new System.Windows.Forms.Button();
+            this.tabWindowsService = new System.Windows.Forms.TabPage();
+            this.bnWindowsService_Save = new System.Windows.Forms.Button();
             this.nudStartup_Delay = new System.Windows.Forms.NumericUpDown();
             this.lblDelayUnit = new System.Windows.Forms.Label();
             this.lblDelay = new System.Windows.Forms.Label();
@@ -70,10 +72,25 @@
             this.bnNotifications_Remove = new System.Windows.Forms.Button();
             this.lstNotifications_Providers = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.grpWindowsService = new System.Windows.Forms.GroupBox();
+            this.lblService_StartMode = new System.Windows.Forms.Label();
+            this.cmbService_StartMode = new System.Windows.Forms.ComboBox();
+            this.lblService_Account = new System.Windows.Forms.Label();
+            this.cmbService_Account = new System.Windows.Forms.ComboBox();
+            this.lblService_User = new System.Windows.Forms.Label();
+            this.txtService_User = new System.Windows.Forms.TextBox();
+            this.lblService_Password = new System.Windows.Forms.Label();
+            this.txtService_Password = new System.Windows.Forms.TextBox();
+            this.lblService_Dependencies = new System.Windows.Forms.Label();
+            this.cmbService_Dependencies = new System.Windows.Forms.ComboBox();
+            this.txtService_Dependencies = new System.Windows.Forms.TextBox();
+            this.lblService_Hint = new System.Windows.Forms.Label();
             this.cmsMenu.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabServices.SuspendLayout();
             this.tabSettings.SuspendLayout();
+            this.tabWindowsService.SuspendLayout();
+            this.grpWindowsService.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).BeginInit();
             this.tabNotifications.SuspendLayout();
@@ -148,6 +165,7 @@
             this.tabMain.Controls.Add(this.tabServices);
             this.tabMain.Controls.Add(this.tabSettings);
             this.tabMain.Controls.Add(this.tabNotifications);
+            this.tabMain.Controls.Add(this.tabWindowsService);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
             this.tabMain.Size = new System.Drawing.Size(766, 427);
@@ -292,6 +310,148 @@
             this.rrbMode_NetPipes.AutoSize = true;
             this.rrbMode_NetPipes.TabIndex = 0;
             this.rrbMode_NetPipes.Text = "Net Pipes";
+            //
+            // tabWindowsService
+            //
+            this.tabWindowsService.Controls.Add(this.grpWindowsService);
+            this.tabWindowsService.Controls.Add(this.bnWindowsService_Save);
+            this.tabWindowsService.Location = new System.Drawing.Point(4, 22);
+            this.tabWindowsService.Name = "tabWindowsService";
+            this.tabWindowsService.Size = new System.Drawing.Size(758, 401);
+            this.tabWindowsService.TabIndex = 3;
+            this.tabWindowsService.Text = "Windows service";
+            //
+            // bnWindowsService_Save
+            //
+            this.bnWindowsService_Save.Location = new System.Drawing.Point(30, 325);
+            this.bnWindowsService_Save.Name = "bnWindowsService_Save";
+            this.bnWindowsService_Save.Size = new System.Drawing.Size(110, 24);
+            this.bnWindowsService_Save.TabIndex = 1;
+            this.bnWindowsService_Save.Text = "Save";
+            this.bnWindowsService_Save.Click += new System.EventHandler(this.bnWindowsService_Save_Click);
+            //
+            // grpWindowsService
+            //
+            this.grpWindowsService.Controls.Add(this.lblService_StartMode);
+            this.grpWindowsService.Controls.Add(this.cmbService_StartMode);
+            this.grpWindowsService.Controls.Add(this.lblService_Account);
+            this.grpWindowsService.Controls.Add(this.cmbService_Account);
+            this.grpWindowsService.Controls.Add(this.lblService_User);
+            this.grpWindowsService.Controls.Add(this.txtService_User);
+            this.grpWindowsService.Controls.Add(this.lblService_Password);
+            this.grpWindowsService.Controls.Add(this.txtService_Password);
+            this.grpWindowsService.Controls.Add(this.lblService_Dependencies);
+            this.grpWindowsService.Controls.Add(this.cmbService_Dependencies);
+            this.grpWindowsService.Controls.Add(this.txtService_Dependencies);
+            this.grpWindowsService.Controls.Add(this.lblService_Hint);
+            this.grpWindowsService.Location = new System.Drawing.Point(30, 12);
+            this.grpWindowsService.Name = "grpWindowsService";
+            this.grpWindowsService.Size = new System.Drawing.Size(700, 300);
+            this.grpWindowsService.TabIndex = 0;
+            this.grpWindowsService.TabStop = false;
+            this.grpWindowsService.Text = "Windows service";
+            // 
+            // lblService_StartMode
+            // 
+            this.lblService_StartMode.AutoSize = true;
+            this.lblService_StartMode.Location = new System.Drawing.Point(16, 27);
+            this.lblService_StartMode.Name = "lblService_StartMode";
+            this.lblService_StartMode.TabIndex = 0;
+            this.lblService_StartMode.Text = "Start mode:";
+            // 
+            // cmbService_StartMode
+            // 
+            this.cmbService_StartMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbService_StartMode.FormattingEnabled = true;
+            this.cmbService_StartMode.Location = new System.Drawing.Point(130, 24);
+            this.cmbService_StartMode.Name = "cmbService_StartMode";
+            this.cmbService_StartMode.Size = new System.Drawing.Size(210, 21);
+            this.cmbService_StartMode.TabIndex = 1;
+            // 
+            // lblService_Account
+            // 
+            this.lblService_Account.AutoSize = true;
+            this.lblService_Account.Location = new System.Drawing.Point(16, 60);
+            this.lblService_Account.Name = "lblService_Account";
+            this.lblService_Account.TabIndex = 2;
+            this.lblService_Account.Text = "Log on as:";
+            // 
+            // cmbService_Account
+            // 
+            this.cmbService_Account.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbService_Account.FormattingEnabled = true;
+            this.cmbService_Account.Location = new System.Drawing.Point(130, 57);
+            this.cmbService_Account.Name = "cmbService_Account";
+            this.cmbService_Account.Size = new System.Drawing.Size(210, 21);
+            this.cmbService_Account.TabIndex = 3;
+            this.cmbService_Account.SelectedIndexChanged += new System.EventHandler(this.cmbService_Account_SelectedIndexChanged);
+            // 
+            // lblService_User
+            // 
+            this.lblService_User.AutoSize = true;
+            this.lblService_User.Location = new System.Drawing.Point(16, 93);
+            this.lblService_User.Name = "lblService_User";
+            this.lblService_User.TabIndex = 4;
+            this.lblService_User.Text = "User name:";
+            // 
+            // txtService_User
+            // 
+            this.txtService_User.Location = new System.Drawing.Point(130, 90);
+            this.txtService_User.Name = "txtService_User";
+            this.txtService_User.Size = new System.Drawing.Size(210, 20);
+            this.txtService_User.TabIndex = 5;
+            // 
+            // lblService_Password
+            // 
+            this.lblService_Password.AutoSize = true;
+            this.lblService_Password.Location = new System.Drawing.Point(16, 122);
+            this.lblService_Password.Name = "lblService_Password";
+            this.lblService_Password.TabIndex = 6;
+            this.lblService_Password.Text = "New password:";
+            // 
+            // txtService_Password
+            // 
+            this.txtService_Password.Location = new System.Drawing.Point(130, 119);
+            this.txtService_Password.Name = "txtService_Password";
+            this.txtService_Password.PasswordChar = '*';
+            this.txtService_Password.Size = new System.Drawing.Size(210, 20);
+            this.txtService_Password.TabIndex = 7;
+            // 
+            // lblService_Dependencies
+            // 
+            this.lblService_Dependencies.AutoSize = true;
+            this.lblService_Dependencies.Location = new System.Drawing.Point(16, 155);
+            this.lblService_Dependencies.Name = "lblService_Dependencies";
+            this.lblService_Dependencies.TabIndex = 8;
+            this.lblService_Dependencies.Text = "Dependencies:";
+            // 
+            // cmbService_Dependencies
+            // 
+            this.cmbService_Dependencies.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbService_Dependencies.FormattingEnabled = true;
+            this.cmbService_Dependencies.Location = new System.Drawing.Point(130, 152);
+            this.cmbService_Dependencies.Name = "cmbService_Dependencies";
+            this.cmbService_Dependencies.Size = new System.Drawing.Size(210, 21);
+            this.cmbService_Dependencies.TabIndex = 9;
+            this.cmbService_Dependencies.SelectedIndexChanged += new System.EventHandler(this.cmbService_Dependencies_SelectedIndexChanged);
+            // 
+            // txtService_Dependencies
+            // 
+            this.txtService_Dependencies.Location = new System.Drawing.Point(19, 183);
+            this.txtService_Dependencies.Multiline = true;
+            this.txtService_Dependencies.Name = "txtService_Dependencies";
+            this.txtService_Dependencies.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtService_Dependencies.Size = new System.Drawing.Size(321, 95);
+            this.txtService_Dependencies.TabIndex = 10;
+            // 
+            // lblService_Hint
+            // 
+            this.lblService_Hint.ForeColor = System.Drawing.Color.Firebrick;
+            this.lblService_Hint.Location = new System.Drawing.Point(365, 27);
+            this.lblService_Hint.Name = "lblService_Hint";
+            this.lblService_Hint.Size = new System.Drawing.Size(315, 120);
+            this.lblService_Hint.TabIndex = 11;
+            this.lblService_Hint.Text = "Dependencies can delay startup at boot. Stopping a dependency may also require stopping ServiceManager and its managed applications. Custom: enter one Windows service name per line.";
             // 
             // tabNotifications
             // 
@@ -495,6 +655,9 @@
             this.tabServices.ResumeLayout(false);
             this.tabSettings.ResumeLayout(false);
             this.tabSettings.PerformLayout();
+            this.tabWindowsService.ResumeLayout(false);
+            this.grpWindowsService.ResumeLayout(false);
+            this.grpWindowsService.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).EndInit();
             this.tabNotifications.ResumeLayout(false);
@@ -527,6 +690,21 @@
         private System.Windows.Forms.Label lblDelayUnit;
         private System.Windows.Forms.Label lblDelay;
         private System.Windows.Forms.CheckBox chkRequireAdministrator;
+        private System.Windows.Forms.TabPage tabWindowsService;
+        private System.Windows.Forms.Button bnWindowsService_Save;
+        private System.Windows.Forms.GroupBox grpWindowsService;
+        private System.Windows.Forms.Label lblService_StartMode;
+        private System.Windows.Forms.ComboBox cmbService_StartMode;
+        private System.Windows.Forms.Label lblService_Account;
+        private System.Windows.Forms.ComboBox cmbService_Account;
+        private System.Windows.Forms.Label lblService_User;
+        private System.Windows.Forms.TextBox txtService_User;
+        private System.Windows.Forms.Label lblService_Password;
+        private System.Windows.Forms.TextBox txtService_Password;
+        private System.Windows.Forms.Label lblService_Dependencies;
+        private System.Windows.Forms.ComboBox cmbService_Dependencies;
+        private System.Windows.Forms.TextBox txtService_Dependencies;
+        private System.Windows.Forms.Label lblService_Hint;
         private System.Windows.Forms.TabPage tabNotifications;
         private System.Windows.Forms.Button rbnNotifications_Save;
         private System.Windows.Forms.ComboBox cmbNotification_Extensions;

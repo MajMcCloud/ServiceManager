@@ -1,8 +1,10 @@
 ﻿using ServiceManager.Base;
 using ServiceManager.Base.Data;
+using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Wcf;
 using ServiceManager.Base.Wcf.Models;
 using ServiceManager.UI.Forms;
+using ServiceManager.UI.Installer;
 using System;
 using System.Collections.Generic;
 using System.Configuration.Install;
@@ -720,7 +722,6 @@ namespace ServiceManager.UI
 
         #region "Service"
 
-
         private void rmiService_Install_Click(object sender, EventArgs e)
         {
             try
@@ -739,20 +740,37 @@ namespace ServiceManager.UI
 
                 install.Parameters["assemblypath"] += " -s";
 
-                spi.Account = ServiceAccount.LocalSystem;
-                svi.StartType = ServiceStartMode.Automatic;
+                var windows = ServiceConfig.load().WindowsSettings;
+
+                spi.Account = ToServiceAccount(windows.Account);
+
+                if (windows.Account == WindowsService.eAccount.User)
+                {
+                    spi.Username = windows.GetAccountName();
+                    if (spi.Username == null)
+                    {
+                        throw new ArgumentException("The service account needs a user name.");
+                    }
+
+                    spi.Password = SecretStorage.Unprotect(windows.Password);
+                    String rightMessage = new WindowsServiceConfigWriter().GrantLogOnAsServiceRight(spi.Username);
+                    if (rightMessage != null)
+                    {
+                        throw new InvalidOperationException(rightMessage);
+                    }
+                }
+
+                svi.StartType = ToServiceStartMode(windows.StartMode);
 
                 svi.ServiceName = Program.ServiceName;
                 svi.DisplayName = Program.ServiceTitle;
                 svi.Description = "Runs and protecting specific applications.";
                 svi.Context = install;
 
-                //No delayed auto start, the service comes up as early as possible
-                svi.DelayedAutoStart = false;
+                svi.DelayedAutoStart = windows.StartMode == WindowsService.eStartMode.AutomaticDelayed;
                 svi.Parent = spi;
 
-                //The service reaches its clients over the network
-                svi.ServicesDependedOn = new string[] { "Tcpip", "Dhcp", "Dnscache" };
+                svi.ServicesDependedOn = windows.GetDependencies();
 
                 svi.FailCountResetTime = 60 * 60 * 24;
                 svi.FailRebootMsg = "Whitney Houston! We have a problem";
@@ -773,6 +791,10 @@ namespace ServiceManager.UI
 
                 MessageBox.Show("Service installed.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+            }
+            catch (Exception ex) when (WindowsServiceConfigWriter.IsMissingRights(ex))
+            {
+                MessageBox.Show("The service can not be installed.\r\n\r\n" + WindowsServiceConfigWriter.MissingRightsHint, "Error on installation", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             catch (Exception ex)
             {
@@ -795,6 +817,10 @@ namespace ServiceManager.UI
                 rmServiceRefresh_Tick(null, null);
 
                 MessageBox.Show("Service uninstalled.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex) when (WindowsServiceConfigWriter.IsMissingRights(ex))
+            {
+                MessageBox.Show("The service can not be uninstalled.\r\n\r\n" + WindowsServiceConfigWriter.MissingRightsHint, "Error on uninstall", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             catch (Exception ex)
             {
@@ -949,6 +975,62 @@ namespace ServiceManager.UI
                 rmiService_Restart.Enabled = false;
                 rmiService_Start.Enabled = true;
                 rmiService_Stop.Enabled = false;
+            }
+        }
+
+        private void rmiService_Settings_Click(object sender, EventArgs e)
+        {
+            var frm = new FrmManage();
+            frm.OpenTab = FrmManage.eTab.WindowsService;
+            frm.ShowDialog();
+        }
+
+        private static ServiceAccount ToServiceAccount(WindowsService.eAccount account)
+        {
+            switch (account)
+            {
+                case WindowsService.eAccount.User:
+
+                    return ServiceAccount.User;
+
+                case WindowsService.eAccount.LocalService:
+
+                    return ServiceAccount.LocalService;
+
+                case WindowsService.eAccount.NetworkService:
+
+                    return ServiceAccount.NetworkService;
+
+                case WindowsService.eAccount.LocalSystem:
+
+                    return ServiceAccount.LocalSystem;
+
+                default:
+
+                    throw new ArgumentOutOfRangeException(nameof(account));
+            }
+        }
+
+        private static ServiceStartMode ToServiceStartMode(WindowsService.eStartMode startMode)
+        {
+            switch (startMode)
+            {
+                case WindowsService.eStartMode.Automatic:
+                case WindowsService.eStartMode.AutomaticDelayed:
+
+                    return ServiceStartMode.Automatic;
+
+                case WindowsService.eStartMode.Manual:
+
+                    return ServiceStartMode.Manual;
+
+                case WindowsService.eStartMode.Disabled:
+
+                    return ServiceStartMode.Disabled;
+
+                default:
+
+                    throw new ArgumentOutOfRangeException(nameof(startMode));
             }
         }
 

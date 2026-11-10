@@ -171,6 +171,25 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
+        public void save_checked_persists_the_configuration()
+        {
+            var cfg = new ProbeConfig { Name = "checked save" };
+
+            cfg.saveChecked(file);
+
+            Assert.AreEqual("checked save", (String)JObject.Parse(File.ReadAllText(file))["Name"]);
+        }
+
+        [TestMethod]
+        public void save_checked_reports_a_missing_directory()
+        {
+            var cfg = new ProbeConfig();
+            String missing = Path.Combine(directory, "missing", "default.cfg");
+
+            Assert.ThrowsExactly<DirectoryNotFoundException>(() => cfg.saveChecked(missing));
+        }
+
+        [TestMethod]
         public void loadFromFile_overridesTheStaticFilename()
         {
             ProbeConfig.ConfigPath = directory + "\\";

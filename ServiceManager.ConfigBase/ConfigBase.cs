@@ -176,15 +176,20 @@ namespace ServiceManager.ConfigBase
         {
             try
             {
-                //Include all properties even when they are null
-                var s = JsonConvert.SerializeObject(this, BeautifyOnSave ? Formatting.Indented : Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include });
-
-                File.WriteAllText(path, s);
+                saveChecked(path);
             }
             catch
             {
 
             }
+        }
+
+        /// <summary>Saves the configuration and reports serialization or write failures to the caller.</summary>
+        public void saveChecked(String path)
+        {
+            var s = JsonConvert.SerializeObject(this, BeautifyOnSave ? Formatting.Indented : Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Include });
+
+            File.WriteAllText(path, s);
         }
 
         ~ConfigBase()

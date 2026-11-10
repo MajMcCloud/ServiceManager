@@ -2,12 +2,15 @@
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Extensions;
 using ServiceManager.UI.Forms;
+using ServiceManager.UI.Installer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -19,6 +22,18 @@ namespace ServiceManager.UI
     {
         public String ConfigFile { get; set; }
 
+        /// <summary>The tabs of this window, in the order they sit on the control.</summary>
+        public enum eTab
+        {
+            Services = 0,
+            Settings = 1,
+            Notifications = 2,
+            WindowsService = 3
+        }
+
+        /// <summary>The tab the window opens on. Null leaves the first one selected.</summary>
+        public eTab? OpenTab { get; set; }
+
         /// <summary>The providers of the settings file, edited before they are saved.</summary>
         private List<NotificationTarget> m_Targets = new List<NotificationTarget>();
 
@@ -28,6 +43,10 @@ namespace ServiceManager.UI
         /// <summary>The provider the checkboxes currently show, the one <see cref="commitCheckboxes"/> writes to.</summary>
         private NotificationTarget m_DisplayedTarget;
 
+        private List<String> m_CustomDependencies = new List<String>();
+        private WindowsService.eDependencyMode m_DisplayedDependencyMode;
+        private bool m_LoadingWindowsSettings;
+
         public FrmManage()
         {
             InitializeComponent();
@@ -35,6 +54,11 @@ namespace ServiceManager.UI
 
         private void frmManage_Load(object sender, EventArgs e)
         {
+            if (OpenTab.HasValue)
+            {
+                tabMain.SelectedIndex = (int)OpenTab.Value;
+            }
+
             loadList();
         }
 
@@ -85,6 +109,11 @@ namespace ServiceManager.UI
             nudStartup_Delay.Value = slist.RuntimeSettings.Startup_Delay;
 
             chkRequireAdministrator.Checked = slist.RuntimeSettings.RequireAdministrator;
+
+
+            //Windows service settings
+
+            loadWindowsService(slist);
 
 
             //Notification Settings
@@ -369,6 +398,288 @@ namespace ServiceManager.UI
 
         }
 
+        /// <summary>
+        /// Fills the service control manager section. The values come from the settings file and not from
+        /// the installation, so opening and closing the dialog changes nothing by itself.
+        /// </summary>
+        private void loadWindowsService(ServiceConfig slist)
+        {
+            var windows = slist.WindowsSettings;
+
+            m_LoadingWindowsSettings = true;
+            cmbService_StartMode.Items.Clear();
+            cmbService_Account.Items.Clear();
+            cmbService_Dependencies.Items.Clear();
+            m_CustomDependencies = (windows.CustomDependencies ?? new List<String>()).ToList();
+            m_DisplayedDependencyMode = windows.DependenciesMode;
+
+            foreach (WindowsService.eStartMode mode in Enum.GetValues(typeof(WindowsService.eStartMode)))
+            {
+                cmbService_StartMode.Items.Add(new ChoiceItem(startModeText(mode), mode));
+            }
+
+            foreach (WindowsService.eAccount account in Enum.GetValues(typeof(WindowsService.eAccount)))
+            {
+                cmbService_Account.Items.Add(new ChoiceItem(accountText(account), account));
+            }
+
+            foreach (WindowsService.eDependencyMode mode in Enum.GetValues(typeof(WindowsService.eDependencyMode)))
+            {
+                cmbService_Dependencies.Items.Add(new ChoiceItem(dependencyText(mode), mode));
+            }
+
+            selectChoice(cmbService_StartMode, windows.StartMode);
+            selectChoice(cmbService_Account, windows.Account);
+            selectChoice(cmbService_Dependencies, windows.DependenciesMode);
+
+            txtService_User.Text = windows.UserName ?? String.Empty;
+            txtService_Password.Clear();
+            txtService_Dependencies.Text = String.Join(Environment.NewLine, m_CustomDependencies);
+            m_LoadingWindowsSettings = false;
+
+            applyAccountFields();
+            applyDependencyFields();
+        }
+
+        /// <summary>
+        /// Reads the section back into the settings. True when an edit came in, which is what decides
+        /// whether the installation has to be touched.
+        /// </summary>
+        private bool applyWindowsSettings(ServiceConfig slist)
+        {
+            var windows = slist.WindowsSettings;
+
+            var startMode = selectedChoice(cmbService_StartMode, windows.StartMode);
+            var account = selectedChoice(cmbService_Account, windows.Account);
+            var dependencies = selectedChoice(cmbService_Dependencies, windows.DependenciesMode);
+
+            String userName = txtService_User.Text.Trim();
+            bool passwordEntered = account == WindowsService.eAccount.User && txtService_Password.Text.Length > 0;
+
+            if (account == WindowsService.eAccount.User && String.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentException("The service account needs a user name.");
+            }
+
+            if (account == WindowsService.eAccount.User && !passwordEntered
+                && (windows.Account != account || !String.Equals(windows.UserName, userName, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("Enter a password when selecting a different user account.");
+            }
+
+            if (dependencies == WindowsService.eDependencyMode.Custom)
+            {
+                m_CustomDependencies = readCustomDependencies();
+            }
+
+            var updated = new WindowsService
+            {
+                StartMode = startMode,
+                Account = account,
+                UserName = userName,
+                Password = passwordEntered ? SecretStorage.Protect(txtService_Password.Text) : windows.Password,
+                DependenciesMode = dependencies,
+                CustomDependencies = m_CustomDependencies.ToList()
+            };
+
+            bool changed = startMode != windows.StartMode
+                || account != windows.Account
+                || dependencies != windows.DependenciesMode
+                || (windows.UserName ?? String.Empty) != userName
+                || passwordEntered
+                || !(windows.CustomDependencies ?? new List<String>()).SequenceEqual(updated.CustomDependencies, StringComparer.OrdinalIgnoreCase);
+
+            slist.WindowsSettings = updated;
+
+            return changed;
+        }
+
+        /// <summary>Applies settings to an installed service before persisting them.</summary>
+        private bool applyWindowsService(ServiceConfig slist, bool accountChanged)
+        {
+            var writer = new WindowsServiceConfigWriter();
+
+            if (!writer.IsInstalled(Program.ServiceName))
+            {
+                return true;
+            }
+
+            var result = writer.Apply(Program.ServiceName, slist.WindowsSettings, accountChanged);
+
+            if (!result.Success)
+            {
+                MessageBox.Show(result.Message, "Service settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return result.Success;
+        }
+
+        private void offerServiceRestart()
+        {
+            var writer = new WindowsServiceConfigWriter();
+
+            if (!writer.IsInstalled(Program.ServiceName) || !writer.IsRunning(Program.ServiceName))
+            {
+                return;
+            }
+
+            var question = "The service settings were applied." + Environment.NewLine + Environment.NewLine
+                + "The service has to be restarted for them to take effect. Every application it runs is stopped with it." + Environment.NewLine + Environment.NewLine
+                + "Restart the service now?";
+
+            if (MessageBox.Show(question, "Service settings", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            var restart = writer.Restart(Program.ServiceName);
+
+            if (!restart.Success)
+            {
+                MessageBox.Show(restart.Message, "Service settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void applyAccountFields()
+        {
+            var user = selectedChoice(cmbService_Account, WindowsService.eAccount.LocalSystem) == WindowsService.eAccount.User;
+
+            lblService_User.Enabled = user;
+            txtService_User.Enabled = user;
+            lblService_Password.Enabled = user;
+            txtService_Password.Enabled = user;
+        }
+
+        private List<String> readCustomDependencies()
+        {
+            return txtService_Dependencies.Lines
+                .Select(a => a.Trim())
+                .Where(a => a.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private void applyDependencyFields()
+        {
+            if (m_LoadingWindowsSettings)
+            {
+                return;
+            }
+
+            var mode = selectedChoice(cmbService_Dependencies, WindowsService.eDependencyMode.StandardNetwork);
+
+            if (m_DisplayedDependencyMode == WindowsService.eDependencyMode.Custom)
+            {
+                m_CustomDependencies = readCustomDependencies();
+            }
+
+            m_DisplayedDependencyMode = mode;
+            txtService_Dependencies.ReadOnly = mode != WindowsService.eDependencyMode.Custom;
+            txtService_Dependencies.Text = mode == WindowsService.eDependencyMode.StandardNetwork
+                ? String.Join(Environment.NewLine, WindowsService.StandardNetworkDependencies)
+                : mode == WindowsService.eDependencyMode.Custom ? String.Join(Environment.NewLine, m_CustomDependencies) : String.Empty;
+            lblService_Hint.Visible = mode != WindowsService.eDependencyMode.None;
+        }
+
+        private void cmbService_Account_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            applyAccountFields();
+        }
+
+        private void cmbService_Dependencies_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            applyDependencyFields();
+        }
+
+        private static void selectChoice(ComboBox combo, Object value)
+        {
+            foreach (object item in combo.Items)
+            {
+                var choice = item as ChoiceItem;
+
+                if (choice != null && Equals(choice.Value, value))
+                {
+                    combo.SelectedItem = choice;
+
+                    return;
+                }
+            }
+
+            if (combo.Items.Count > 0)
+            {
+                combo.SelectedIndex = 0;
+            }
+        }
+
+        private static T selectedChoice<T>(ComboBox combo, T fallback)
+        {
+            var choice = combo.SelectedItem as ChoiceItem;
+
+            return choice == null ? fallback : (T)choice.Value;
+        }
+
+        private static String startModeText(WindowsService.eStartMode mode)
+        {
+            switch (mode)
+            {
+                case WindowsService.eStartMode.AutomaticDelayed:
+
+                    return "Automatic (delayed start)";
+
+                case WindowsService.eStartMode.Manual:
+
+                    return "Manual";
+
+                case WindowsService.eStartMode.Disabled:
+
+                    return "Disabled";
+
+                default:
+
+                    return "Automatic";
+            }
+        }
+
+        private static String accountText(WindowsService.eAccount account)
+        {
+            switch (account)
+            {
+                case WindowsService.eAccount.LocalService:
+
+                    return "Local Service account";
+
+                case WindowsService.eAccount.NetworkService:
+
+                    return "Network Service account";
+
+                case WindowsService.eAccount.User:
+
+                    return "A named user account";
+
+                default:
+
+                    return "Local System account";
+            }
+        }
+
+        private static String dependencyText(WindowsService.eDependencyMode mode)
+        {
+            switch (mode)
+            {
+                case WindowsService.eDependencyMode.None:
+
+                    return "No dependencies";
+
+                case WindowsService.eDependencyMode.Custom:
+
+                    return "Own list";
+
+                default:
+
+                    return "Standard network";
+            }
+        }
+
         private void bnSettings_Save_Click(object sender, EventArgs e)
         {
             var slist = ServiceConfig.load();
@@ -390,9 +701,52 @@ namespace ServiceManager.UI
 
             slist.RuntimeSettings.RequireAdministrator = chkRequireAdministrator.Checked;
 
-            slist.save();
+            try
+            {
+                slist.saveChecked(ServiceConfig.ConfigPath + ServiceConfig.Filename);
+                this.Close();
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is Newtonsoft.Json.JsonException)
+            {
+                MessageBox.Show("The settings could not be saved." + Environment.NewLine + ex.Message,
+                    "Settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-            this.Close();
+        private void bnWindowsService_Save_Click(object sender, EventArgs e)
+        {
+            var slist = ServiceConfig.load();
+
+            try
+            {
+                WindowsService previous = slist.WindowsSettings;
+                bool serviceChanged = applyWindowsSettings(slist);
+                bool accountChanged = previous.Account != slist.WindowsSettings.Account
+                    || (slist.WindowsSettings.UsesPassword()
+                        && (!String.Equals(previous.UserName, slist.WindowsSettings.UserName, StringComparison.OrdinalIgnoreCase)
+                            || previous.Password != slist.WindowsSettings.Password));
+
+                if (serviceChanged && !applyWindowsService(slist, accountChanged))
+                {
+                    return;
+                }
+
+                slist.saveChecked(ServiceConfig.ConfigPath + ServiceConfig.Filename);
+
+                if (accountChanged && slist.WindowsSettings.StartMode != WindowsService.eStartMode.Disabled)
+                {
+                    offerServiceRestart();
+                }
+
+                this.Close();
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is Win32Exception
+                || ex is InvalidOperationException || ex is CryptographicException || ex is FormatException
+                || ex is IOException || ex is UnauthorizedAccessException || ex is Newtonsoft.Json.JsonException)
+            {
+                MessageBox.Show("The settings could not be saved or applied. Check the Windows service configuration before retrying."
+                    + Environment.NewLine + ex.Message, "Service settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void rbnNotifications_Save_Click(object sender, EventArgs e)
@@ -450,6 +804,22 @@ namespace ServiceManager.UI
             Extensions.Extensions.Reload();
 
             reloadTargets();
+        }
+
+        /// <summary>Entry of a drop down list.</summary>
+        private sealed class ChoiceItem
+        {
+            public ChoiceItem(String text, Object value)
+            {
+                Text = text;
+                Value = value;
+            }
+
+            public String Text { get; }
+
+            public Object Value { get; }
+
+            public override String ToString() => Text;
         }
 
         /// <summary>Eintrag der Extensions-Auswahl.</summary>

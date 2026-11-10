@@ -112,6 +112,7 @@
     <Compile Include="FrmManage.Designer.cs">
       <DependentUpon>FrmManage.cs</DependentUpon>
     </Compile>
+    <Compile Include="installer\WindowsServiceConfigWriter.cs" />
     <Compile Include="installer\ServiceInstallerEx.cs">
       <SubType>Component</SubType>
     </Compile>
