@@ -107,6 +107,14 @@ of repeating the Windows error.
 - **Dependencies:** None, Standard network (`Tcpip`, `Dhcp`, `Dnscache`) or Custom. Custom takes one
   Windows service name per line, not its display name. The standard list is shown read-only.
 
+The Windows service tab lists configured dependencies by display name, service name and status. Select
+**Own list** and **Select...** to filter services by either name and choose more than one; filtering keeps
+checked services selected. A dependency that is no longer installed stays visible so it can be removed.
+
+<img src="Screens/WindowsServiceSettings.png" />
+
+<img src="Screens/WindowsServicePicker.png" />
+
 Saving applies changes immediately to an installed service and stores the same values for reinstallation.
 Failures are shown and the dialog stays open; after a partial application, check the Windows service
 configuration before retrying. If the service is not installed yet, saving only stores its future settings.
