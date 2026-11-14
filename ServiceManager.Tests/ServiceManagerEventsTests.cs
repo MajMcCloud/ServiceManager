@@ -245,6 +245,111 @@ namespace ServiceManager.Tests
         }
 
 
+        [TestMethod]
+        public void a_service_that_ends_on_its_own_stops_the_dependents_that_go_with_it()
+        {
+            var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var child = new ServiceItem()
+            {
+                ID = Child,
+                Title = "TelegramBot",
+                Dependencies = new List<Guid> { Service },
+                DependencyStopRule = ServiceItem.eDependencyStopRule.Stop
+            };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(parent);
+            manager.Config.ServiceList.Add(child);
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+            manager.IsRunning = true;
+
+            manager.PrepareService(parent);
+
+            manager.Process_Exited(parent, null);
+
+            Assert.AreEqual(2, bus.Events.Count, "the end of the service and the stop of the service waiting for it");
+
+            Assert.AreEqual(NotificationKind.ServiceCrashed, bus.Events[0].Kind);
+            Assert.AreEqual(Service, bus.Events[0].ServiceId);
+
+            Assert.AreEqual(NotificationKind.ServiceStop, bus.Events[1].Kind);
+            Assert.AreEqual(Child, bus.Events[1].ServiceId);
+        }
+
+
+        [TestMethod]
+        public void a_stop_the_manager_asked_for_does_not_run_the_rules_a_second_time()
+        {
+            var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var child = new ServiceItem()
+            {
+                ID = Child,
+                Title = "TelegramBot",
+                Dependencies = new List<Guid> { Service },
+                DependencyStopRule = ServiceItem.eDependencyStopRule.Stop
+            };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(parent);
+            manager.Config.ServiceList.Add(child);
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+            manager.IsRunning = true;
+
+            manager.PrepareService(parent);
+
+            //The stop is asked for, so its rules travel with StopService; the process only reports in afterwards
+            manager.ServiceEnd(parent);
+            manager.Process_Exited(parent, null);
+
+            Assert.AreEqual(1, bus.Events.Count, "the dependent is stopped once, not once more by the report of the process");
+            Assert.AreEqual(Service, bus.Events[0].ServiceId);
+        }
+
+
+        [TestMethod]
+        public void the_shutdown_of_the_instance_does_not_run_the_stop_rules()
+        {
+            var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var child = new ServiceItem()
+            {
+                ID = Child,
+                Title = "TelegramBot",
+                Dependencies = new List<Guid> { Service },
+                DependencyStopRule = ServiceItem.eDependencyStopRule.Stop
+            };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(parent);
+            manager.Config.ServiceList.Add(child);
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+
+            manager.PrepareService(parent);
+
+            manager.Process_Exited(parent, null);
+
+            Assert.AreEqual(1, bus.Events.Count, "the instance goes down on its own, the stop levels of the shutdown do the work");
+            Assert.AreEqual(Service, bus.Events[0].ServiceId);
+        }
+
+
         /// <summary>Takes the place of the bus, so a test reads back what the manager raised.</summary>
         private class RecordingBus : IServiceEventBus
         {

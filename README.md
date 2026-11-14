@@ -275,9 +275,10 @@ not start** starts the service anyway, which is what ServiceManager did before, 
 dependency stops** leaves the service running, which is what ServiceManager did before, or stops it as well. All
 three rules reach through the services below, level by level.
 
-A service that is stopped through the menu, the log window or a shutdown of the instance goes through the stop
-rule of every service that waits for it. A service that ends on its own is a crash and leaves its dependents
-alone, and stopping the whole instance follows the shutdown order described below instead of the rules.
+A service that is stopped through the menu or the log window goes through the stop rule of every service that
+waits for it. So does a service that ends on its own and stays ended: the dependents that go with it are taken
+offline as well. A service that is brought back by its own restart rule never reaches this point, and taking the
+whole instance offline follows the shutdown order described below instead of the rules.
 
 Services that wait for each other are refused in the dialog. A settings file that already holds such a circle
 is loaded anyway: the circle is reported through the *On Dependency Wait* event and the services start in the

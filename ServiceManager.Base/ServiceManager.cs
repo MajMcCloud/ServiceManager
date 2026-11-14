@@ -657,7 +657,11 @@ namespace ServiceManager.Base
             return false;
         }
 
-        private void Process_Exited(ServiceItem service, Process proc)
+        /// <summary>
+        /// The process of a service ended. It is internal because a test cannot hand over a process that walked
+        /// away on its own, it has to call this handler itself.
+        /// </summary>
+        internal void Process_Exited(ServiceItem service, Process proc)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == service.ID);
             if (sa != null)
@@ -693,6 +697,14 @@ namespace ServiceManager.Base
                 var status = kind == NotificationKind.ServiceCrashed ? "Crashed" : "Stopped";
 
                 Raise(kind, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: " + status, s);
+
+                //A service that ends on its own leaves the services waiting for it behind with a dependency that
+                //is gone, so their stop rule decides whether they go with it. A stop the manager asked for
+                //carries its own rules, and the shutdown of the instance follows the stop levels instead.
+                if (kind == NotificationKind.ServiceCrashed && this.IsRunning)
+                {
+                    ApplyStopRules(s.ID);
+                }
 
                 return;
             }
