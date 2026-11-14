@@ -134,27 +134,15 @@ namespace ServiceManager.Base.Wcf
         public void RestartService(Guid serviceId)
         {
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
-            var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
-
-            if (analytics.IsRunning)
+            if (service == null)
             {
-                ServiceLog(serviceId, "Service will be shutting down.");
-
-                analytics.Exiting = DateTime.Now;
-                Manager.ServiceEnd(service);
-            }
-            else if (analytics.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
-            {
-                //The wait has to end first, otherwise the start below is ignored as a duplicate
-                Manager.ServiceEnd(service);
+                return;
             }
 
-            //Does not restart automatically
-            if (!service.ForceRestart)
-            {
-                Manager.StartService(service);
-            }
+            ServiceLog(serviceId, "Service will be restarted.");
+
+            Manager.RestartService(service);
 
             ServiceLog(serviceId, "Service has been restarted.");
         }

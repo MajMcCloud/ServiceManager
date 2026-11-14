@@ -469,6 +469,42 @@ namespace ServiceManager.Base
             sa.Status = ServiceAnalytics.eStatus.offline;
         }
 
+        /// <summary>
+        /// Restarts one service the way the window asks for it. The rules of the services that wait for it are
+        /// applied here as well: a restart through the menu replaced the process, and a dependent that keeps its
+        /// old one talks to something that is gone.
+        /// </summary>
+        public void RestartService(ServiceItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID);
+
+            if (sa != null && sa.IsRunning)
+            {
+                sa.Exiting = DateTime.Now;
+                ServiceEnd(item);
+            }
+            else if (sa != null && sa.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                //The wait has to end first, otherwise the start below is ignored as a duplicate
+                ServiceEnd(item);
+            }
+
+            //Does not restart automatically
+            if (!item.ForceRestart)
+            {
+                StartService(item);
+
+                //With the flag on the own exit path of the service restarts it and carries the rules from there,
+                //applying them here as well would race with it.
+                ApplyRestartRules(item.ID);
+            }
+        }
+
         public void SendInput(ServiceItem item, String input)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
