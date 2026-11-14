@@ -79,6 +79,8 @@
             this.cmbDependency_Restart = new System.Windows.Forms.ComboBox();
             this.label18 = new System.Windows.Forms.Label();
             this.cmbDependency_Start = new System.Windows.Forms.ComboBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.cmbDependency_Stop = new System.Windows.Forms.ComboBox();
             this.tabMain.SuspendLayout();
             this.tabBasic.SuspendLayout();
             this.tabStart.SuspendLayout();
@@ -496,6 +498,8 @@
             this.tabServiceDependencies.Controls.Add(this.cmbDependency_Restart);
             this.tabServiceDependencies.Controls.Add(this.label18);
             this.tabServiceDependencies.Controls.Add(this.cmbDependency_Start);
+            this.tabServiceDependencies.Controls.Add(this.label19);
+            this.tabServiceDependencies.Controls.Add(this.cmbDependency_Stop);
             this.tabServiceDependencies.Location = new System.Drawing.Point(4, 22);
             this.tabServiceDependencies.Name = "tabServiceDependencies";
             this.tabServiceDependencies.Size = new System.Drawing.Size(683, 393);
@@ -566,6 +570,22 @@
             this.cmbDependency_Start.Name = "cmbDependency_Start";
             this.cmbDependency_Start.Size = new System.Drawing.Size(180, 21);
             this.cmbDependency_Start.TabIndex = 14;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(22, 368);
+            this.label19.Name = "label19";
+            this.label19.TabIndex = 15;
+            this.label19.Text = "When a dependency stops";
+            // 
+            // cmbDependency_Stop
+            // 
+            this.cmbDependency_Stop.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbDependency_Stop.Location = new System.Drawing.Point(285, 365);
+            this.cmbDependency_Stop.Name = "cmbDependency_Stop";
+            this.cmbDependency_Stop.Size = new System.Drawing.Size(180, 21);
+            this.cmbDependency_Stop.TabIndex = 16;
             // 
             // FrmNewService
             // 
@@ -656,5 +676,7 @@
         private System.Windows.Forms.ComboBox cmbDependency_Restart;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox cmbDependency_Start;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.ComboBox cmbDependency_Stop;
     }
 }

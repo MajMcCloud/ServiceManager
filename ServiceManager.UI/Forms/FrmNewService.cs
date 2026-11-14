@@ -66,6 +66,7 @@ namespace ServiceManager.UI.Forms
             Item.Dependencies = picked;
             Item.DependencyRestartRule = selectedRule(cmbDependency_Restart, ServiceItem.eDependencyRestartRule.Ignore);
             Item.DependencyStartRule = selectedRule(cmbDependency_Start, ServiceItem.eDependencyStartRule.StartAnyway);
+            Item.DependencyStopRule = selectedRule(cmbDependency_Stop, ServiceItem.eDependencyStopRule.StayRunning);
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -104,6 +105,7 @@ namespace ServiceManager.UI.Forms
 
                 selectRule(cmbDependency_Restart, this.Item.DependencyRestartRule);
                 selectRule(cmbDependency_Start, this.Item.DependencyStartRule);
+                selectRule(cmbDependency_Stop, this.Item.DependencyStopRule);
 
                 fillDependencyList();
             }
@@ -111,6 +113,7 @@ namespace ServiceManager.UI.Forms
             {
                 selectRule(cmbDependency_Restart, ServiceItem.eDependencyRestartRule.Ignore);
                 selectRule(cmbDependency_Start, ServiceItem.eDependencyStartRule.StartAnyway);
+                selectRule(cmbDependency_Stop, ServiceItem.eDependencyStopRule.StayRunning);
             }
 
             fillServiceDependencies();
@@ -323,7 +326,7 @@ namespace ServiceManager.UI.Forms
             return graph.ReachesItself(test.ID);
         }
 
-        /// <summary>Fills the two rule boxes with the rules a dependent service can follow.</summary>
+        /// <summary>Fills the rule boxes with the rules a dependent service can follow.</summary>
         private void fillRuleBoxes()
         {
             cmbDependency_Restart.Items.Clear();
@@ -338,6 +341,13 @@ namespace ServiceManager.UI.Forms
             foreach (ServiceItem.eDependencyStartRule rule in Enum.GetValues(typeof(ServiceItem.eDependencyStartRule)))
             {
                 cmbDependency_Start.Items.Add(new RuleItem(startRuleText(rule), rule));
+            }
+
+            cmbDependency_Stop.Items.Clear();
+
+            foreach (ServiceItem.eDependencyStopRule rule in Enum.GetValues(typeof(ServiceItem.eDependencyStopRule)))
+            {
+                cmbDependency_Stop.Items.Add(new RuleItem(stopRuleText(rule), rule));
             }
         }
 
@@ -362,6 +372,17 @@ namespace ServiceManager.UI.Forms
                     return "Do not start this service";
                 default:
                     return "Start anyway";
+            }
+        }
+
+        private static String stopRuleText(ServiceItem.eDependencyStopRule rule)
+        {
+            switch (rule)
+            {
+                case ServiceItem.eDependencyStopRule.Stop:
+                    return "Stop this service";
+                default:
+                    return "Leave this service running";
             }
         }
 

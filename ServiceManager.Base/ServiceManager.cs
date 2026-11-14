@@ -505,6 +505,31 @@ namespace ServiceManager.Base
             }
         }
 
+        /// <summary>
+        /// Stops one service the way the window asks for it. The rules of the services that wait for it are applied
+        /// as well: a dependent that keeps running talks to a service that is gone, so every one of them can be
+        /// told to stay up or to go with its dependency.
+        /// </summary>
+        public void StopService(ServiceItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID);
+
+            //A service that is only waiting has no process, ServiceEnd ends the wait for it
+            if (sa != null && sa.IsRunning)
+            {
+                sa.Exiting = DateTime.Now;
+            }
+
+            ServiceEnd(item);
+
+            ApplyStopRules(item.ID);
+        }
+
         public void SendInput(ServiceItem item, String input)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
@@ -777,6 +802,49 @@ namespace ServiceManager.Base
                 Raise(NotificationKind.DependencyWait, this.Config.Notifications.InstanceName + ": " + dependent.Title + "\r\nStatus: Not started, " + TitleOf(id) + " did not start", dependent);
 
                 ApplyStartRules(graph, dependent.ID, visited);
+            }
+        }
+
+        /// <summary>
+        /// Applies the stop rule of every service that depends on the given one.
+        /// </summary>
+        private void ApplyStopRules(Guid id)
+        {
+            if (this.Config == null)
+            {
+                return;
+            }
+
+            ApplyStopRules(new ServiceDependencyGraph(this.Config.ServiceList), id, new HashSet<Guid> { id });
+        }
+
+        /// <summary>
+        /// A dependent that is meant to stay running is left alone, and the rule carries further down: a service
+        /// below a service that was stopped goes the same way. The visited set is what keeps a circle from
+        /// running forever.
+        /// </summary>
+        private void ApplyStopRules(ServiceDependencyGraph graph, Guid id, HashSet<Guid> visited)
+        {
+            foreach (var dependent in graph.DependentsOf(id))
+            {
+                if (dependent.DependencyStopRule != ServiceItem.eDependencyStopRule.Stop)
+                {
+                    continue;
+                }
+
+                if (!visited.Add(dependent.ID))
+                {
+                    continue;
+                }
+
+                //Without the flag the own restart path of the service would bring it straight back up
+                dependent.ForceRestart = false;
+
+                ServiceEnd(dependent);
+
+                Raise(NotificationKind.ServiceStop, this.Config.Notifications.InstanceName + ": " + dependent.Title + "\r\nStatus: Stopped with a dependency", dependent);
+
+                ApplyStopRules(graph, dependent.ID, visited);
             }
         }
 

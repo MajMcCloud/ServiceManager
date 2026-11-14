@@ -269,10 +269,15 @@ A managed application can wait for other managed applications. On the **Depends 
 dialog, tick the services that have to run first: they are started in front, and where nothing waits for
 anything the order of the service list is kept. A service that is disabled or was deleted holds nothing back.
 
-Two rules decide what happens once the services are running. **When a dependency restarts** leaves the service
+Three rules decide what happens once the services are running. **When a dependency restarts** leaves the service
 alone, restarts it together with the dependency, or stops it and leaves it stopped. **When a dependency did
-not start** starts the service anyway, which is what ServiceManager did before, or takes it offline. Both
-rules reach through the services below, level by level.
+not start** starts the service anyway, which is what ServiceManager did before, or takes it offline. **When a
+dependency stops** leaves the service running, which is what ServiceManager did before, or stops it as well. All
+three rules reach through the services below, level by level.
+
+A service that is stopped through the menu, the log window or a shutdown of the instance goes through the stop
+rule of every service that waits for it. A service that ends on its own is a crash and leaves its dependents
+alone, and stopping the whole instance follows the shutdown order described below instead of the rules.
 
 Services that wait for each other are refused in the dialog. A settings file that already holds such a circle
 is loaded anyway: the circle is reported through the *On Dependency Wait* event and the services start in the

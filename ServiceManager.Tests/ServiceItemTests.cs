@@ -71,6 +71,7 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual(ServiceItem.eDependencyRestartRule.Ignore, item.DependencyRestartRule);
             Assert.AreEqual(ServiceItem.eDependencyStartRule.StartAnyway, item.DependencyStartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStopRule.StayRunning, item.DependencyStopRule);
         }
 
         [TestMethod]
@@ -82,12 +83,14 @@ namespace ServiceManager.Tests
             item.Dependencies = new List<Guid> { new Guid("11111111-1111-1111-1111-111111111111") };
             item.DependencyRestartRule = ServiceItem.eDependencyRestartRule.Stop;
             item.DependencyStartRule = ServiceItem.eDependencyStartRule.DoNotStart;
+            item.DependencyStopRule = ServiceItem.eDependencyStopRule.Stop;
 
             var again = JsonConvert.DeserializeObject<ServiceItem>(JsonConvert.SerializeObject(item));
 
             CollectionAssert.AreEqual(item.Dependencies, again.Dependencies);
             Assert.AreEqual(ServiceItem.eDependencyRestartRule.Stop, again.DependencyRestartRule);
             Assert.AreEqual(ServiceItem.eDependencyStartRule.DoNotStart, again.DependencyStartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStopRule.Stop, again.DependencyStopRule);
         }
 
         [TestMethod]
@@ -99,16 +102,18 @@ namespace ServiceManager.Tests
             Assert.AreEqual(0, again.Dependencies.Count);
             Assert.AreEqual(ServiceItem.eDependencyRestartRule.Ignore, again.DependencyRestartRule);
             Assert.AreEqual(ServiceItem.eDependencyStartRule.StartAnyway, again.DependencyStartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStopRule.StayRunning, again.DependencyStopRule);
         }
 
         [TestMethod]
         public void the_numbers_in_the_settings_file_mean_the_same_rules_as_the_names()
         {
             //An older file holds the numbers, so a rule that moves would change what that file says
-            var again = JsonConvert.DeserializeObject<ServiceItem>("{\"DependencyRestartRule\":2,\"DependencyStartRule\":1}");
+            var again = JsonConvert.DeserializeObject<ServiceItem>("{\"DependencyRestartRule\":2,\"DependencyStartRule\":1,\"DependencyStopRule\":1}");
 
             Assert.AreEqual(ServiceItem.eDependencyRestartRule.Stop, again.DependencyRestartRule);
             Assert.AreEqual(ServiceItem.eDependencyStartRule.DoNotStart, again.DependencyStartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStopRule.Stop, again.DependencyStopRule);
         }
     }
 }

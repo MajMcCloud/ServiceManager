@@ -150,6 +150,12 @@ namespace ServiceManager.Base.Wcf
         public void ShutdownService(Guid serviceId)
         {
             var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
+
+            if (service == null)
+            {
+                return;
+            }
+
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
             if (!analytics.IsRunning && analytics.Status != ServiceAnalytics.eStatus.waiting_for_dependency)
@@ -160,19 +166,16 @@ namespace ServiceManager.Base.Wcf
 
             ServiceLog(serviceId, "Service will be ended.");
 
-
+            //Without the flag the own restart path of the service would bring it straight back up
             service.ForceRestart = false;
 
-
-            if (analytics.IsRunning)
-            {
-                analytics.Exiting = DateTime.Now;
-            }
-
-            Manager.ServiceEnd(service);
+            //The rules of the services that wait for this one are applied by the manager
+            Manager.StopService(service);
 
             if (!analytics.IsRunning)
+            {
                 ServiceLog(serviceId, "Service has been ended.");
+            }
         }
 
         public void ToggleEnable(Guid serviceId)

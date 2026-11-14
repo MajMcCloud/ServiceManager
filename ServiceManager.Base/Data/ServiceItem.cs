@@ -42,6 +42,11 @@ namespace ServiceManager.Base.Data
         public eDependencyStartRule DependencyStartRule { get; set; } = eDependencyStartRule.StartAnyway;
 
         /// <summary>
+        /// What happens to this service when a service it depends on is stopped.
+        /// </summary>
+        public eDependencyStopRule DependencyStopRule { get; set; } = eDependencyStopRule.StayRunning;
+
+        /// <summary>
         /// Wait for the Windows dependencies after an automatic restart as well.
         /// </summary>
         public bool Wait_On_Restart { get; set; } = true;
@@ -101,6 +106,19 @@ namespace ServiceManager.Base.Data
 
             /// <summary>The dependent service is taken offline and stays offline.</summary>
             DoNotStart = 1
+        }
+
+        /// <summary>
+        /// How a service reacts when a service it depends on is stopped. The numbers are kept because the
+        /// settings file stores them.
+        /// </summary>
+        public enum eDependencyStopRule
+        {
+            /// <summary>The dependent service keeps running, which is what the manager did before.</summary>
+            StayRunning = 0,
+
+            /// <summary>The dependent service is stopped as well.</summary>
+            Stop = 1
         }
 
     }
