@@ -53,6 +53,7 @@ namespace ServiceManager.Tests
         public void the_severity_of_an_event_is_the_one_of_the_other_providers()
         {
             Assert.AreEqual(3, SyslogMessage.SeverityOf(NotificationKind.ConsoleError));
+            Assert.AreEqual(3, SyslogMessage.SeverityOf(NotificationKind.ServiceCrashed));
 
             Assert.AreEqual(4, SyslogMessage.SeverityOf(NotificationKind.ServiceStop));
             Assert.AreEqual(4, SyslogMessage.SeverityOf(NotificationKind.ServiceRestart));

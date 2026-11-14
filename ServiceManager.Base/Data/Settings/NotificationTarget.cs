@@ -28,6 +28,8 @@ namespace ServiceManager.Base.Data.Settings
 
         public bool OnDependencyWait { get; set; } = true;
 
+        public bool OnServiceCrashed { get; set; } = true;
+
 
         public bool IsEnabled(NotificationKind kind)
         {
@@ -49,6 +51,8 @@ namespace ServiceManager.Base.Data.Settings
                     return OnConsoleError;
                 case NotificationKind.DependencyWait:
                     return OnDependencyWait;
+                case NotificationKind.ServiceCrashed:
+                    return OnServiceCrashed;
                 default:
                     return false;
             }

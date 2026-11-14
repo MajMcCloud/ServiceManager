@@ -13,6 +13,7 @@ namespace ServiceManager.Extensions.Interfaces
         ServiceRestart = 4,
         ConsoleOutput = 5,
         ConsoleError = 6,
-        DependencyWait = 7
+        DependencyWait = 7,
+        ServiceCrashed = 8
     }
 }

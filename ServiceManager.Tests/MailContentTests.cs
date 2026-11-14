@@ -42,6 +42,7 @@ namespace ServiceManager.Tests
         public void every_event_gets_the_level_of_the_other_providers()
         {
             Assert.AreEqual("error", MailContent.Severity(NotificationKind.ConsoleError));
+            Assert.AreEqual("error", MailContent.Severity(NotificationKind.ServiceCrashed));
 
             Assert.AreEqual("warning", MailContent.Severity(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", MailContent.Severity(NotificationKind.ServiceRestart));

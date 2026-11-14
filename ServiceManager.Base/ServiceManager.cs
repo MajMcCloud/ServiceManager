@@ -38,6 +38,12 @@ namespace ServiceManager.Base
         /// </summary>
         public IWindowsServiceStatus WindowsStatus { get; set; }
 
+        /// <summary>
+        /// Which services were asked to stop. A process that ends without an entry here ended on its own,
+        /// which is a crash rather than the stop the user asked for.
+        /// </summary>
+        public StopRequestTracker StopRequests { get; set; }
+
         public List<Guid> LiveLogs { get; set; }
 
         public List<Process> RunningProcesses { get; set; }
@@ -50,6 +56,8 @@ namespace ServiceManager.Base
             RunningProcesses = new List<Process>();
 
             WindowsStatus = new WindowsServiceStatus();
+
+            StopRequests = new StopRequestTracker();
         }
 
 
@@ -152,6 +160,8 @@ namespace ServiceManager.Base
             sa.Started = null;
             sa.Exited = null;
             sa.Exiting = null;
+
+            StopRequests.Clear(item.ID);
         }
 
         /// <summary>
@@ -283,6 +293,8 @@ namespace ServiceManager.Base
                 return;
             }
 
+            StopRequests.Clear(item.ID);
+
             Notify(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item.Title);
 
             Process proc = new Process();
@@ -353,6 +365,8 @@ namespace ServiceManager.Base
         public void ServiceEnd(ServiceItem item)
         {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
+
+            StopRequests.Mark(item.ID);
 
             //There is no process to end while the service holds back, taking it offline is what stops the wait
             if (sa.Status == ServiceAnalytics.eStatus.waiting_for_dependency)
@@ -588,7 +602,10 @@ namespace ServiceManager.Base
 
             if (!service.ForceRestart | !this.IsRunning)
             {
-                Notify(NotificationKind.ServiceStop, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Stopped", s.Title);
+                var kind = StopRequests.ReasonOf(service.ID);
+                var status = kind == NotificationKind.ServiceCrashed ? "Crashed" : "Stopped";
+
+                Notify(kind, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: " + status, s.Title);
 
                 return;
             }
@@ -624,6 +641,8 @@ namespace ServiceManager.Base
                     continue;
 
                 sa.Exiting = DateTime.Now;
+
+                StopRequests.Mark(service.ID);
 
                 var ex = new Task(() =>
                 {

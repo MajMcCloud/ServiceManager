@@ -111,13 +111,14 @@ namespace ServiceManager.Extensions.EventLogNotifier
 
         /// <summary>
         /// A stopped or restarted service is worth a warning, everything that arrives over the error
-        /// stream is an error. The rest is information.
+        /// stream and every process that ended on its own is an error. The rest is information.
         /// </summary>
         private static EventLogEntryType ToEntryType(NotificationKind kind)
         {
             switch (kind)
             {
                 case NotificationKind.ConsoleError:
+                case NotificationKind.ServiceCrashed:
                     return EventLogEntryType.Error;
 
                 case NotificationKind.ServiceStop:

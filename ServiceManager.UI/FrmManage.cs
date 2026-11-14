@@ -236,6 +236,7 @@ namespace ServiceManager.UI
             target.OnServerStart = chkNotifications_OnServerStart.Checked;
             target.OnServerShutdown = chkNotifications_OnServerShutdown.Checked;
             target.OnDependencyWait = chkNotifications_OnDependencyWait.Checked;
+            target.OnServiceCrashed = chkNotifications_OnServiceCrashed.Checked;
         }
 
         /// <summary>Shows the events the selected provider asked for.</summary>
@@ -259,6 +260,7 @@ namespace ServiceManager.UI
             chkNotifications_OnServerStart.Checked = target.OnServerStart;
             chkNotifications_OnServerShutdown.Checked = target.OnServerShutdown;
             chkNotifications_OnDependencyWait.Checked = target.OnDependencyWait;
+            chkNotifications_OnServiceCrashed.Checked = target.OnServiceCrashed;
         }
 
         private void lstNotifications_Providers_SelectedIndexChanged(object sender, EventArgs e)

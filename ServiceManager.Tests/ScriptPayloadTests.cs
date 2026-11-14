@@ -70,6 +70,7 @@ namespace ServiceManager.Tests
         public void every_event_gets_the_level_of_the_other_providers()
         {
             Assert.AreEqual("error", ScriptPayload.Level(NotificationKind.ConsoleError));
+            Assert.AreEqual("error", ScriptPayload.Level(NotificationKind.ServiceCrashed));
 
             Assert.AreEqual("warning", ScriptPayload.Level(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", ScriptPayload.Level(NotificationKind.ServiceRestart));

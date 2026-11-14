@@ -90,6 +90,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
             switch (kind)
             {
                 case NotificationKind.ConsoleError:
+                case NotificationKind.ServiceCrashed:
                     return "error";
 
                 case NotificationKind.ServiceStop:

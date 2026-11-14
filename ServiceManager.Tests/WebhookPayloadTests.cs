@@ -123,6 +123,7 @@ namespace ServiceManager.Tests
         public void every_event_gets_the_level_of_the_event_log_provider()
         {
             Assert.AreEqual("error", WebhookPayload.Level(NotificationKind.ConsoleError));
+            Assert.AreEqual("error", WebhookPayload.Level(NotificationKind.ServiceCrashed));
 
             Assert.AreEqual("warning", WebhookPayload.Level(NotificationKind.ServiceStop));
             Assert.AreEqual("warning", WebhookPayload.Level(NotificationKind.ServiceRestart));

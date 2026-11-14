@@ -24,6 +24,7 @@ namespace ServiceManager.Extensions.SyslogNotifier
             switch (kind)
             {
                 case NotificationKind.ConsoleError:
+                case NotificationKind.ServiceCrashed:
                     return 3;
 
                 case NotificationKind.ServiceStop:

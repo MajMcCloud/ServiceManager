@@ -52,6 +52,7 @@
     <Compile Include="Data\ServiceAnalytics.cs" />
     <Compile Include="Data\ServiceConfig.cs" />
     <Compile Include="Data\ServiceItem.cs" />
+    <Compile Include="Data\StopRequestTracker.cs" />
     <Compile Include="Data\Settings\Notifications.cs" />
     <Compile Include="Data\Settings\NotificationTarget.cs" />
     <Compile Include="Data\Settings\Runtime.cs" />

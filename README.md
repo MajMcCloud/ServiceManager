@@ -151,9 +151,11 @@ An empty list switches notifications off, a provider that is not listed never re
 A settings file of an older version keeps working: its single provider and the global ticks become
 one entry of this list the first time the file is read.
 
-The seven events are the ones the ServiceManager reports: *On Start*, *On Stop* and *On Restart* belong to a
-managed service, *On Console Output* and *On Console Error* to its console, *On Server Start* and
-*On Server Shutdown* to the ServiceManager itself.
+The nine events are the ones the ServiceManager reports: *On Start*, *On Stop*, *On Restart* and
+*On Service Crashed* belong to a managed service, *On Console Output* and *On Console Error* to its
+console, *On Dependency Wait* to a service that waits for a Windows service, *On Server Start* and
+*On Server Shutdown* to the ServiceManager itself. A crash is only reported when a process ends on its
+own, a stop through the stop button or a shutdown of the ServiceManager stays *On Stop*.
 
 <img src="Screens/Settings_3.png" />
 

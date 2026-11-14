@@ -40,7 +40,8 @@ namespace ServiceManager.Tests
             NotificationKind.ServiceRestart,
             NotificationKind.ConsoleOutput,
             NotificationKind.ConsoleError,
-            NotificationKind.DependencyWait
+            NotificationKind.DependencyWait,
+            NotificationKind.ServiceCrashed
         };
 
 
@@ -127,6 +128,15 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
+        public void anOldFileWithoutTheCrashFlag_keepsTheCrashFlagOn()
+        {
+            var settings = JsonConvert.DeserializeObject<Notifications>(LegacyJson);
+
+            Assert.IsTrue(settings.Targets[0].IsEnabled(NotificationKind.ServiceCrashed),
+                "a provider installed before the crash kind still hears about a crash");
+        }
+
+        [TestMethod]
         public void everyKindMapsToItsOwnFlagAndToNoOther()
         {
             foreach (var kind in AllKinds)
@@ -176,12 +186,12 @@ namespace ServiceManager.Tests
             // kind travels as a number through the dispatch. A shift here would silently move the
             // selection of every installed configuration, so both the names and the numbers are fixed.
             CollectionAssert.AreEqual(
-                new[] { "ServerStart", "ServerShutdown", "ServiceStart", "ServiceStop", "ServiceRestart", "ConsoleOutput", "ConsoleError", "DependencyWait" },
+                new[] { "ServerStart", "ServerShutdown", "ServiceStart", "ServiceStop", "ServiceRestart", "ConsoleOutput", "ConsoleError", "DependencyWait", "ServiceCrashed" },
                 Enum.GetNames(typeof(NotificationKind)),
                 "renaming or inserting a kind changes the meaning of every stored event selection");
 
             CollectionAssert.AreEqual(
-                new[] { 0, 1, 2, 3, 4, 5, 6, 7 },
+                new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 },
                 Enum.GetValues(typeof(NotificationKind)).Cast<int>().ToArray(),
                 "the numeric values are what a settings file and an older provider see");
         }
@@ -229,6 +239,9 @@ namespace ServiceManager.Tests
                     break;
                 case NotificationKind.DependencyWait:
                     target.OnDependencyWait = value;
+                    break;
+                case NotificationKind.ServiceCrashed:
+                    target.OnServiceCrashed = value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind));

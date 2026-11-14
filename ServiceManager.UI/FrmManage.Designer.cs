@@ -67,6 +67,7 @@
             this.chkNotifications_OnServerStart = new System.Windows.Forms.CheckBox();
             this.chkNotifications_OnStart = new System.Windows.Forms.CheckBox();
             this.chkNotifications_OnDependencyWait = new System.Windows.Forms.CheckBox();
+            this.chkNotifications_OnServiceCrashed = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.cmbNotification_Extensions = new System.Windows.Forms.ComboBox();
@@ -543,6 +544,7 @@
             this.tabNotifications.Controls.Add(this.chkNotifications_OnServerStart);
             this.tabNotifications.Controls.Add(this.chkNotifications_OnStart);
             this.tabNotifications.Controls.Add(this.chkNotifications_OnDependencyWait);
+            this.tabNotifications.Controls.Add(this.chkNotifications_OnServiceCrashed);
             this.tabNotifications.Controls.Add(this.label2);
             this.tabNotifications.Controls.Add(this.label1);
             this.tabNotifications.Controls.Add(this.cmbNotification_Extensions);
@@ -640,6 +642,15 @@
             this.chkNotifications_OnDependencyWait.AutoSize = true;
             this.chkNotifications_OnDependencyWait.TabIndex = 10;
             this.chkNotifications_OnDependencyWait.Text = "On Dependency Wait";
+            // 
+            // chkNotifications_OnServiceCrashed
+            // 
+            this.chkNotifications_OnServiceCrashed.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkNotifications_OnServiceCrashed.Location = new System.Drawing.Point(380, 340);
+            this.chkNotifications_OnServiceCrashed.Name = "chkNotifications_OnServiceCrashed";
+            this.chkNotifications_OnServiceCrashed.AutoSize = true;
+            this.chkNotifications_OnServiceCrashed.TabIndex = 10;
+            this.chkNotifications_OnServiceCrashed.Text = "On Service Crashed";
             // 
             // label2
             // 
@@ -803,6 +814,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkNotifications_OnStart;
         private System.Windows.Forms.CheckBox chkNotifications_OnDependencyWait;
+        private System.Windows.Forms.CheckBox chkNotifications_OnServiceCrashed;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkNotifications_OnConsoleError;
         private System.Windows.Forms.CheckBox chkNotifications_OnConsoleOutput;
