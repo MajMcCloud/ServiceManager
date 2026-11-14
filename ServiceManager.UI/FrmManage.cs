@@ -162,6 +162,13 @@ namespace ServiceManager.UI
         /// </summary>
         private void trvDependencies_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            //The tree turns the branch of a node over on a double click. The settings are what the click is meant
+            //for, so the branch is turned back and stays as the user left it.
+            if (e.Node != null)
+            {
+                e.Node.Toggle();
+            }
+
             var node = (e.Node as TreeNode)?.Tag as DependencyTreeNode;
             if (node == null || node.IsRepeat)
             {
