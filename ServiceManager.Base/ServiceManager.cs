@@ -69,9 +69,10 @@ namespace ServiceManager.Base
 
             Events = new EventBus();
 
-            //The order is the one the hand-written calls had: the client is told first, the providers after.
-            Events.Subscribe(PushToClients);
-            Events.Subscribe(SendToProviders);
+            //The client is pushed to and the providers are asked on threads of their own, so a provider that
+            //waits for its webhook cannot hold up the push to the client.
+            Events.Subscribe(eGroup.clients, PushToClients);
+            Events.Subscribe(eGroup.providers, SendToProviders);
         }
 
 
@@ -536,20 +537,19 @@ namespace ServiceManager.Base
             if (Connection.ServerChannel == null || Connection.Failed)
                 return;
 
-
-            //The ping has to reach the client in front of the line that follows it, so both stay in this task.
-            var t = new Task(() =>
+            //The ping has to reach the client in front of the line that follows it. Both travel through the
+            //client queue, which keeps that order and keeps the output thread off the WCF call.
+            if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 10)
             {
-                if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 10)
-                {
-                    Connection?.Try(a => a.ActivityPing(sa.ServiceID));
-                    sa.LastPing = DateTime.Now;
-                }
+                sa.LastPing = DateTime.Now;
 
+                Raise(eCallback.ping, s, sa);
+            }
+
+            if (LiveLogs.Contains(sa.ServiceID))
+            {
                 Raise(eCallback.logs, s, sa, e.Data);
-            });
-
-            t.Start();
+            }
         }
 
         public bool SaveToDisk(ServiceItem service, String content)
@@ -722,6 +722,8 @@ namespace ServiceManager.Base
 
             }
 
+            //The pushes of the services that just ended have to reach the client in front of the handshake.
+            Events.Flush();
 
             Thread.Sleep(1000);
 
@@ -735,6 +737,9 @@ namespace ServiceManager.Base
 
             Raise(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutted down");
 
+            Events.Flush();
+
+            Events.Complete();
         }
 
         /// <summary>
@@ -767,8 +772,11 @@ namespace ServiceManager.Base
         }
 
 
-        /// <summary>Puts an event on the bus that only the connected clients are told about.</summary>
-        private void Raise(eCallback callback, ServiceItem item, ServiceAnalytics sa, String details = null)
+        /// <summary>
+        /// Puts an event on the bus that only the connected clients are told about. A WCF operation that
+        /// changed something on its own raises it here instead of pushing over the channel itself.
+        /// </summary>
+        public void Raise(eCallback callback, ServiceItem item, ServiceAnalytics sa, String details = null)
         {
             Events.Publish(new ServiceEvent()
             {
@@ -777,6 +785,21 @@ namespace ServiceManager.Base
                 Service = item,
                 Analytics = sa,
                 Title = item.Title,
+                Details = details
+            });
+        }
+
+
+        /// <summary>
+        /// Puts an event on the bus that only the connected clients are told about, for a service the caller
+        /// names by its id. A log line has the id at hand and no reason to look the item up.
+        /// </summary>
+        public void Raise(eCallback callback, Guid serviceId, String details = null)
+        {
+            Events.Publish(new ServiceEvent()
+            {
+                Callback = callback,
+                ServiceId = serviceId,
                 Details = details
             });
         }
@@ -846,10 +869,11 @@ namespace ServiceManager.Base
                     break;
 
                 case eCallback.logs:
-                    if (LiveLogs.Contains(e.ServiceId))
-                    {
-                        Connection?.Try(a => a.LiveLogsUpdate(e.ServiceId, e.Details));
-                    }
+                    Connection?.Try(a => a.LiveLogsUpdate(e.ServiceId, e.Details));
+                    break;
+
+                case eCallback.ping:
+                    Connection?.Try(a => a.ActivityPing(e.ServiceId));
                     break;
             }
         }

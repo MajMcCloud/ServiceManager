@@ -12,6 +12,7 @@ namespace ServiceManager.Base.Events
         started = 2,
         exited = 3,
         exiting = 4,
-        logs = 5
+        logs = 5,
+        ping = 6
     }
 }

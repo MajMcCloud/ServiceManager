@@ -1,12 +1,11 @@
 ﻿using ServiceManager.Base.Data;
+using ServiceManager.Base.Events;
 using ServiceManager.Base.Wcf.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ServiceManager.Base.Wcf
 {
@@ -246,22 +245,18 @@ namespace ServiceManager.Base.Wcf
 
         private void ServiceLog(Guid serviceId, String log)
         {
-            if (this.CallbackChannel == null)
-                return;
-
             var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
+            if (analytics == null)
+            {
+                return;
+            }
 
             String s = "SERVICE MANAGER: " + log;
             analytics.AppendOutput(s + "\r\n");
 
-            try
-            {
-                this.CallbackChannel.LiveLogsUpdate(serviceId, s);
-            }
-            catch
-            {
-
-            }
+            //A manager message is shown whether or not the client asked for the live log of the service,
+            //so the live log gate sits with the console output and not here.
+            Manager.Raise(eCallback.logs, serviceId, s);
         }
 
         public void ToggleAutoRestart(Guid serviceId)
@@ -271,12 +266,7 @@ namespace ServiceManager.Base.Wcf
 
             service.ForceRestart = !service.ForceRestart;
 
-            Thread t = new Thread(new ThreadStart(() =>
-            {
-                this.CallbackChannel.ServiceUpdated(serviceId, service, analytics);
-            }));
-            t.Start();
-
+            Manager.Raise(eCallback.updated, service, analytics);
         }
 
         /// <summary>

@@ -105,6 +105,11 @@ namespace ServiceManager.Tests
         {
             public List<ServiceEvent> Events { get; } = new List<ServiceEvent>();
 
+            public int Dropped
+            {
+                get { return 0; }
+            }
+
 
             public void Publish(ServiceEvent e)
             {
@@ -112,9 +117,20 @@ namespace ServiceManager.Tests
             }
 
 
-            public IDisposable Subscribe(Action<ServiceEvent> handler)
+            public IDisposable Subscribe(eGroup group, Action<ServiceEvent> handler)
             {
                 return new Nothing();
+            }
+
+
+            public bool Flush()
+            {
+                return true;
+            }
+
+
+            public void Complete()
+            {
             }
 
 
