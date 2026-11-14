@@ -2,6 +2,7 @@
 using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Progress;
+using ServiceManager.Base.Windows;
 using ServiceManager.Base.Wcf;
 using ServiceManager.Base.Wcf.Models;
 using ServiceManager.UI.Forms;
@@ -34,6 +35,9 @@ namespace ServiceManager.UI
         public Channel WatchConnection { get; set; }
 
         public List<ServiceItem> Services { get; set; }
+
+        /// <summary>Reads the rights of this process, asked whenever a menu opens.</summary>
+        private readonly IProcessElevation m_Elevation = new WindowsElevation();
 
         private static object _sync = new object();
 
@@ -1057,6 +1061,13 @@ namespace ServiceManager.UI
 
         private void rmiService_DropDownOpening(object sender, EventArgs e)
         {
+            showElevationShield(rmiService_Install, ElevationRules.eOperation.InstallWindowsService);
+            showElevationShield(rmiService_Uninstall, ElevationRules.eOperation.UninstallWindowsService);
+            showElevationShield(rmiService_Settings, ElevationRules.eOperation.WindowsServiceSettings);
+            showElevationShield(rmiService_Start, ElevationRules.eOperation.StartWindowsService);
+            showElevationShield(rmiService_Restart, ElevationRules.eOperation.RestartWindowsService);
+            showElevationShield(rmiService_Stop, ElevationRules.eOperation.StopWindowsService);
+
             ServiceController[] services = ServiceController.GetServices();
             ServiceController sc = services.FirstOrDefault(a => a.ServiceName == Program.ServiceName);
 
@@ -1089,6 +1100,22 @@ namespace ServiceManager.UI
                 rmiService_Start.Enabled = true;
                 rmiService_Stop.Enabled = false;
             }
+        }
+
+        /// <summary>
+        /// Puts the shield of the operating system in front of an entry that asks for rights this process
+        /// does not hold. The entry stays clickable: the shield only tells the user that the operation will
+        /// ask, it does not take the entry away from him.
+        /// </summary>
+        private void showElevationShield(ToolStripMenuItem item, ElevationRules.eOperation operation)
+        {
+            if (!ElevationRules.NeedsShield(operation, m_Elevation.IsElevated()))
+            {
+                item.Image = null;
+                return;
+            }
+
+            item.Image = ShieldIcon.Get();
         }
 
         private void rmiService_Settings_Click(object sender, EventArgs e)

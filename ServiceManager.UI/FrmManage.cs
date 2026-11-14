@@ -52,6 +52,9 @@ namespace ServiceManager.UI
         /// <summary>Reads the services of the machine once per dialog, the list and the picker share it.</summary>
         private WindowsServiceLister m_ServiceLister;
 
+        /// <summary>Reads the rights of this process, asked once per dialog.</summary>
+        private readonly IProcessElevation m_Elevation = new WindowsElevation();
+
         public FrmManage()
         {
             InitializeComponent();
@@ -65,6 +68,35 @@ namespace ServiceManager.UI
             }
 
             loadList();
+
+            showWindowsServiceTabShield();
+        }
+
+        /// <summary>
+        /// The settings of the Windows service are written to the service control manager, which asks for
+        /// elevated rights. The shield sits on the tab so that the hint is seen before the save button of
+        /// that tab is looked for.
+        /// </summary>
+        private void showWindowsServiceTabShield()
+        {
+            if (!ElevationRules.NeedsShield(ElevationRules.eOperation.WindowsServiceSettings, m_Elevation.IsElevated()))
+            {
+                return;
+            }
+
+            Image shield = ShieldIcon.Get();
+
+            if (shield == null)
+            {
+                return;
+            }
+
+            ImageList icons = new ImageList();
+            icons.ImageSize = new Size(shield.Width, shield.Height);
+            icons.Images.Add(shield);
+
+            tabMain.ImageList = icons;
+            tabWindowsService.ImageIndex = 0;
         }
 
         private void loadList()

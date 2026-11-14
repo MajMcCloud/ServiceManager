@@ -75,6 +75,9 @@ What that means in practice:
 
 - Start the UI elevated, through *Run as administrator*. A UI that is not elevated can no longer connect to the
   installed service, and it says so when the connection fails.
+- A UI that is not elevated carries the Windows shield in front of the entries that ask for it: the six entries
+  under *Service* and the Windows service tab of the settings. The entries stay clickable, the shield only says
+  that the operation will ask for the rights.
 - A script that talks to the ServiceManager has to run elevated as well.
 - *Testing* -> *Start testing* needs no administrator rights. That run hosts the service inside the UI process and
   answers the account of that process only, so the endpoint stays closed for every other local account.
