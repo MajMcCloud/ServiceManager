@@ -319,6 +319,12 @@ namespace Fixtures
             return Fill(FailingTemplate, className, id, name);
         }
 
+        /// <summary>Structured provider that records the thread it was handed the event on.</summary>
+        public static String ThreadRecordSource(String className, Guid id, String name)
+        {
+            return Fill(ThreadTemplate, className, id, name);
+        }
+
         private static String Fill(String template, String className, Guid id, String name)
         {
             return template
@@ -378,6 +384,39 @@ namespace Fixtures
         public Task Send(NotificationMessage message)
         {
             throw new InvalidOperationException(""fixture provider failed"");
+        }
+
+        public void Configure() { }
+    }
+}
+";
+
+        private const String ThreadTemplate =
+@"using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceManager.Extensions.Interfaces;
+
+namespace Fixtures
+{
+    public class $CLASS$ : INotificationMessageExtension
+    {
+        public Guid Id { get { return new Guid(""$ID$""); } }
+
+        public String Name { get { return ""$NAME$""; } }
+
+        public String Description { get { return ""test fixture""; } }
+
+        public Task Send(String message) { return Task.CompletedTask; }
+
+        public Task Send(NotificationMessage message)
+        {
+            File.AppendAllText(
+                Path.Combine(Path.GetDirectoryName(typeof($CLASS$).Assembly.Location), ""sent.log""),
+                Thread.CurrentThread.ManagedThreadId + Environment.NewLine);
+
+            return Task.CompletedTask;
         }
 
         public void Configure() { }
