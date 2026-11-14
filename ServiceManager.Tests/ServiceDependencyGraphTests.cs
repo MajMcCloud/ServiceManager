@@ -302,6 +302,39 @@ namespace ServiceManager.Tests
             Assert.AreEqual(1, graph.Services.Count);
         }
 
+        [TestMethod]
+        public void roots_are_the_services_without_a_dependency()
+        {
+            var database = Service("database");
+            var api = Service("api", database.ID);
+
+            var graph = new ServiceDependencyGraph(new List<ServiceItem> { api, database });
+
+            CollectionAssert.AreEqual(new List<ServiceItem> { database }, graph.Roots());
+        }
+
+        [TestMethod]
+        public void a_service_that_waits_for_a_deleted_service_is_a_root()
+        {
+            var api = Service("api", Guid.NewGuid());
+
+            var graph = new ServiceDependencyGraph(new List<ServiceItem> { api });
+
+            CollectionAssert.AreEqual(new List<ServiceItem> { api }, graph.Roots());
+        }
+
+        [TestMethod]
+        public void dependencies_of_name_only_the_services_of_the_file()
+        {
+            var database = Service("database");
+            var gone = Guid.NewGuid();
+            var api = Service("api", database.ID, gone, Guid.Empty);
+
+            var graph = new ServiceDependencyGraph(new List<ServiceItem> { api, database });
+
+            CollectionAssert.AreEqual(new List<Guid> { database.ID }, graph.DependenciesOf(api));
+        }
+
         private static ServiceItem Service(String title, params Guid[] dependencies)
         {
             var item = new ServiceItem();

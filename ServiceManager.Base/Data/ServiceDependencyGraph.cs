@@ -129,6 +129,46 @@ namespace ServiceManager.Base.Data
         }
 
         /// <summary>
+        /// The services the given one names as its dependencies. A name without a value, a reference to
+        /// itself and a reference to a deleted service are all left out, they cannot order anything.
+        /// </summary>
+        public List<Guid> DependenciesOf(ServiceItem service)
+        {
+            var known = new List<Guid>();
+
+            if (service == null || service.Dependencies == null)
+            {
+                return known;
+            }
+
+            foreach (Guid id in service.Dependencies)
+            {
+                if (id == Guid.Empty || id == service.ID)
+                {
+                    continue;
+                }
+
+                if (known.Contains(id) || Find(id) == null)
+                {
+                    continue;
+                }
+
+                known.Add(id);
+            }
+
+            return known;
+        }
+
+        /// <summary>
+        /// The services that name no dependency of this settings file. Everything else hangs below one of
+        /// them, only the services of a circle do not: a circle has no service that starts it.
+        /// </summary>
+        public List<ServiceItem> Roots()
+        {
+            return m_Services.Where(a => DependenciesOf(a).Count == 0).ToList();
+        }
+
+        /// <summary>
         /// True when the service reaches itself through its dependencies. The dialog asks with this whether
         /// a list that was just picked is a circle.
         /// </summary>
@@ -216,38 +256,6 @@ namespace ServiceManager.Base.Data
             }
 
             return levels;
-        }
-
-        /// <summary>
-        /// The dependencies of a service that are part of this settings file. A name without a value, a
-        /// reference to itself and a reference to a deleted service are all left out, they cannot order
-        /// anything.
-        /// </summary>
-        private List<Guid> DependenciesOf(ServiceItem service)
-        {
-            var known = new List<Guid>();
-
-            if (service == null || service.Dependencies == null)
-            {
-                return known;
-            }
-
-            foreach (Guid id in service.Dependencies)
-            {
-                if (id == Guid.Empty || id == service.ID)
-                {
-                    continue;
-                }
-
-                if (known.Contains(id) || Find(id) == null)
-                {
-                    continue;
-                }
-
-                known.Add(id);
-            }
-
-            return known;
         }
 
         private bool IsStartable(ServiceItem service, List<ServiceItem> pending, HashSet<Guid> started)

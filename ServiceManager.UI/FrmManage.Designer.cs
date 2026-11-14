@@ -44,6 +44,9 @@
             this.bnSettings_Save = new System.Windows.Forms.Button();
             this.tabWindowsService = new System.Windows.Forms.TabPage();
             this.bnWindowsService_Save = new System.Windows.Forms.Button();
+            this.tabDependencies = new System.Windows.Forms.TabPage();
+            this.trvDependencies = new System.Windows.Forms.TreeView();
+            this.lblDependencies_Hint = new System.Windows.Forms.Label();
             this.nudStartup_Delay = new System.Windows.Forms.NumericUpDown();
             this.nudDependency_Wait_Timeout = new System.Windows.Forms.NumericUpDown();
             this.lblDependencyTimeoutUnit = new System.Windows.Forms.Label();
@@ -99,6 +102,7 @@
             this.tabServices.SuspendLayout();
             this.tabSettings.SuspendLayout();
             this.tabWindowsService.SuspendLayout();
+            this.tabDependencies.SuspendLayout();
             this.grpWindowsService.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDependency_Wait_Timeout)).BeginInit();
@@ -176,10 +180,12 @@
             this.tabMain.Controls.Add(this.tabSettings);
             this.tabMain.Controls.Add(this.tabNotifications);
             this.tabMain.Controls.Add(this.tabWindowsService);
+            this.tabMain.Controls.Add(this.tabDependencies);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
             this.tabMain.Size = new System.Drawing.Size(766, 427);
             this.tabMain.TabIndex = 4;
+            this.tabMain.SelectedIndexChanged += new System.EventHandler(this.tabMain_SelectedIndexChanged);
             // 
             // tabServices
             // 
@@ -733,6 +739,37 @@
             this.label3.Name = "label3";
             this.label3.TabIndex = 17;
             this.label3.Text = "Active providers (select one to edit its events):";
+            //
+            // tabDependencies
+            //
+            this.tabDependencies.Controls.Add(this.trvDependencies);
+            this.tabDependencies.Controls.Add(this.lblDependencies_Hint);
+            this.tabDependencies.Location = new System.Drawing.Point(4, 22);
+            this.tabDependencies.Name = "tabDependencies";
+            this.tabDependencies.Size = new System.Drawing.Size(758, 401);
+            this.tabDependencies.TabIndex = 4;
+            this.tabDependencies.Text = "Dependencies";
+            //
+            // trvDependencies
+            //
+            this.trvDependencies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.trvDependencies.HideSelection = false;
+            this.trvDependencies.Location = new System.Drawing.Point(12, 52);
+            this.trvDependencies.Name = "trvDependencies";
+            this.trvDependencies.Size = new System.Drawing.Size(734, 337);
+            this.trvDependencies.TabIndex = 1;
+            this.trvDependencies.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.trvDependencies_NodeMouseDoubleClick);
+            //
+            // lblDependencies_Hint
+            //
+            this.lblDependencies_Hint.AutoSize = true;
+            this.lblDependencies_Hint.Location = new System.Drawing.Point(12, 12);
+            this.lblDependencies_Hint.Name = "lblDependencies_Hint";
+            this.lblDependencies_Hint.TabIndex = 0;
+            this.lblDependencies_Hint.Text = "A service hangs below the service it waits for. The leaves under a service are the Windows services it w" +
+    "aits for.\r\nDouble-click a service to open its settings, double-click ServiceManager to open its own tab.";
             // 
             // FrmManage
             // 
@@ -750,6 +787,8 @@
             this.tabSettings.ResumeLayout(false);
             this.tabSettings.PerformLayout();
             this.tabWindowsService.ResumeLayout(false);
+            this.tabDependencies.ResumeLayout(false);
+            this.tabDependencies.PerformLayout();
             this.grpWindowsService.ResumeLayout(false);
             this.grpWindowsService.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).EndInit();
@@ -789,6 +828,9 @@
         private System.Windows.Forms.Label lblDependencyTimeout;
         private System.Windows.Forms.CheckBox chkRequireAdministrator;
         private System.Windows.Forms.TabPage tabWindowsService;
+        private System.Windows.Forms.TabPage tabDependencies;
+        private System.Windows.Forms.TreeView trvDependencies;
+        private System.Windows.Forms.Label lblDependencies_Hint;
         private System.Windows.Forms.Button bnWindowsService_Save;
         private System.Windows.Forms.GroupBox grpWindowsService;
         private System.Windows.Forms.Label lblService_StartMode;

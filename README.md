@@ -283,6 +283,21 @@ At shutdown the services nothing waits for go down first, then their dependencie
 and everything inside one level at the same time.
 
 
+## Service Settings - Dependency Tree
+
+The **Dependencies** tab of the service list shows the same relations as a tree. ServiceManager itself sits on
+top, with the Windows services it waits for as leaves, and the services of the list hang below it: a service
+under the service it waits for, the Windows services that service waits for below it again. The services nothing
+waits for open a branch, a service that waits for two services hangs below both of them.
+
+Nothing is hidden: a circle is closed by showing the service once again marked *(see above)*, the members of
+a circle nothing reaches hang at the bottom marked *(circle)*, and a disabled service stays in the tree
+marked *(disabled)*. Double-click a service to open its settings, double-click ServiceManager to open its own
+tab. The tree is rebuilt whenever the tab is opened.
+
+<img src="Screens/Dependencies.png" />
+
+
 ## Live Console In and Output
 
 Get directly output from your console applications and send back informations over the network.

@@ -48,6 +48,8 @@
     <Compile Include="Channel.cs" />
     <Compile Include="ChannelExtensions.cs" />
     <Compile Include="Data\Analytics.cs" />
+    <Compile Include="Data\DependencyTree.cs" />
+    <Compile Include="Data\DependencyTreeNode.cs" />
 	  <Compile Include="Data\SecretStorage.cs" />
     <Compile Include="Data\ServiceAnalytics.cs" />
     <Compile Include="Data\ServiceConfig.cs" />

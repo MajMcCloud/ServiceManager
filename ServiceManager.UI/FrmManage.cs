@@ -31,7 +31,8 @@ namespace ServiceManager.UI
             Services = 0,
             Settings = 1,
             Notifications = 2,
-            WindowsService = 3
+            WindowsService = 3,
+            Dependencies = 4
         }
 
         /// <summary>The tab the window opens on. Null leaves the first one selected.</summary>
@@ -70,6 +71,117 @@ namespace ServiceManager.UI
             loadList();
 
             showWindowsServiceTabShield();
+
+            showDependencyTree();
+        }
+
+        /// <summary>
+        /// The services are edited on the first tab, so the tree is built again whenever its own tab is opened
+        /// rather than once for the whole dialog.
+        /// </summary>
+        private void tabMain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabMain.SelectedTab != tabDependencies)
+            {
+                return;
+            }
+
+            showDependencyTree();
+        }
+
+        /// <summary>
+        /// The tree shows what the start order is built from, so it is handed the same graph the manager works
+        /// with. Nothing here decides anything about the dependencies, the tree only draws what it is given.
+        /// </summary>
+        private void showDependencyTree()
+        {
+            var slist = ServiceConfig.load();
+            var windows = slist.WindowsSettings;
+
+            var tree = new DependencyTree(new ServiceDependencyGraph(slist.ServiceList), Program.ServiceName,
+                windows == null ? null : windows.GetDependencies());
+
+            trvDependencies.BeginUpdate();
+            trvDependencies.Nodes.Clear();
+
+            foreach (var node in tree.Build())
+            {
+                trvDependencies.Nodes.Add(toTreeNode(node));
+            }
+
+            trvDependencies.ExpandAll();
+            trvDependencies.EndUpdate();
+        }
+
+        /// <summary>
+        /// A disabled service and a service that sits on a circle are marked instead of left out, otherwise the
+        /// tree would hide the two things a person has to see.
+        /// </summary>
+        private TreeNode toTreeNode(DependencyTreeNode node)
+        {
+            var item = new TreeNode(node.Title);
+
+            //The node is the key of the double click, it names the service the settings belong to.
+            item.Tag = node;
+
+            // A Windows service is always a leaf, the settings file holds no dependencies below it.
+            if (node.Kind == DependencyTreeNode.eNodeKind.WindowsService)
+            {
+                return item;
+            }
+
+            if (!node.Enabled)
+            {
+                item.Text += " (disabled)";
+                item.ForeColor = Color.Gray;
+            }
+
+            if (node.IsRepeat)
+            {
+                item.Text += " (see above)";
+                item.ForeColor = Color.Gray;
+            }
+            else if (node.InCycle)
+            {
+                item.Text += " (circle)";
+                item.ForeColor = Color.Firebrick;
+            }
+
+            foreach (var child in node.Children)
+            {
+                item.Nodes.Add(toTreeNode(child));
+            }
+
+            return item;
+        }
+
+        /// <summary>
+        /// A service node opens the settings of that service, the ServiceManager node opens the tab holding its
+        /// own settings. A Windows service has no settings here, and the repeat that closes a circle leads to a
+        /// service that is already shown above.
+        /// </summary>
+        private void trvDependencies_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            var node = (e.Node as TreeNode)?.Tag as DependencyTreeNode;
+            if (node == null || node.IsRepeat)
+            {
+                return;
+            }
+
+            if (node.Kind == DependencyTreeNode.eNodeKind.Host)
+            {
+                tabMain.SelectedTab = tabWindowsService;
+                return;
+            }
+
+            if (node.Kind != DependencyTreeNode.eNodeKind.Service)
+            {
+                return;
+            }
+
+            editService(node.ID);
+
+            showDependencyTree();
         }
 
         /// <summary>
@@ -386,8 +498,14 @@ namespace ServiceManager.UI
                 return;
             }
 
+            editService((Guid)item.Item.Tag);
+        }
+
+        /// <summary>Opens the settings of one service and writes the file back once the dialog was accepted.</summary>
+        private void editService(Guid id)
+        {
             var slist = ServiceConfig.load();
-            var service = slist.ServiceList.FirstOrDefault(a => a.ID == (Guid)item.Item.Tag);
+            var service = slist.ServiceList.FirstOrDefault(a => a.ID == id);
             if (service == null)
             {
                 return;
