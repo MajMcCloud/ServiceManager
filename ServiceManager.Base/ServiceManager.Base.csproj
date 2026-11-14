@@ -53,6 +53,10 @@
     <Compile Include="Data\ServiceConfig.cs" />
     <Compile Include="Data\ServiceItem.cs" />
     <Compile Include="Data\StopRequestTracker.cs" />
+    <Compile Include="Events\eCallback.cs" />
+    <Compile Include="Events\EventBus.cs" />
+    <Compile Include="Events\IServiceEventBus.cs" />
+    <Compile Include="Events\ServiceEvent.cs" />
     <Compile Include="Data\Settings\Notifications.cs" />
     <Compile Include="Data\Settings\NotificationTarget.cs" />
     <Compile Include="Data\Settings\Runtime.cs" />

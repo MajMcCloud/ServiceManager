@@ -1,4 +1,5 @@
 ﻿using ServiceManager.Base.Data;
+using ServiceManager.Base.Events;
 using ServiceManager.Base.Windows;
 using ServiceManager.Extensions.Interfaces;
 using System;
@@ -44,6 +45,13 @@ namespace ServiceManager.Base
         /// </summary>
         public StopRequestTracker StopRequests { get; set; }
 
+        /// <summary>
+        /// Where the manager reports what it notices. The WCF push and the provider dispatch are subscribers
+        /// here rather than calls at every place where something happens, and a test hands in a recording
+        /// fake instead of a channel.
+        /// </summary>
+        public IServiceEventBus Events { get; set; }
+
         public List<Guid> LiveLogs { get; set; }
 
         public List<Process> RunningProcesses { get; set; }
@@ -58,6 +66,12 @@ namespace ServiceManager.Base
             WindowsStatus = new WindowsServiceStatus();
 
             StopRequests = new StopRequestTracker();
+
+            Events = new EventBus();
+
+            //The order is the one the hand-written calls had: the client is told first, the providers after.
+            Events.Subscribe(PushToClients);
+            Events.Subscribe(SendToProviders);
         }
 
 
@@ -67,7 +81,7 @@ namespace ServiceManager.Base
 
             Config = cfg;
 
-            Notify(NotificationKind.ServerStart, this.Config.Notifications.InstanceName + ": Server started");
+            Raise(NotificationKind.ServerStart, this.Config.Notifications.InstanceName + ": Server started");
 
             this.IsRunning = true;
 
@@ -225,9 +239,7 @@ namespace ServiceManager.Base
             sa.ProcessID = 0;
             sa.AppendError(WindowsDependencyWait.WaitError(missing));
 
-            Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
-
-            Notify(NotificationKind.DependencyWait, WindowsDependencyWait.WaitText(this.Config.Notifications.InstanceName, item.Title, missing), item.Title, missing);
+            Raise(NotificationKind.DependencyWait, eCallback.updated, WindowsDependencyWait.WaitText(this.Config.Notifications.InstanceName, item.Title, missing), item, missing);
 
             Thread th = new Thread(new ThreadStart(() => WaitForDependencies(item, sa)));
 
@@ -277,9 +289,7 @@ namespace ServiceManager.Base
             sa.Exiting = null;
             sa.AppendError(WindowsDependencyWait.TimeoutError(missing, timeout));
 
-            Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
-
-            Notify(NotificationKind.DependencyWait, WindowsDependencyWait.TimeoutText(this.Config.Notifications.InstanceName, item.Title, missing, timeout), item.Title, missing);
+            Raise(NotificationKind.DependencyWait, eCallback.updated, WindowsDependencyWait.TimeoutText(this.Config.Notifications.InstanceName, item.Title, missing, timeout), item, missing);
         }
 
         /// <summary>
@@ -295,7 +305,7 @@ namespace ServiceManager.Base
 
             StopRequests.Clear(item.ID);
 
-            Notify(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item.Title);
+            Raise(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item);
 
             Process proc = new Process();
 
@@ -315,9 +325,9 @@ namespace ServiceManager.Base
 
                 sa.Status = ServiceAnalytics.eStatus.offline;
 
-                Connection?.Try(a => a.ServiceExited(item.ID, item, sa));
+                Raise(eCallback.exited, item, sa);
 
-                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+                Raise(eCallback.updated, item, sa);
 
                 Process_Exited(item, proc);
             };
@@ -342,7 +352,7 @@ namespace ServiceManager.Base
 
                 sa.Status = ServiceAnalytics.eStatus.start_failed;
 
-                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+                Raise(eCallback.updated, item, sa);
 
                 return;
             }
@@ -359,7 +369,7 @@ namespace ServiceManager.Base
 
             sa.Status = ServiceAnalytics.eStatus.running;
 
-            Connection?.Try(a => a.ServiceStarted(item.ID, item, sa));
+            Raise(eCallback.started, item, sa);
         }
 
         public void ServiceEnd(ServiceItem item)
@@ -373,7 +383,7 @@ namespace ServiceManager.Base
             {
                 sa.Status = ServiceAnalytics.eStatus.offline;
 
-                Connection?.Try(a => a.ServiceUpdated(item.ID, item, sa));
+                Raise(eCallback.updated, item, sa);
 
                 return;
             }
@@ -403,7 +413,7 @@ namespace ServiceManager.Base
 
             if (IsRunning)
             {
-                Connection?.Try(a => a.ServiceExiting(item.ID, item, sa));
+                Raise(eCallback.exiting, item, sa);
             }
 
             if (item.Shutdown_ENTER_Send)
@@ -480,7 +490,7 @@ namespace ServiceManager.Base
             if (s == null)
                 return;
 
-            Notify(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data, s.Title, e.Data);
+            Raise(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data, s, e.Data);
 
             sa.AppendError((e.Data ?? "") + "\r\n");
         }
@@ -499,7 +509,7 @@ namespace ServiceManager.Base
             if (s == null)
                 return;
 
-            Notify(NotificationKind.ConsoleOutput, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data, s.Title, e.Data);
+            Raise(NotificationKind.ConsoleOutput, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data, s, e.Data);
 
             var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
             if (service.LogConsoleOutput)
@@ -527,6 +537,7 @@ namespace ServiceManager.Base
                 return;
 
 
+            //The ping has to reach the client in front of the line that follows it, so both stay in this task.
             var t = new Task(() =>
             {
                 if (DateTime.Now.Subtract(sa.LastPing).TotalSeconds > 10)
@@ -535,12 +546,7 @@ namespace ServiceManager.Base
                     sa.LastPing = DateTime.Now;
                 }
 
-
-                if (LiveLogs.Contains(sa.ServiceID))
-                {
-                    Connection?.Try(a => a.LiveLogsUpdate(sa.ServiceID, e.Data));
-                }
-
+                Raise(eCallback.logs, s, sa, e.Data);
             });
 
             t.Start();
@@ -605,7 +611,7 @@ namespace ServiceManager.Base
                 var kind = StopRequests.ReasonOf(service.ID);
                 var status = kind == NotificationKind.ServiceCrashed ? "Crashed" : "Stopped";
 
-                Notify(kind, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: " + status, s.Title);
+                Raise(kind, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: " + status, s);
 
                 return;
             }
@@ -615,7 +621,7 @@ namespace ServiceManager.Base
 
             StartService(service, service.Wait_On_Restart);
 
-            Notify(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted", s.Title);
+            Raise(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted", s);
         }
 
         public void Shutdown()
@@ -625,7 +631,7 @@ namespace ServiceManager.Base
 
         public void Stop()
         {
-            Notify(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutting down");
+            Raise(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutting down");
 
             this.Connection?.Try(a => a.ShutdownStarted());
 
@@ -653,7 +659,7 @@ namespace ServiceManager.Base
                     sa.Status = ServiceAnalytics.eStatus.shutting_down;
                     var start = DateTime.Now;
 
-                    this.Connection?.Try(a => a.ServiceExiting(service.ID, service, sa));
+                    Raise(eCallback.exiting, service, sa);
 
                     if (service.Shutdown_ENTER_Send)
                     {
@@ -686,7 +692,7 @@ namespace ServiceManager.Base
 
                     sa.Status = ServiceAnalytics.eStatus.offline;
 
-                    Connection?.Try(a => a.ServiceExited(service.ID, service, sa));
+                    Raise(eCallback.exited, service, sa);
 
                     sa.Exited = DateTime.Now;
 
@@ -727,36 +733,125 @@ namespace ServiceManager.Base
             this.Connection?.Stop();
 
 
-            Notify(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutted down");
+            Raise(NotificationKind.ServerShutdown, this.Config.Notifications.InstanceName + ": Server shutted down");
 
         }
 
         /// <summary>
-        /// Hands an event to every provider that opted into this kind. Text keeps the wording the
-        /// providers have always received, the structured fields are for providers that build cards
-        /// or map an event to a log level.
+        /// Puts an event on the bus for the notification providers. The text keeps the wording the providers
+        /// have always received, the structured fields are for providers that build cards or map an event
+        /// to a log level.
         /// </summary>
-        private void Notify(NotificationKind kind, String text, String serviceTitle = null, String details = null)
+        private void Raise(NotificationKind kind, String text, ServiceItem item = null, String details = null)
         {
-            var notifications = this.Config?.Notifications;
+            Raise(kind, eCallback.none, text, item, details);
+        }
 
-            if (notifications == null)
-                return;
 
-            var providers = notifications.GetProviders(kind);
-
-            if (providers.Count == 0)
-                return;
-
-            Extensions.Extensions.SendNotification(providers, new NotificationMessage()
+        /// <summary>
+        /// Puts an event on the bus that the providers and the connected clients both read. The kind is what
+        /// a provider opts into, the callback the push the client gets.
+        /// </summary>
+        private void Raise(NotificationKind kind, eCallback callback, String text, ServiceItem item = null, String details = null)
+        {
+            Events.Publish(new ServiceEvent()
             {
                 Kind = kind,
-                Timestamp = DateTime.Now,
-                InstanceName = notifications.InstanceName,
-                ServiceTitle = serviceTitle,
+                Callback = callback,
+                ServiceId = item == null ? Guid.Empty : item.ID,
+                Service = item,
+                Title = item == null ? null : item.Title,
                 Details = details,
                 Text = text
             });
+        }
+
+
+        /// <summary>Puts an event on the bus that only the connected clients are told about.</summary>
+        private void Raise(eCallback callback, ServiceItem item, ServiceAnalytics sa, String details = null)
+        {
+            Events.Publish(new ServiceEvent()
+            {
+                Callback = callback,
+                ServiceId = item.ID,
+                Service = item,
+                Analytics = sa,
+                Title = item.Title,
+                Details = details
+            });
+        }
+
+
+        /// <summary>
+        /// Hands an event to every provider that opted into this kind.
+        /// </summary>
+        private void SendToProviders(ServiceEvent e)
+        {
+            if (e.Kind == null)
+            {
+                return;
+            }
+
+            var notifications = this.Config?.Notifications;
+
+            if (notifications == null)
+            {
+                return;
+            }
+
+            var providers = notifications.GetProviders(e.Kind.Value);
+
+            if (providers.Count == 0)
+            {
+                return;
+            }
+
+            Extensions.Extensions.SendNotification(providers, new NotificationMessage()
+            {
+                Kind = e.Kind.Value,
+                Timestamp = e.Timestamp,
+                InstanceName = notifications.InstanceName,
+                ServiceTitle = e.Title,
+                Details = e.Details,
+                Text = e.Text
+            });
+        }
+
+
+        /// <summary>
+        /// Pushes an event to the connected client. The bus is in process, the callback contract is what the
+        /// UI has always been given, so the shape of the push does not change with the bus.
+        /// </summary>
+        private void PushToClients(ServiceEvent e)
+        {
+            switch (e.Callback)
+            {
+                case eCallback.none:
+                    return;
+
+                case eCallback.updated:
+                    Connection?.Try(a => a.ServiceUpdated(e.ServiceId, e.Service, e.Analytics));
+                    break;
+
+                case eCallback.started:
+                    Connection?.Try(a => a.ServiceStarted(e.ServiceId, e.Service, e.Analytics));
+                    break;
+
+                case eCallback.exited:
+                    Connection?.Try(a => a.ServiceExited(e.ServiceId, e.Service, e.Analytics));
+                    break;
+
+                case eCallback.exiting:
+                    Connection?.Try(a => a.ServiceExiting(e.ServiceId, e.Service, e.Analytics));
+                    break;
+
+                case eCallback.logs:
+                    if (LiveLogs.Contains(e.ServiceId))
+                    {
+                        Connection?.Try(a => a.LiveLogsUpdate(e.ServiceId, e.Details));
+                    }
+                    break;
+            }
         }
 
 
