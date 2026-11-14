@@ -70,6 +70,15 @@
             this.bnDependencies_Select = new System.Windows.Forms.Button();
             this.chkDependencies_WaitOnRestart = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
+            this.tabServiceDependencies = new System.Windows.Forms.TabPage();
+            this.lsvServiceDependencies = new System.Windows.Forms.ListView();
+            this.colServiceDependency_Title = new System.Windows.Forms.ColumnHeader();
+            this.colServiceDependency_Path = new System.Windows.Forms.ColumnHeader();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.cmbDependency_Restart = new System.Windows.Forms.ComboBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.cmbDependency_Start = new System.Windows.Forms.ComboBox();
             this.tabMain.SuspendLayout();
             this.tabBasic.SuspendLayout();
             this.tabStart.SuspendLayout();
@@ -78,6 +87,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
             this.tabLogging.SuspendLayout();
             this.tabDependencies.SuspendLayout();
+            this.tabServiceDependencies.SuspendLayout();
             this.SuspendLayout();
             // 
             // bnSave
@@ -180,6 +190,7 @@
             this.tabMain.Controls.Add(this.tabShutdown);
             this.tabMain.Controls.Add(this.tabLogging);
             this.tabMain.Controls.Add(this.tabDependencies);
+            this.tabMain.Controls.Add(this.tabServiceDependencies);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
             this.tabMain.Size = new System.Drawing.Size(691, 419);
@@ -477,6 +488,85 @@
             this.chkDependencies_WaitOnRestart.TabIndex = 12;
             this.chkDependencies_WaitOnRestart.Text = "Wait for the dependencies after an automatic restart";
             // 
+            // tabServiceDependencies
+            // 
+            this.tabServiceDependencies.Controls.Add(this.lsvServiceDependencies);
+            this.tabServiceDependencies.Controls.Add(this.label16);
+            this.tabServiceDependencies.Controls.Add(this.label17);
+            this.tabServiceDependencies.Controls.Add(this.cmbDependency_Restart);
+            this.tabServiceDependencies.Controls.Add(this.label18);
+            this.tabServiceDependencies.Controls.Add(this.cmbDependency_Start);
+            this.tabServiceDependencies.Location = new System.Drawing.Point(4, 22);
+            this.tabServiceDependencies.Name = "tabServiceDependencies";
+            this.tabServiceDependencies.Size = new System.Drawing.Size(683, 393);
+            this.tabServiceDependencies.TabIndex = 5;
+            this.tabServiceDependencies.Text = "Depends on";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(22, 22);
+            this.label16.Name = "label16";
+            this.label16.TabIndex = 9;
+            this.label16.Text = "Other services that have to run first";
+            // 
+            // lsvServiceDependencies
+            // 
+            this.lsvServiceDependencies.CheckBoxes = true;
+            this.lsvServiceDependencies.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colServiceDependency_Title,
+            this.colServiceDependency_Path});
+            this.lsvServiceDependencies.FullRowSelect = true;
+            this.lsvServiceDependencies.HideSelection = false;
+            this.lsvServiceDependencies.Location = new System.Drawing.Point(22, 45);
+            this.lsvServiceDependencies.Name = "lsvServiceDependencies";
+            this.lsvServiceDependencies.Size = new System.Drawing.Size(639, 250);
+            this.lsvServiceDependencies.TabIndex = 10;
+            this.lsvServiceDependencies.UseCompatibleStateImageBehavior = false;
+            this.lsvServiceDependencies.View = System.Windows.Forms.View.Details;
+            // 
+            // colServiceDependency_Title
+            // 
+            this.colServiceDependency_Title.Text = "Title";
+            this.colServiceDependency_Title.Width = 240;
+            // 
+            // colServiceDependency_Path
+            // 
+            this.colServiceDependency_Path.Text = "Path";
+            this.colServiceDependency_Path.Width = 380;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(22, 308);
+            this.label17.Name = "label17";
+            this.label17.TabIndex = 11;
+            this.label17.Text = "When a dependency restarts";
+            // 
+            // cmbDependency_Restart
+            // 
+            this.cmbDependency_Restart.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbDependency_Restart.Location = new System.Drawing.Point(285, 305);
+            this.cmbDependency_Restart.Name = "cmbDependency_Restart";
+            this.cmbDependency_Restart.Size = new System.Drawing.Size(180, 21);
+            this.cmbDependency_Restart.TabIndex = 12;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(22, 338);
+            this.label18.Name = "label18";
+            this.label18.TabIndex = 13;
+            this.label18.Text = "When a dependency did not start";
+            // 
+            // cmbDependency_Start
+            // 
+            this.cmbDependency_Start.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbDependency_Start.Location = new System.Drawing.Point(285, 335);
+            this.cmbDependency_Start.Name = "cmbDependency_Start";
+            this.cmbDependency_Start.Size = new System.Drawing.Size(180, 21);
+            this.cmbDependency_Start.TabIndex = 14;
+            // 
             // FrmNewService
             // 
             this.AllowDrop = true;
@@ -507,6 +597,8 @@
             this.tabLogging.PerformLayout();
             this.tabDependencies.ResumeLayout(false);
             this.tabDependencies.PerformLayout();
+            this.tabServiceDependencies.ResumeLayout(false);
+            this.tabServiceDependencies.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -555,5 +647,14 @@
         private System.Windows.Forms.Button bnDependencies_Select;
         private System.Windows.Forms.CheckBox chkDependencies_WaitOnRestart;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TabPage tabServiceDependencies;
+        private System.Windows.Forms.ListView lsvServiceDependencies;
+        private System.Windows.Forms.ColumnHeader colServiceDependency_Title;
+        private System.Windows.Forms.ColumnHeader colServiceDependency_Path;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.ComboBox cmbDependency_Restart;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.ComboBox cmbDependency_Start;
     }
 }

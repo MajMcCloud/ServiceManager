@@ -260,6 +260,25 @@ Log your services console and error outputs right into memory /and on disk. So y
 
 <img src="Screens/Settings_4.png" />
 
+## Service Settings - Dependencies
+
+A managed application can wait for other managed applications. On the **Depends on** tab of its settings
+dialog, tick the services that have to run first: they are started in front, and where nothing waits for
+anything the order of the service list is kept. A service that is disabled or was deleted holds nothing back.
+
+Two rules decide what happens once the services are running. **When a dependency restarts** leaves the service
+alone, restarts it together with the dependency, or stops it and leaves it stopped. **When a dependency did
+not start** starts the service anyway, which is what ServiceManager did before, or takes it offline. Both
+rules reach through the services below, level by level.
+
+Services that wait for each other are refused in the dialog. A settings file that already holds such a circle
+is loaded anyway: the circle is reported through the *On Dependency Wait* event and the services start in the
+order of the list rather than not at all. Deleting a service names every service that waits for it and removes
+the entry from those lists.
+
+At shutdown the services nothing waits for go down first, then their dependencies, one level after the other
+and everything inside one level at the same time.
+
 
 ## Live Console In and Output
 

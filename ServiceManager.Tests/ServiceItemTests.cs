@@ -54,5 +54,61 @@ namespace ServiceManager.Tests
             Assert.AreEqual(0, again.WindowsDependencies.Count);
             Assert.IsTrue(again.Wait_On_Restart);
         }
+
+        [TestMethod]
+        public void serviceItem_waits_for_no_other_service_by_default()
+        {
+            var item = new ServiceItem();
+
+            Assert.IsNotNull(item.Dependencies);
+            Assert.AreEqual(0, item.Dependencies.Count);
+        }
+
+        [TestMethod]
+        public void serviceItem_leaves_its_dependents_alone_by_default()
+        {
+            var item = new ServiceItem();
+
+            Assert.AreEqual(ServiceItem.eDependencyRestartRule.Ignore, item.DependencyRestartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStartRule.StartAnyway, item.DependencyStartRule);
+        }
+
+        [TestMethod]
+        public void service_dependencies_survive_the_settings_file()
+        {
+            var item = new ServiceItem();
+
+            item.Title = "Telegram bot";
+            item.Dependencies = new List<Guid> { new Guid("11111111-1111-1111-1111-111111111111") };
+            item.DependencyRestartRule = ServiceItem.eDependencyRestartRule.Stop;
+            item.DependencyStartRule = ServiceItem.eDependencyStartRule.DoNotStart;
+
+            var again = JsonConvert.DeserializeObject<ServiceItem>(JsonConvert.SerializeObject(item));
+
+            CollectionAssert.AreEqual(item.Dependencies, again.Dependencies);
+            Assert.AreEqual(ServiceItem.eDependencyRestartRule.Stop, again.DependencyRestartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStartRule.DoNotStart, again.DependencyStartRule);
+        }
+
+        [TestMethod]
+        public void older_settings_without_service_dependencies_keep_the_defaults()
+        {
+            var again = JsonConvert.DeserializeObject<ServiceItem>("{\"Title\":\"Telegram bot\",\"ForceRestart\":true}");
+
+            Assert.IsNotNull(again.Dependencies, "the start order reads the list without checking it");
+            Assert.AreEqual(0, again.Dependencies.Count);
+            Assert.AreEqual(ServiceItem.eDependencyRestartRule.Ignore, again.DependencyRestartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStartRule.StartAnyway, again.DependencyStartRule);
+        }
+
+        [TestMethod]
+        public void the_numbers_in_the_settings_file_mean_the_same_rules_as_the_names()
+        {
+            //An older file holds the numbers, so a rule that moves would change what that file says
+            var again = JsonConvert.DeserializeObject<ServiceItem>("{\"DependencyRestartRule\":2,\"DependencyStartRule\":1}");
+
+            Assert.AreEqual(ServiceItem.eDependencyRestartRule.Stop, again.DependencyRestartRule);
+            Assert.AreEqual(ServiceItem.eDependencyStartRule.DoNotStart, again.DependencyStartRule);
+        }
     }
 }

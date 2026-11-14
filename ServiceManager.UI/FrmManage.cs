@@ -381,10 +381,9 @@ namespace ServiceManager.UI
             if (lsvServices.SelectedItems.Count == 0)
                 return;
 
-            if (MessageBox.Show("Are you sure to remove these " + lsvServices.SelectedItems.Count + " services?", "Confirmation", MessageBoxButtons.YesNo) != DialogResult.Yes)
-                return;
-
             var slist = ServiceConfig.load();
+
+            var ids = new List<Guid>();
 
             foreach (var si in lsvServices.SelectedItems)
             {
@@ -392,7 +391,43 @@ namespace ServiceManager.UI
                 if (id == null)
                     continue;
 
-                slist.ServiceList.RemoveAll(a => a.ID == id.Value);
+                if (!ids.Contains(id.Value))
+                    ids.Add(id.Value);
+            }
+
+            //A service that others wait for is named together with everything that waits for it, so the
+            //person deleting can see what the list entry takes with it.
+            var graph = new ServiceDependencyGraph(slist.ServiceList);
+            var dependents = new List<ServiceItem>();
+
+            foreach (Guid id in ids)
+            {
+                foreach (var dependent in graph.DependentsRecursively(id))
+                {
+                    if (!dependents.Contains(dependent))
+                        dependents.Add(dependent);
+                }
+            }
+
+            var question = "Are you sure to remove these " + ids.Count + " services?";
+
+            if (dependents.Count > 0)
+            {
+                question += "\r\n\r\nThese services depend on them and will no longer wait for them:\r\n" + String.Join("\r\n", dependents.Select(a => a.Title).OrderBy(a => a, StringComparer.OrdinalIgnoreCase));
+            }
+
+            if (MessageBox.Show(question, "Confirmation", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                return;
+
+            foreach (Guid id in ids)
+            {
+                slist.ServiceList.RemoveAll(a => a.ID == id);
+
+                foreach (var service in slist.ServiceList)
+                {
+                    if (service.Dependencies != null)
+                        service.Dependencies.Remove(id);
+                }
             }
 
             slist.save();

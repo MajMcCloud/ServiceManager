@@ -141,7 +141,15 @@ namespace ServiceManager.Base
 
         private void StartServices(ServiceConfig cfg)
         {
-            foreach (var c in cfg.ServiceList)
+            var graph = new ServiceDependencyGraph(cfg.ServiceList);
+
+            //A circle in the settings file is reported and then ignored, the services still come up
+            if (graph.HasCycle)
+            {
+                Raise(NotificationKind.DependencyWait, cfg.Notifications.InstanceName + ": Dependency cycle between " + String.Join(", ", graph.Cyclic.Select(a => TitleOf(a))));
+            }
+
+            foreach (var c in graph.StartOrder(cfg.ServiceList))
             {
                 //Don't start
                 if (!c.Enabled)
@@ -149,6 +157,14 @@ namespace ServiceManager.Base
 
                 StartService(c);
             }
+        }
+
+        /// <summary>The title of a service, its id when the settings file no longer knows it.</summary>
+        private String TitleOf(Guid id)
+        {
+            var service = this.Config?.ServiceList.FirstOrDefault(a => a.ID == id);
+
+            return service != null ? service.Title : id.ToString();
         }
 
         /// <summary>
@@ -291,6 +307,8 @@ namespace ServiceManager.Base
             sa.AppendError(WindowsDependencyWait.TimeoutError(missing, timeout));
 
             Raise(NotificationKind.DependencyWait, eCallback.updated, WindowsDependencyWait.TimeoutText(this.Config.Notifications.InstanceName, item.Title, missing, timeout), item, missing);
+
+            ApplyStartRules(item.ID);
         }
 
         /// <summary>
@@ -354,6 +372,8 @@ namespace ServiceManager.Base
                 sa.Status = ServiceAnalytics.eStatus.start_failed;
 
                 Raise(eCallback.updated, item, sa);
+
+                ApplyStartRules(item.ID);
 
                 return;
             }
@@ -622,6 +642,106 @@ namespace ServiceManager.Base
             StartService(service, service.Wait_On_Restart);
 
             Raise(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nStatus: Restarted", s);
+
+            ApplyRestartRules(service.ID);
+        }
+
+        /// <summary>
+        /// Applies the restart rule of every service that depends on the given one.
+        /// </summary>
+        private void ApplyRestartRules(Guid id)
+        {
+            if (this.Config == null)
+            {
+                return;
+            }
+
+            ApplyRestartRules(new ServiceDependencyGraph(this.Config.ServiceList), id, new HashSet<Guid> { id });
+        }
+
+        /// <summary>
+        /// The services already visited are skipped, that is what keeps a circle in the settings file from
+        /// running around in circles.
+        /// </summary>
+        private void ApplyRestartRules(ServiceDependencyGraph graph, Guid id, HashSet<Guid> visited)
+        {
+            foreach (var dependent in graph.DependentsOf(id))
+            {
+                if (!visited.Add(dependent.ID))
+                {
+                    continue;
+                }
+
+                switch (dependent.DependencyRestartRule)
+                {
+                    case ServiceItem.eDependencyRestartRule.Restart:
+                        ServiceEnd(dependent);
+
+                        //A service that restarts on its own is left to its own restart path, which carries
+                        //the rules further down from there. Restarting it here as well would race with it.
+                        if (!dependent.ForceRestart)
+                        {
+                            StartService(dependent, dependent.Wait_On_Restart);
+
+                            Raise(NotificationKind.ServiceRestart, this.Config.Notifications.InstanceName + ": " + dependent.Title + "\r\nStatus: Restarted with a dependency", dependent);
+
+                            ApplyRestartRules(graph, dependent.ID, visited);
+                        }
+                        break;
+
+                    case ServiceItem.eDependencyRestartRule.Stop:
+                        //Without the flag the own restart path of the service would bring it straight back up
+                        dependent.ForceRestart = false;
+
+                        ServiceEnd(dependent);
+
+                        Raise(NotificationKind.ServiceStop, this.Config.Notifications.InstanceName + ": " + dependent.Title + "\r\nStatus: Stopped with a dependency", dependent);
+
+                        ApplyRestartRules(graph, dependent.ID, visited);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Takes the services that must not start without the given one offline.
+        /// </summary>
+        private void ApplyStartRules(Guid id)
+        {
+            if (this.Config == null)
+            {
+                return;
+            }
+
+            ApplyStartRules(new ServiceDependencyGraph(this.Config.ServiceList), id, new HashSet<Guid> { id });
+        }
+
+        /// <summary>
+        /// A service that starts anyway is left alone, and a service below a service that was taken offline
+        /// is taken offline as well. The visited set is what keeps a circle from running forever.
+        /// </summary>
+        private void ApplyStartRules(ServiceDependencyGraph graph, Guid id, HashSet<Guid> visited)
+        {
+            foreach (var dependent in graph.DependentsOf(id))
+            {
+                if (dependent.DependencyStartRule != ServiceItem.eDependencyStartRule.DoNotStart)
+                {
+                    continue;
+                }
+
+                if (!visited.Add(dependent.ID))
+                {
+                    continue;
+                }
+
+                dependent.ForceRestart = false;
+
+                ServiceEnd(dependent);
+
+                Raise(NotificationKind.DependencyWait, this.Config.Notifications.InstanceName + ": " + dependent.Title + "\r\nStatus: Not started, " + TitleOf(id) + " did not start", dependent);
+
+                ApplyStartRules(graph, dependent.ID, visited);
+            }
         }
 
         public void Shutdown()
@@ -637,89 +757,40 @@ namespace ServiceManager.Base
 
             this.IsRunning = false;
 
-            List<Task> Exits = new List<Task>();
+            var graph = new ServiceDependencyGraph(this.Config.ServiceList);
+            var running = this.Config.ServiceList.Where(a => HasLiveProcess(a)).ToList();
 
-
-            foreach (var service in this.Config.ServiceList)
+            //The services nothing else depends on go down first, then their parents. Everything inside one
+            //level is stopped at the same time.
+            foreach (var level in graph.StopLevels(running))
             {
-                var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == service.ID);
-                if (sa == null || !sa.IsRunning)
-                    continue;
+                List<Task> Exits = new List<Task>();
 
-                sa.Exiting = DateTime.Now;
-
-                StopRequests.Mark(service.ID);
-
-                var ex = new Task(() =>
+                foreach (var service in level)
                 {
-                    var proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
-                    if (proc == null)
-                        return;
+                    var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == service.ID);
+                    if (sa == null)
+                        continue;
 
-                    sa.Status = ServiceAnalytics.eStatus.shutting_down;
-                    var start = DateTime.Now;
+                    sa.Exiting = DateTime.Now;
 
-                    Raise(eCallback.exiting, service, sa);
+                    StopRequests.Mark(service.ID);
 
-                    if (service.Shutdown_ENTER_Send)
-                    {
-                        proc.StandardInput.WriteLine("\r\n");
+                    var ex = new Task(() => StopRunningService(service, sa));
 
-                        if (service.Shutdown_ENTER_Timeout > 0)
-                        {
-                            Wait(service.Shutdown_ENTER_Timeout, a => proc.HasExited);
-                        }
-                    }
+                    ex.Start();
 
+                    Exits.Add(ex);
+                }
 
+                try
+                {
+                    Task.WaitAll(Exits.ToArray());
+                }
+                catch
+                {
 
-                    if (!proc.HasExited)
-                    {
-                        proc.CloseMainWindow();
-
-                        if (service.Shutdown_Timeout > 0)
-                        {
-                            Wait(service.Shutdown_Timeout, a => proc.HasExited);
-                        }
-                        else
-                        {
-                            Wait(10, a => proc.HasExited);
-                        }
-                    }
-
-                    if (!proc.HasExited)
-                        proc.Kill();
-
-                    sa.Status = ServiceAnalytics.eStatus.offline;
-
-                    Raise(eCallback.exited, service, sa);
-
-                    sa.Exited = DateTime.Now;
-
-                    //Save to harddrive
-                    if (sa.LastSaved.Date != DateTime.Today)
-                    {
-                        if (service.LogConsoleOutput && SaveToDisk(service, sa.Output))
-                        {
-                            sa.Output = "";
-                            sa.LastSaved = DateTime.Now;
-                        }
-                    }
-
-                });
-
-                ex.Start();
-
-                Exits.Add(ex);
-            }
-
-            try
-            {
-                Task.WaitAll(Exits.ToArray());
-            }
-            catch
-            {
-
+                }
             }
 
             //The pushes of the services that just ended have to reach the client in front of the handshake.
@@ -740,6 +811,72 @@ namespace ServiceManager.Base
             Events.Flush();
 
             Events.Complete();
+        }
+
+        /// <summary>True when the analytics know a process of the service that is still alive.</summary>
+        private bool HasLiveProcess(ServiceItem service)
+        {
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == service.ID);
+
+            return sa != null && sa.IsRunning;
+        }
+
+        /// <summary>
+        /// Brings one service down: the enter key it might be waiting for, its main window, and the process
+        /// itself when neither of them was enough.
+        /// </summary>
+        private void StopRunningService(ServiceItem service, ServiceAnalytics sa)
+        {
+            var proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
+            if (proc == null)
+                return;
+
+            sa.Status = ServiceAnalytics.eStatus.shutting_down;
+
+            Raise(eCallback.exiting, service, sa);
+
+            if (service.Shutdown_ENTER_Send)
+            {
+                proc.StandardInput.WriteLine("\r\n");
+
+                if (service.Shutdown_ENTER_Timeout > 0)
+                {
+                    Wait(service.Shutdown_ENTER_Timeout, a => proc.HasExited);
+                }
+            }
+
+            if (!proc.HasExited)
+            {
+                proc.CloseMainWindow();
+
+                if (service.Shutdown_Timeout > 0)
+                {
+                    Wait(service.Shutdown_Timeout, a => proc.HasExited);
+                }
+                else
+                {
+                    Wait(10, a => proc.HasExited);
+                }
+            }
+
+            if (!proc.HasExited)
+                proc.Kill();
+
+            sa.Status = ServiceAnalytics.eStatus.offline;
+
+            Raise(eCallback.exited, service, sa);
+
+            sa.Exited = DateTime.Now;
+
+            //Save to harddrive
+            if (sa.LastSaved.Date != DateTime.Today)
+            {
+                if (service.LogConsoleOutput && SaveToDisk(service, sa.Output))
+                {
+                    sa.Output = "";
+                    sa.LastSaved = DateTime.Now;
+                }
+            }
         }
 
         /// <summary>

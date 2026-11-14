@@ -51,6 +51,7 @@
 	  <Compile Include="Data\SecretStorage.cs" />
     <Compile Include="Data\ServiceAnalytics.cs" />
     <Compile Include="Data\ServiceConfig.cs" />
+    <Compile Include="Data\ServiceDependencyGraph.cs" />
     <Compile Include="Data\ServiceItem.cs" />
     <Compile Include="Data\StopRequestTracker.cs" />
     <Compile Include="Events\eCallback.cs" />

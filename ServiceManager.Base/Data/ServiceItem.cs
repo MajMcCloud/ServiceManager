@@ -27,6 +27,21 @@ namespace ServiceManager.Base.Data
         public List<String> WindowsDependencies { get; set; } = new List<String>();
 
         /// <summary>
+        /// Other managed services that have to be started before this one.
+        /// </summary>
+        public List<Guid> Dependencies { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// What happens to this service when a service it depends on is restarted.
+        /// </summary>
+        public eDependencyRestartRule DependencyRestartRule { get; set; } = eDependencyRestartRule.Ignore;
+
+        /// <summary>
+        /// What happens to this service when a service it depends on did not start.
+        /// </summary>
+        public eDependencyStartRule DependencyStartRule { get; set; } = eDependencyStartRule.StartAnyway;
+
+        /// <summary>
         /// Wait for the Windows dependencies after an automatic restart as well.
         /// </summary>
         public bool Wait_On_Restart { get; set; } = true;
@@ -57,6 +72,35 @@ namespace ServiceManager.Base.Data
         public ServiceItem()
         {
 
+        }
+
+        /// <summary>
+        /// How a service reacts when a service it depends on is restarted. The numbers are kept because the
+        /// settings file stores them.
+        /// </summary>
+        public enum eDependencyRestartRule
+        {
+            /// <summary>The dependent service is left alone.</summary>
+            Ignore = 0,
+
+            /// <summary>The dependent service is stopped and started again.</summary>
+            Restart = 1,
+
+            /// <summary>The dependent service is stopped and stays stopped.</summary>
+            Stop = 2
+        }
+
+        /// <summary>
+        /// How a service reacts when a service it depends on did not start. The numbers are kept because the
+        /// settings file stores them.
+        /// </summary>
+        public enum eDependencyStartRule
+        {
+            /// <summary>The dependent service starts anyway, which is what the manager did before.</summary>
+            StartAnyway = 0,
+
+            /// <summary>The dependent service is taken offline and stays offline.</summary>
+            DoNotStart = 1
         }
 
     }
