@@ -104,6 +104,26 @@ namespace ServiceManager.Base.Data
 
 
         /// <summary>
+        /// Memory the process holds in physical memory, in bytes. Null when nothing was measured, which an
+        /// older service never sends.
+        /// </summary>
+        public Int64? WorkingSetBytes { get; set; }
+
+
+        /// <summary>
+        /// The percent of all processors the process used since the last read. Null when there is no second
+        /// read to compare the first one with.
+        /// </summary>
+        public Double? CpuPercent { get; set; }
+
+
+        /// <summary>
+        /// How many threads the process has. Null when nothing was measured.
+        /// </summary>
+        public Int32? ThreadCount { get; set; }
+
+
+        /// <summary>
         /// The status as English text. The enum name is not what a person should read in the service list.
         /// </summary>
         public static String StatusText(eStatus status)

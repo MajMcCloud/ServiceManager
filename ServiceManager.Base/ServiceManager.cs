@@ -52,6 +52,12 @@ namespace ServiceManager.Base
         /// </summary>
         public IServiceEventBus Events { get; set; }
 
+        /// <summary>
+        /// Reads memory, processor use and threads of the processes behind the analytics. The processor use
+        /// is a difference between two reads, so one sampler serves the whole run instead of one per call.
+        /// </summary>
+        public ProcessSampler Sampler { get; set; }
+
         public List<Guid> LiveLogs { get; set; }
 
         public List<Process> RunningProcesses { get; set; }
@@ -68,6 +74,8 @@ namespace ServiceManager.Base
             StopRequests = new StopRequestTracker();
 
             Events = new EventBus();
+
+            Sampler = new ProcessSampler();
 
             //The client is pushed to and the providers are asked on threads of their own, so a provider that
             //waits for its webhook cannot hold up the push to the client.

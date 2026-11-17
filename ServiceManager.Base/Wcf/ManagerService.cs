@@ -80,6 +80,11 @@ namespace ServiceManager.Base.Wcf
 
             var sa = this.Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
 
+            if (sa != null)
+            {
+                this.Manager.Sampler.Apply(sa);
+            }
+
             response.Service = item;
             response.Analytics = sa;
 
@@ -92,6 +97,9 @@ namespace ServiceManager.Base.Wcf
 
             foreach (var an in this.Manager.Analytics.Services)
             {
+                //The list is polled, so every poll is a new measurement and the one before it is still known
+                this.Manager.Sampler.Apply(an);
+
                 var sa = Newtonsoft.Json.JsonConvert.DeserializeObject<ServiceAnalytics>(Newtonsoft.Json.JsonConvert.SerializeObject(an));
                 if (sa == null)
                     continue;
