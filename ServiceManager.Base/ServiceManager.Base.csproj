@@ -89,6 +89,7 @@
     <Compile Include="Windows\WindowsServiceQuery.cs" />
     <Compile Include="Windows\WindowsServiceStatus.cs" />
     <Compile Include="Windows\WindowsStartFailure.cs" />
+    <Compile Include="Windows\WindowsUserProcess.cs" />
     <Compile Include="Wcf\AdministratorAuthorizationManager.cs" />
     <Compile Include="Wcf\OwnUserAuthorizationManager.cs" />
     <Compile Include="Wcf\Args\ActivityPingEventArgs.cs" />

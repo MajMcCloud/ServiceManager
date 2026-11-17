@@ -296,11 +296,12 @@ a new one is typed. It is saved protected through Windows DPAPI for the whole ma
 administrator of that machine can read it back. The built-in accounts LocalSystem, LocalService and NetworkService
 are not offered yet.
 
-One limit to know about: while ServiceManager itself runs as **LocalSystem** - the default of the Windows service
-installation - a managed process cannot be started under another account. Windows refuses that logon because it
-works with the logon identifier of the caller, and the LocalSystem token does not carry one, so the service goes
-offline with `Access is denied (5)` and the log says what it means. The interactive test run and a ServiceManager
-running under its own account do not have that limit.
+While ServiceManager itself runs as **LocalSystem** - the default of the Windows service installation - the
+account is taken through a Windows token instead: ServiceManager logs the account in, takes a copy of its token
+and has Windows start the process for that token. The plain logon of .NET cannot be used there, because it works
+with the logon identifier of the caller and the LocalSystem token carries none; a service that is refused that way
+went offline with `Access is denied (5)`. The interactive test run and a ServiceManager running under its own
+account take the shorter way.
 
 ## Service Settings - Shutdown
 
@@ -309,6 +310,12 @@ Timeout before service gets killed when not responding to exit signal.
 Good for console applications allow pressing ENTER before running Timeout.
 
 After the timeout it will get killed.
+
+Every step stands on its own. A step that was refused - a process of another account that will not take the input,
+a window that is already gone - is named in the console of ServiceManager, in the error output of the service and
+in its live log, and the next step is taken anyway. A service whose process cannot be reached is taken offline
+rather than left in the list as running, and what was measured on it - the run time, the memory, the processor use
+and the thread count - is cleared as soon as it is offline.
 
 <img src="Screens/Settings_2.png" />
 

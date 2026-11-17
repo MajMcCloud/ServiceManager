@@ -100,6 +100,19 @@ namespace ServiceManager.Base.Data
 
         public DateTime LastPing { get; set; }
 
+        /// <summary>
+        /// Hands back everything that was measured on a process. A service that is offline has nothing left to
+        /// measure, and a value that stays behind reads as if the process were still there.
+        /// </summary>
+        public void ClearMeasurements()
+        {
+            Started = null;
+            LastPing = DateTime.MinValue;
+            WorkingSetBytes = null;
+            CpuPercent = null;
+            ThreadCount = null;
+        }
+
         public eStatus Status { get; set; }
 
 

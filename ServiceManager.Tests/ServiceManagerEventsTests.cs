@@ -6,6 +6,7 @@ using ServiceManager.Base.Windows;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceManager.Tests
 {
@@ -280,6 +281,55 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual(NotificationKind.ServiceStop, bus.Events[1].Kind);
             Assert.AreEqual(Child, bus.Events[1].ServiceId);
+        }
+
+
+        [TestMethod]
+        public void a_service_the_manager_has_no_process_for_goes_offline_and_stops_its_dependents()
+        {
+            var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var child = new ServiceItem()
+            {
+                ID = Child,
+                Title = "TelegramBot",
+                Dependencies = new List<Guid> { Service },
+                DependencyStopRule = ServiceItem.eDependencyStopRule.Stop
+            };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(parent);
+            manager.Config.ServiceList.Add(child);
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+            manager.IsRunning = true;
+
+            manager.PrepareService(parent);
+            manager.PrepareService(child);
+
+            var parentAnalytics = manager.Analytics.Services.First(a => a.ServiceID == Service);
+            var childAnalytics = manager.Analytics.Services.First(a => a.ServiceID == Child);
+
+            parentAnalytics.ProcessID = 4242;
+            parentAnalytics.Status = ServiceAnalytics.eStatus.running;
+
+            childAnalytics.ProcessID = 4243;
+            childAnalytics.Status = ServiceAnalytics.eStatus.running;
+            childAnalytics.WorkingSetBytes = 2048;
+
+            manager.StopService(parent);
+
+            Assert.AreEqual(ServiceAnalytics.eStatus.offline, parentAnalytics.Status, "a service with no process left to end is not running anymore");
+            Assert.AreEqual(ServiceAnalytics.eStatus.offline, childAnalytics.Status, "the service waiting for it goes the same way");
+            Assert.IsNull(childAnalytics.WorkingSetBytes, "what was measured on a process that is gone is handed back");
+
+            Assert.AreEqual(1, bus.Events.Count, "the dependent is stopped through the rules of its own");
+            Assert.AreEqual(NotificationKind.ServiceStop, bus.Events[0].Kind);
+            Assert.AreEqual(Child, bus.Events[0].ServiceId);
         }
 
 

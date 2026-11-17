@@ -62,6 +62,11 @@ namespace ServiceManager.Base
 
         public List<Process> RunningProcesses { get; set; }
 
+        /// <summary>
+        /// The processes started under another account by token, keyed by their process id. They own the pipes of
+        /// the standard streams, which the manager has to hand back once the process is gone.
+        /// </summary>
+        private readonly Dictionary<int, WindowsUserProcess> m_UserProcesses = new Dictionary<int, WindowsUserProcess>();
 
         public ServiceManager()
         {
@@ -312,6 +317,7 @@ namespace ServiceManager.Base
             sa.Started = null;
             sa.Exited = DateTime.Now;
             sa.Exiting = null;
+            sa.ClearMeasurements();
             sa.AppendError(WindowsDependencyWait.TimeoutError(missing, timeout));
 
             Raise(NotificationKind.DependencyWait, eCallback.updated, WindowsDependencyWait.TimeoutText(this.Config.Notifications.InstanceName, item.Title, missing, timeout), item, missing);
@@ -347,18 +353,48 @@ namespace ServiceManager.Base
 
             Raise(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item);
 
-            Process proc = new Process();
-
             sa.Status = ServiceAnalytics.eStatus.starting;
 
+            WindowsUserProcess session = null;
+            Process proc;
 
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.FileName = item.Path;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.RedirectStandardError = true;
-            proc.StartInfo.RedirectStandardInput = true;
+            //A manager running as LocalSystem is refused the logon of the framework, that token carries no logon
+            //identifier. Such a process is created from a token of the account instead
+            if (WindowsUserProcess.WantsTokenPath(account, WindowsHostAccount.IsLocalSystem()))
+            {
+                try
+                {
+                    session = WindowsUserProcess.Start(account, item.Path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(WindowsStartFailure.ConsoleLine(item.Title, account, ex));
 
-            account.Apply(proc.StartInfo);
+                    StartFailed(item, sa, WindowsStartFailure.ErrorLine(account, ex));
+
+                    return;
+                }
+
+                proc = session.Process;
+
+                //The process is still standing still, so the session is registered before it can end
+                lock (m_UserProcesses)
+                {
+                    m_UserProcesses[proc.Id] = session;
+                }
+            }
+            else
+            {
+                proc = new Process();
+
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.FileName = item.Path;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardInput = true;
+
+                account.Apply(proc.StartInfo);
+            }
 
             proc.EnableRaisingEvents = true;
 
@@ -367,11 +403,15 @@ namespace ServiceManager.Base
 
                 sa.Status = ServiceAnalytics.eStatus.offline;
 
+                RemoveRunningProcess(proc);
+
                 Raise(eCallback.exited, item, sa);
 
                 Raise(eCallback.updated, item, sa);
 
                 Process_Exited(item, proc);
+
+                closeSession(proc.Id);
             };
 
             proc.OutputDataReceived += Proc_OutputDataReceived;
@@ -379,15 +419,31 @@ namespace ServiceManager.Base
 
             try
             {
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
+                if (session == null)
+                {
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.BeginErrorReadLine();
+                }
+                else
+                {
+                    //The line handling is on the process before it runs, the process was created standing still
+                    session.OutputLine = (line) => handleOutput(proc.Id, line);
+                    session.ErrorLine = (line) => handleError(proc.Id, line);
+
+                    session.Resume();
+                }
             }
             catch (Exception ex)
             {
                 //The operating system knows why the process is not running. Without that reason a wrong
                 //password, an account that may not log on and a missing file all look the same
                 Console.WriteLine(WindowsStartFailure.ConsoleLine(item.Title, account, ex));
+
+                if (session != null)
+                {
+                    closeSession(proc.Id);
+                }
 
                 StartFailed(item, sa, WindowsStartFailure.ErrorLine(account, ex));
 
@@ -421,6 +477,7 @@ namespace ServiceManager.Base
             sa.Started = null;
             sa.Exited = DateTime.Now;
             sa.Exiting = null;
+            sa.ClearMeasurements();
 
             sa.Status = ServiceAnalytics.eStatus.start_failed;
 
@@ -453,64 +510,164 @@ namespace ServiceManager.Base
                 return;
             }
 
-            Process proc;
-
-            lock (RunningProcesses)
+            try
             {
+                Process proc;
 
-                proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
-                if (proc == null)
+                lock (RunningProcesses)
                 {
-                    return;
+
+                    proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
+                    if (proc == null)
+                    {
+                        //The manager knows no process of this service. A service it believes to be running goes
+                        //offline here, a service that never started keeps the reason it never started
+                        if (sa.Status == ServiceAnalytics.eStatus.running || sa.Status == ServiceAnalytics.eStatus.shutting_down)
+                        {
+                            sa.Status = ServiceAnalytics.eStatus.offline;
+                        }
+
+                        sa.ClearMeasurements();
+
+                        return;
+                    }
+
+                    sa.Status = ServiceAnalytics.eStatus.shutting_down;
+
+                    if (RunningProcesses.Contains(proc))
+                        RunningProcesses.Remove(proc);
+
                 }
 
-                sa.Status = ServiceAnalytics.eStatus.shutting_down;
+                if (!HasExited(proc))
+                {
+                    if (IsRunning)
+                    {
+                        Raise(eCallback.exiting, item, sa);
+                    }
 
-                if (RunningProcesses.Contains(proc))
-                    RunningProcesses.Remove(proc);
+                    EndProcess(item, sa, proc, 1);
+                }
 
+                sa.Status = ServiceAnalytics.eStatus.offline;
+                sa.ClearMeasurements();
+            }
+            catch (Exception ex)
+            {
+                //A service that cannot be reached is offline as far as the manager is concerned. Leaving it up
+                //would hold the services waiting for it on a dependency that is gone
+                sa.Status = ServiceAnalytics.eStatus.offline;
+                sa.ClearMeasurements();
+
+                ReportEndFailure(item, sa, ex);
+            }
+        }
+
+        /// <summary>
+        /// The steps that take a process down: the enter key it might be waiting for, its main window and the
+        /// process itself when neither of them was enough. Every one of them can be refused, by a pipe that is
+        /// closed, by a process of another account or by a process that walked away on its own, so the steps are
+        /// taken one after the other and none of them throws the end at whoever asked for it.
+        /// </summary>
+        /// <param name="windowFallback">Seconds to wait for the window step when the settings name no timeout.</param>
+        internal void EndProcess(ServiceItem item, ServiceAnalytics sa, Process proc, int windowFallback)
+        {
+            if (item.Shutdown_ENTER_Send)
+            {
+                TryEndStep(item, sa, () => WriteInput(proc, "\r\n"));
+
+                if (item.Shutdown_ENTER_Timeout > 0)
+                {
+                    Wait(item.Shutdown_ENTER_Timeout, a => HasExited(proc));
+                }
             }
 
-            if (proc.HasExited)
+            if (!HasExited(proc))
+            {
+                TryEndStep(item, sa, () => proc.CloseMainWindow());
+
+                if (item.Shutdown_Timeout > 0)
+                {
+                    Wait(item.Shutdown_Timeout, a => HasExited(proc));
+                }
+                else
+                {
+                    Wait(windowFallback, a => HasExited(proc));
+                }
+            }
+
+            if (!HasExited(proc))
+            {
+                TryEndStep(item, sa, () => proc.Kill());
+            }
+        }
+
+        /// <summary>
+        /// Takes one step of the end and reports the reason when it was refused. The steps that follow are taken
+        /// regardless: an enter key that does not reach the process must not leave the process running.
+        /// </summary>
+        private void TryEndStep(ServiceItem item, ServiceAnalytics sa, Action step)
+        {
+            try
+            {
+                step();
+            }
+            catch (Exception ex)
+            {
+                ReportEndFailure(item, sa, ex);
+            }
+        }
+
+        /// <summary>
+        /// Whether a process is gone. A process the framework cannot read anymore is treated as gone, there is
+        /// nothing left to end.
+        /// </summary>
+        private static bool HasExited(Process proc)
+        {
+            try
+            {
+                return proc.HasExited;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// What a refused step of an end costs the run. The reason goes to the console, the output of the service
+        /// and the live log, so a process that was reached and refused is not mistaken for one that was never
+        /// reached at all.
+        /// </summary>
+        private void ReportEndFailure(ServiceItem item, ServiceAnalytics sa, Exception ex)
+        {
+            var reason = WindowsStartFailure.Reason(ex);
+
+            Console.WriteLine("ServiceManager: " + item.Title + " could not be ended: " + reason);
+
+            if (sa == null)
             {
                 return;
             }
 
-            if (IsRunning)
+            var line = "SERVICE MANAGER: COULD NOT END " + item.Title + ": " + reason;
+
+            sa.AppendError(line + "\r\n");
+            sa.AppendOutput(line + "\r\n");
+
+            Raise(eCallback.logs, item.ID, line);
+        }
+
+        /// <summary>
+        /// Hands back the process of a service that ended. A process that stays in the list is looked up again by
+        /// the rules of the services waiting for it, and reading it then throws over a handle that is closed.
+        /// </summary>
+        private void RemoveRunningProcess(Process proc)
+        {
+            lock (RunningProcesses)
             {
-                Raise(eCallback.exiting, item, sa);
+                RunningProcesses.Remove(proc);
             }
-
-            if (item.Shutdown_ENTER_Send)
-            {
-                proc.StandardInput.WriteLine("\r\n");
-
-                if (item.Shutdown_ENTER_Timeout > 0)
-                {
-                    Wait(item.Shutdown_ENTER_Timeout, a => proc.HasExited);
-                }
-            }
-
-            if (!proc.HasExited)
-            {
-                proc.CloseMainWindow();
-
-                if (item.Shutdown_Timeout > 0)
-                {
-                    Thread.Sleep(item.Shutdown_Timeout * 1000);
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                }
-            }
-
-            if (!proc.HasExited)
-            {
-                proc.Kill();
-            }
-
-            sa.Status = ServiceAnalytics.eStatus.offline;
         }
 
         /// <summary>
@@ -591,7 +748,7 @@ namespace ServiceManager.Base
                 var t = new Thread(new ThreadStart(() =>
                 {
                     Thread.Sleep(100);
-                    proc.StandardInput.WriteLine(input);
+                    WriteInput(proc, input);
                 }));
                 t.Start();
 
@@ -608,17 +765,10 @@ namespace ServiceManager.Base
                 return;
 
             Process proc = sender as Process;
-            var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == proc.Id) ?? new ServiceAnalytics();
-            if (sa == null)
+            if (proc == null)
                 return;
 
-            var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
-            if (s == null)
-                return;
-
-            Raise(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + e.Data, s, e.Data);
-
-            sa.AppendError((e.Data ?? "") + "\r\n");
+            handleError(proc.Id, e.Data);
         }
 
         private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -627,7 +777,19 @@ namespace ServiceManager.Base
                 return;
 
             Process proc = sender as Process;
-            var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == proc.Id) ?? new ServiceAnalytics();
+            if (proc == null)
+                return;
+
+            handleOutput(proc.Id, e.Data);
+        }
+
+        /// <summary>
+        /// What the error stream of a process reported, wherever the line came from. The framework hands it in
+        /// through an event, a process started under another account by token hands it in from its pipe.
+        /// </summary>
+        private void handleError(int processId, String data)
+        {
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == processId) ?? new ServiceAnalytics();
             if (sa == null)
                 return;
 
@@ -635,7 +797,25 @@ namespace ServiceManager.Base
             if (s == null)
                 return;
 
-            Raise(NotificationKind.ConsoleOutput, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + e.Data, s, e.Data);
+            Raise(NotificationKind.ConsoleError, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\nError:\r\n" + data, s, data);
+
+            sa.AppendError((data ?? "") + "\r\n");
+        }
+
+        /// <summary>
+        /// What the output stream of a process reported, wherever the line came from.
+        /// </summary>
+        private void handleOutput(int processId, String data)
+        {
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ProcessID == processId) ?? new ServiceAnalytics();
+            if (sa == null)
+                return;
+
+            var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
+            if (s == null)
+                return;
+
+            Raise(NotificationKind.ConsoleOutput, this.Config.Notifications.InstanceName + ": " + s.Title + "\r\n" + data, s, data);
 
             var service = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
             if (service.LogConsoleOutput)
@@ -656,7 +836,7 @@ namespace ServiceManager.Base
                     }
                 }
 
-                sa.AppendOutput(e.Data + "\r\n");
+                sa.AppendOutput(data + "\r\n");
             }
 
             if (Connection.ServerChannel == null || Connection.Failed)
@@ -673,8 +853,52 @@ namespace ServiceManager.Base
 
             if (LiveLogs.Contains(sa.ServiceID))
             {
-                Raise(eCallback.logs, s, sa, e.Data);
+                Raise(eCallback.logs, s, sa, data);
             }
+        }
+
+        /// <summary>
+        /// Writes one line to the standard input of a process. A process started under another account by token
+        /// has no stream of the framework, its input travels through a pipe owned by the session.
+        /// </summary>
+        private void WriteInput(Process proc, String line)
+        {
+            WindowsUserProcess session;
+
+            lock (m_UserProcesses)
+            {
+                m_UserProcesses.TryGetValue(proc.Id, out session);
+            }
+
+            if (session != null)
+            {
+                session.WriteInput(line);
+
+                return;
+            }
+
+            proc.StandardInput.WriteLine(line);
+        }
+
+        /// <summary>
+        /// Hands back the pipes of a process that is gone. A process of the framework owns no session, the call
+        /// then costs nothing.
+        /// </summary>
+        private void closeSession(int processId)
+        {
+            WindowsUserProcess session;
+
+            lock (m_UserProcesses)
+            {
+                if (!m_UserProcesses.TryGetValue(processId, out session))
+                {
+                    return;
+                }
+
+                m_UserProcesses.Remove(processId);
+            }
+
+            session.Dispose();
         }
 
         public bool SaveToDisk(ServiceItem service, String content)
@@ -712,6 +936,8 @@ namespace ServiceManager.Base
             {
                 sa.Exited = DateTime.Now;
 
+                //The process is gone, and so is everything that was measured on it
+                sa.ClearMeasurements();
             }
 
             var s = this.Config.ServiceList.FirstOrDefault(a => a.ID == sa.ServiceID);
@@ -987,7 +1213,13 @@ namespace ServiceManager.Base
         /// </summary>
         private void StopRunningService(ServiceItem service, ServiceAnalytics sa)
         {
-            var proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
+            Process proc;
+
+            lock (RunningProcesses)
+            {
+                proc = RunningProcesses.FirstOrDefault(a => a.Id == sa.ProcessID);
+            }
+
             if (proc == null)
                 return;
 
@@ -995,34 +1227,10 @@ namespace ServiceManager.Base
 
             Raise(eCallback.exiting, service, sa);
 
-            if (service.Shutdown_ENTER_Send)
-            {
-                proc.StandardInput.WriteLine("\r\n");
-
-                if (service.Shutdown_ENTER_Timeout > 0)
-                {
-                    Wait(service.Shutdown_ENTER_Timeout, a => proc.HasExited);
-                }
-            }
-
-            if (!proc.HasExited)
-            {
-                proc.CloseMainWindow();
-
-                if (service.Shutdown_Timeout > 0)
-                {
-                    Wait(service.Shutdown_Timeout, a => proc.HasExited);
-                }
-                else
-                {
-                    Wait(10, a => proc.HasExited);
-                }
-            }
-
-            if (!proc.HasExited)
-                proc.Kill();
+            EndProcess(service, sa, proc, 10);
 
             sa.Status = ServiceAnalytics.eStatus.offline;
+            sa.ClearMeasurements();
 
             Raise(eCallback.exited, service, sa);
 

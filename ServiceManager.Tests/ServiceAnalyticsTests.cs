@@ -138,6 +138,43 @@ namespace ServiceManager.Tests
             }
         }
 
+        [TestMethod]
+        public void clear_measurements_hands_back_every_value_of_a_process()
+        {
+            var analytics = new ServiceAnalytics();
+
+            analytics.Started = DateTime.Now;
+            analytics.LastPing = DateTime.Now;
+            analytics.WorkingSetBytes = 2048;
+            analytics.CpuPercent = 4;
+            analytics.ThreadCount = 12;
+
+            analytics.ClearMeasurements();
+
+            Assert.IsNull(analytics.Started);
+            Assert.AreEqual(DateTime.MinValue, analytics.LastPing);
+            Assert.IsNull(analytics.WorkingSetBytes);
+            Assert.IsNull(analytics.CpuPercent);
+            Assert.IsNull(analytics.ThreadCount);
+        }
+
+        [TestMethod]
+        public void clear_measurements_keeps_what_a_service_reports_about_itself()
+        {
+            var analytics = new ServiceAnalytics();
+
+            analytics.Exited = DateTime.Now;
+            analytics.Restarts = 2;
+            analytics.Status = ServiceAnalytics.eStatus.offline;
+            analytics.Output = "the last line\r\n";
+
+            analytics.ClearMeasurements();
+
+            Assert.AreEqual(2, analytics.Restarts);
+            Assert.AreEqual(ServiceAnalytics.eStatus.offline, analytics.Status);
+            Assert.AreEqual("the last line\r\n", analytics.Output);
+        }
+
         // Every line has the same length, so the tail can be measured line by line.
         private static String Line(int Number)
         {

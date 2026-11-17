@@ -143,6 +143,26 @@ namespace ServiceManager.Tests
             Assert.AreEqual("12", ColumnText.Get(eColumn.Threads, newService(), data, now));
         }
 
+        [TestMethod]
+        public void a_service_that_went_offline_reads_empty_in_every_measured_column()
+        {
+            ServiceAnalytics data = newAnalytics();
+
+            data.Started = now.AddMinutes(-90);
+            data.LastPing = now.AddSeconds(-30);
+            data.WorkingSetBytes = 2048;
+            data.CpuPercent = 4;
+            data.ThreadCount = 12;
+
+            data.ClearMeasurements();
+
+            Assert.AreEqual("-", ColumnText.Get(eColumn.Uptime, newService(), data, now));
+            Assert.AreEqual("never", ColumnText.Get(eColumn.LastReply, newService(), data, now));
+            Assert.AreEqual("-", ColumnText.Get(eColumn.Memory, newService(), data, now));
+            Assert.AreEqual("-", ColumnText.Get(eColumn.Cpu, newService(), data, now));
+            Assert.AreEqual("-", ColumnText.Get(eColumn.Threads, newService(), data, now));
+        }
+
         private static ServiceItem newService()
         {
             return new ServiceItem();
