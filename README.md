@@ -59,6 +59,8 @@ The View menu lists every column that can be switched off and ticks the ones tha
 belongs to the Windows account and is stored in `%LOCALAPPDATA%\ServiceManager\ui.cfg`, so a small list on one
 machine stays small on the next start. The Activity column stays, as it holds the icon and the check box.
 
+<img src="Screens/ServiceListColumns.png" />
+
 Memory, processor use and the thread count are measured by the ServiceManager itself, once per refresh of the
 list, and travel to the interface with the analytics of the service. The processor value is the difference
 between two refreshes, so the first value for a service appears one refresh after it starts. A value that
@@ -283,6 +285,8 @@ runs as a Windows service, the signed-in user while it is started from the user 
 process under another account instead. Pick **Another account**, take it out of the list of the local accounts of
 the machine or type its name, and add the password. A domain account works as well: the domain goes in its own box,
 or the user name is written as `DOMAIN\user`.
+
+<img src="Screens/RunAsAccount.png" />
 
 The account has to be allowed to sign in on the computer it runs on, the "Log on locally" right. Without that right
 the logon is refused, the service goes offline and the log names the account that could not be used together with the
