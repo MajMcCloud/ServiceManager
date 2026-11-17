@@ -137,6 +137,7 @@
     <Compile Include="FrmManage.Designer.cs">
       <DependentUpon>FrmManage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Notifications\ProviderWarning.cs" />
     <Compile Include="installer\WindowsServiceConfigWriter.cs" />
     <Compile Include="installer\ServiceInstallerEx.cs">
       <SubType>Component</SubType>

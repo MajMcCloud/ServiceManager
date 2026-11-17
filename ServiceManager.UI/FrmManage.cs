@@ -5,6 +5,7 @@ using ServiceManager.Base.Windows;
 using ServiceManager.Extensions;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
+using ServiceManager.UI.Notifications;
 using ServiceManager.UI.Progress;
 using System;
 using System.Collections.Generic;
@@ -47,6 +48,9 @@ namespace ServiceManager.UI
         /// <summary>The provider the checkboxes currently show, the one <see cref="commitCheckboxes"/> writes to.</summary>
         private NotificationTarget m_DisplayedTarget;
 
+        /// <summary>Image of a provider whose settings are still incomplete.</summary>
+        private const String WarningImage = "warning";
+
         private List<String> m_CustomDependencies = new List<String>();
         private bool m_LoadingWindowsSettings;
 
@@ -59,6 +63,13 @@ namespace ServiceManager.UI
         public FrmManage()
         {
             InitializeComponent();
+
+            var providerImages = new ImageList { ColorDepth = ColorDepth.Depth32Bit, ImageSize = new Size(16, 16) };
+
+            // The icon of the shell stays readable under any theme, and it needs no file of its own.
+            providerImages.Images.Add(WarningImage, SystemIcons.Warning.ToBitmap());
+
+            lsvNotifications_Providers.SmallImageList = providerImages;
         }
 
         private void frmManage_Load(object sender, EventArgs e)
@@ -302,13 +313,17 @@ namespace ServiceManager.UI
         /// <summary>Eintrag der aktiven Provider.</summary>
         private sealed class TargetItem
         {
-            public TargetItem(NotificationTarget target, string text)
+            public TargetItem(NotificationTarget target, Extension extension, string text)
             {
                 Target = target;
+                Extension = extension;
                 Text = text;
             }
 
             public NotificationTarget Target { get; }
+
+            /// <summary>Der geladene Provider, null wenn seine Assembly verschwunden ist.</summary>
+            public Extension Extension { get; }
 
             public string Text { get; }
 
@@ -332,7 +347,7 @@ namespace ServiceManager.UI
 
                 var text = extension != null ? extension.Name : "unknown provider: " + target.PluginId;
 
-                return new TargetItem(target, text);
+                return new TargetItem(target, extension, text);
             })
             .OrderBy(a => a.Text, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -342,31 +357,48 @@ namespace ServiceManager.UI
 
             m_LoadingTargets = true;
 
-            lstNotifications_Providers.BeginUpdate();
-            lstNotifications_Providers.Items.Clear();
+            lsvNotifications_Providers.BeginUpdate();
+            lsvNotifications_Providers.Items.Clear();
 
             foreach (var entry in entries)
             {
-                lstNotifications_Providers.Items.Add(entry);
+                ListViewItem row = new ListViewItem(entry.Text);
+
+                row.Tag = entry;
+
+                // The icon points at the entry before anyone selects it and reads the sentence beside it.
+                if (ProviderWarning.Missing(entry.Extension).Count > 0)
+                    row.ImageKey = WarningImage;
+
+                lsvNotifications_Providers.Items.Add(row);
             }
 
-            lstNotifications_Providers.EndUpdate();
+            lsvNotifications_Providers.EndUpdate();
 
             var index = entries.FindIndex(a => ReferenceEquals(a.Target, wanted));
 
             if (index < 0)
                 index = entries.Count > 0 ? 0 : -1;
 
-            lstNotifications_Providers.SelectedIndex = index;
+            if (index >= 0)
+                lsvNotifications_Providers.SelectedIndices.Add(index);
 
             m_LoadingTargets = false;
 
             applySelectedTarget();
         }
 
+        private TargetItem selectedItem()
+        {
+            if (lsvNotifications_Providers.SelectedItems.Count == 0)
+                return null;
+
+            return lsvNotifications_Providers.SelectedItems[0].Tag as TargetItem;
+        }
+
         private NotificationTarget selectedTarget()
         {
-            var item = lstNotifications_Providers.SelectedItem as TargetItem;
+            var item = selectedItem();
 
             return item != null ? item.Target : null;
         }
@@ -393,12 +425,16 @@ namespace ServiceManager.UI
         /// <summary>Shows the events the selected provider asked for.</summary>
         private void applySelectedTarget()
         {
-            var target = selectedTarget();
+            var entry = selectedItem();
+
+            var target = entry != null ? entry.Target : null;
 
             m_DisplayedTarget = target;
 
             bnNotifications_Remove.Enabled = target != null;
             bnNotifications_Configure.Enabled = target != null;
+
+            lblNotifications_Warning.Text = entry == null ? "" : ProviderWarning.Text(entry.Text, ProviderWarning.Missing(entry.Extension));
 
             if (target == null)
                 return;
@@ -414,7 +450,7 @@ namespace ServiceManager.UI
             chkNotifications_OnServiceCrashed.Checked = target.OnServiceCrashed;
         }
 
-        private void lstNotifications_Providers_SelectedIndexChanged(object sender, EventArgs e)
+        private void lsvNotifications_Providers_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (m_LoadingTargets)
                 return;

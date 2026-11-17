@@ -174,6 +174,12 @@ Pick every provider that should react to an event and decide per provider which 
 Add registers a provider, Remove drops it again, Configure opens the settings of the selected one.
 An empty list switches notifications off, a provider that is not listed never receives a message.
 
+A provider whose own settings are still incomplete is marked with a warning icon, and the line beside
+the list names the fields that are empty: *SMTP server*, *Sender* and *Recipient(s)* for the mail
+provider, *Syslog host*, *Program*, *URL*, *API Key* and *Chat Id* for the others. The provider answers
+that question itself, so an extension written before this warning simply stays unmarked. The Windows
+Event Log provider is never incomplete: source name and log come with a working default.
+
 A settings file of an older version keeps working: its single provider and the global ticks become
 one entry of this list the first time the file is read.
 

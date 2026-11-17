@@ -78,7 +78,9 @@
             this.bnNotifications_Configure = new System.Windows.Forms.Button();
             this.bnNotifications_Add = new System.Windows.Forms.Button();
             this.bnNotifications_Remove = new System.Windows.Forms.Button();
-            this.lstNotifications_Providers = new System.Windows.Forms.ListBox();
+            this.lsvNotifications_Providers = new System.Windows.Forms.ListView();
+            this.colProvider_Name = new System.Windows.Forms.ColumnHeader();
+            this.lblNotifications_Warning = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.grpWindowsService = new System.Windows.Forms.GroupBox();
             this.lblService_StartMode = new System.Windows.Forms.Label();
@@ -538,7 +540,8 @@
             this.tabNotifications.Controls.Add(this.bnNotifications_Add);
             this.tabNotifications.Controls.Add(this.bnNotifications_Remove);
             this.tabNotifications.Controls.Add(this.bnNotifications_Configure);
-            this.tabNotifications.Controls.Add(this.lstNotifications_Providers);
+            this.tabNotifications.Controls.Add(this.lsvNotifications_Providers);
+            this.tabNotifications.Controls.Add(this.lblNotifications_Warning);
             this.tabNotifications.Controls.Add(this.label3);
             this.tabNotifications.Controls.Add(this.txtNotifications_InstanceName);
             this.tabNotifications.Controls.Add(this.label4);
@@ -722,15 +725,34 @@
             this.bnNotifications_Remove.Text = "Remove";
             this.bnNotifications_Remove.UseVisualStyleBackColor = true;
             this.bnNotifications_Remove.Click += new System.EventHandler(this.bnNotifications_Remove_Click);
+             // 
+            // lsvNotifications_Providers
             // 
-            // lstNotifications_Providers
+            this.lsvNotifications_Providers.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colProvider_Name});
+            this.lsvNotifications_Providers.FullRowSelect = true;
+            this.lsvNotifications_Providers.HideSelection = false;
+            this.lsvNotifications_Providers.Location = new System.Drawing.Point(30, 145);
+            this.lsvNotifications_Providers.MultiSelect = false;
+            this.lsvNotifications_Providers.Name = "lsvNotifications_Providers";
+            this.lsvNotifications_Providers.Size = new System.Drawing.Size(250, 108);
+            this.lsvNotifications_Providers.TabIndex = 16;
+            this.lsvNotifications_Providers.UseCompatibleStateImageBehavior = false;
+            this.lsvNotifications_Providers.View = System.Windows.Forms.View.Details;
+            this.lsvNotifications_Providers.SelectedIndexChanged += new System.EventHandler(this.lsvNotifications_Providers_SelectedIndexChanged);
             // 
-            this.lstNotifications_Providers.FormattingEnabled = true;
-            this.lstNotifications_Providers.Location = new System.Drawing.Point(30, 145);
-            this.lstNotifications_Providers.Name = "lstNotifications_Providers";
-            this.lstNotifications_Providers.Size = new System.Drawing.Size(250, 108);
-            this.lstNotifications_Providers.TabIndex = 16;
-            this.lstNotifications_Providers.SelectedIndexChanged += new System.EventHandler(this.lstNotifications_Providers_SelectedIndexChanged);
+            // colProvider_Name
+            // 
+            this.colProvider_Name.Text = "Provider";
+            this.colProvider_Name.Width = 240;
+            // 
+            // lblNotifications_Warning
+            // 
+            this.lblNotifications_Warning.ForeColor = System.Drawing.Color.Firebrick;
+            this.lblNotifications_Warning.Location = new System.Drawing.Point(375, 145);
+            this.lblNotifications_Warning.Name = "lblNotifications_Warning";
+            this.lblNotifications_Warning.Size = new System.Drawing.Size(360, 100);
+            this.lblNotifications_Warning.TabIndex = 18;
             // 
             // label3
             // 
@@ -869,7 +891,9 @@
         private System.Windows.Forms.Button bnNotifications_Configure;
         private System.Windows.Forms.Button bnNotifications_Add;
         private System.Windows.Forms.Button bnNotifications_Remove;
-        private System.Windows.Forms.ListBox lstNotifications_Providers;
+        private System.Windows.Forms.ListView lsvNotifications_Providers;
+        private System.Windows.Forms.ColumnHeader colProvider_Name;
+        private System.Windows.Forms.Label lblNotifications_Warning;
         private System.Windows.Forms.Label label3;
     }
 }
