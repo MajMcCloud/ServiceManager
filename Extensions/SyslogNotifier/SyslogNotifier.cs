@@ -1,6 +1,7 @@
 using ServiceManager.Extensions.Interfaces;
 using ServiceManager.Extensions.SyslogNotifier.Forms;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ServiceManager.Extensions.SyslogNotifier
@@ -9,7 +10,7 @@ namespace ServiceManager.Extensions.SyslogNotifier
     /// The provider for an installation that already collects logs: a syslog line needs no account, no
     /// token and no certificate, and it lands in the same place as the lines of every other device.
     /// </summary>
-    public class SyslogNotifier : Interfaces.INotificationMessageExtension
+    public class SyslogNotifier : Interfaces.INotificationMessageExtension, Interfaces.INotificationSettingsCheck
     {
         public Guid Id => Guid.Parse("5aa8d564-45ae-456d-9425-aaf5f69c2e9c");
 
@@ -63,6 +64,15 @@ namespace ServiceManager.Extensions.SyslogNotifier
         public Task<String> Test(NotificationMessage message)
         {
             return __sender.Deliver(message);
+        }
+
+
+        /// <summary>
+        /// Only the host is missing when nothing was filled in, port and facility come with a default.
+        /// </summary>
+        public IList<String> MissingSettings()
+        {
+            return SyslogSender.MissingSettings(__config);
         }
 
 

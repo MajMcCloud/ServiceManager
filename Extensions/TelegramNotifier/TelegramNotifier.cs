@@ -11,7 +11,7 @@ using Telegram.Bot;
 
 namespace ServiceManager.Extensions.TelegramNotifier
 {
-    public class TelegramNotifier : Interfaces.INotificationExtension
+    public class TelegramNotifier : Interfaces.INotificationExtension, Interfaces.INotificationSettingsCheck
     {
 
 
@@ -76,6 +76,23 @@ namespace ServiceManager.Extensions.TelegramNotifier
 
             return;
         }
+
+        /// <summary>
+        /// Without the key the bot answers nobody, without the chat id the message has no destination.
+        /// </summary>
+        public IList<String> MissingSettings()
+        {
+            var missing = new List<String>();
+
+            if (__config == null || (__config.APIKey ?? "").Trim() == "")
+                missing.Add("API Key");
+
+            if (__config == null || __config.ChatId == 0)
+                missing.Add("Chat Id");
+
+            return missing;
+        }
+
 
         public void Configure()
         {

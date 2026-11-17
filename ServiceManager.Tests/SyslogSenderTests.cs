@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceManager.Extensions.Interfaces;
 using ServiceManager.Extensions.SyslogNotifier;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -185,6 +186,24 @@ namespace ServiceManager.Tests
             // Nothing listens on 514 of this machine. What matters is that the provider did not refuse
             // the number in the settings file and that it named the port it actually used.
             Assert.IsTrue(answer == null || answer.Contains(":514"), "said: " + answer);
+        }
+
+
+        [TestMethod]
+        public void missing_settings_names_the_syslog_host_of_the_settings_dialog()
+        {
+            var missing = SyslogSender.MissingSettings(new SyslogConfig());
+
+            CollectionAssert.AreEqual(new String[] { "Syslog host" }, missing.ToArray());
+        }
+
+
+        [TestMethod]
+        public void missing_settings_stays_empty_once_the_host_is_filled_in()
+        {
+            var missing = SyslogSender.MissingSettings(new SyslogConfig() { Host = "10.0.0.9" });
+
+            Assert.AreEqual(0, missing.Count, "port and facility come with a default");
         }
     }
 }

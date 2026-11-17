@@ -1,6 +1,7 @@
 using ServiceManager.Extensions.SmtpNotifier.Forms;
 using ServiceManager.Extensions.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ServiceManager.Extensions.SmtpNotifier
@@ -9,7 +10,7 @@ namespace ServiceManager.Extensions.SmtpNotifier
     /// The provider that reaches people without a chat service and without the internet: a mail goes
     /// to a mailbox on the mail server of the network and is still readable on the way home.
     /// </summary>
-    public class SmtpNotifier : Interfaces.INotificationMessageExtension
+    public class SmtpNotifier : Interfaces.INotificationMessageExtension, Interfaces.INotificationSettingsCheck
     {
         public Guid Id => Guid.Parse("390d4bb4-9b40-4586-a355-b031e13d7e79");
 
@@ -63,6 +64,15 @@ namespace ServiceManager.Extensions.SmtpNotifier
         public Task<String> Test(NotificationMessage message)
         {
             return __sender.Test(message);
+        }
+
+
+        /// <summary>
+        /// The provider is ready as soon as server, sender and recipient are filled in.
+        /// </summary>
+        public IList<String> MissingSettings()
+        {
+            return MailSender.MissingSettings(__config);
         }
 
 

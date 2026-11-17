@@ -310,5 +310,23 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual(ScriptPayload.ToJson(message), File.ReadAllText(received));
         }
+
+
+        [TestMethod]
+        public void missing_settings_names_the_program_of_the_settings_dialog()
+        {
+            var missing = ScriptRunner.MissingSettings(new ScriptConfig());
+
+            CollectionAssert.AreEqual(new String[] { "Program" }, missing.ToArray());
+        }
+
+
+        [TestMethod]
+        public void missing_settings_stays_empty_once_the_program_is_filled_in()
+        {
+            var missing = ScriptRunner.MissingSettings(new ScriptConfig() { ScriptPath = Cmd, Arguments = "/c exit" });
+
+            Assert.AreEqual(0, missing.Count, "the arguments stay optional");
+        }
     }
 }

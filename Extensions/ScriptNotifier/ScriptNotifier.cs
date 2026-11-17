@@ -1,6 +1,7 @@
 using ServiceManager.Extensions.Interfaces;
 using ServiceManager.Extensions.ScriptNotifier.Forms;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ServiceManager.Extensions.ScriptNotifier
@@ -9,7 +10,7 @@ namespace ServiceManager.Extensions.ScriptNotifier
     /// The provider for everything that does not speak http: a program of your own gets the event as
     /// json and can call an sms gateway, open a ticket or start a backup.
     /// </summary>
-    public class ScriptNotifier : Interfaces.INotificationMessageExtension
+    public class ScriptNotifier : Interfaces.INotificationMessageExtension, Interfaces.INotificationSettingsCheck
     {
         public Guid Id => Guid.Parse("f285237d-627e-40e7-b43a-6ba8b6c51199");
 
@@ -63,6 +64,15 @@ namespace ServiceManager.Extensions.ScriptNotifier
         public Task<String> Test(NotificationMessage message)
         {
             return __runner.Deliver(message);
+        }
+
+
+        /// <summary>
+        /// Only the program is missing when nothing was filled in, the arguments stay optional.
+        /// </summary>
+        public IList<String> MissingSettings()
+        {
+            return ScriptRunner.MissingSettings(__config);
         }
 
 

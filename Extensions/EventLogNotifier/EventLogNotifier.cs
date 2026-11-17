@@ -16,6 +16,9 @@ namespace ServiceManager.Extensions.EventLogNotifier
     /// The provider without any network: every event lands in the Windows Event Log and, when the
     /// user asks for it, as a balloon tip on the desktop. It is the only provider that still works
     /// while the machine has no internet access.
+    ///
+    /// It offers no INotificationSettingsCheck: source name and log both come with a working default,
+    /// so this provider is never incomplete.
     /// </summary>
     public class EventLogNotifier : Interfaces.INotificationMessageExtension
     {

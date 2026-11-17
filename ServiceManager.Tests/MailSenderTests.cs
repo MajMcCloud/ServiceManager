@@ -293,6 +293,43 @@ namespace ServiceManager.Tests
         }
 
 
+        [TestMethod]
+        public void missing_settings_names_every_empty_field_of_the_settings_dialog()
+        {
+            var missing = MailSender.MissingSettings(new MailConfig());
+
+            CollectionAssert.AreEqual(new String[] { "SMTP server", "Sender", "Recipient(s)" }, missing.ToArray());
+        }
+
+
+        [TestMethod]
+        public void missing_settings_stays_empty_once_the_fields_are_filled_in()
+        {
+            var config = new MailConfig()
+            {
+                SmtpServer = "mail.internal",
+                FromAddress = "manager@internal",
+                ToAddresses = "ops@internal, it@internal"
+            };
+
+            CollectionAssert.AreEqual(new String[0], MailSender.MissingSettings(config).ToArray());
+        }
+
+
+        [TestMethod]
+        public void missing_settings_reads_a_field_of_only_separators_as_empty()
+        {
+            var config = new MailConfig()
+            {
+                SmtpServer = "mail.internal",
+                FromAddress = "manager@internal",
+                ToAddresses = ", ;,"
+            };
+
+            CollectionAssert.AreEqual(new String[] { "Recipient(s)" }, MailSender.MissingSettings(config).ToArray());
+        }
+
+
         /// <summary>A port on the loopback adapter that nothing listens on.</summary>
         private static int ClosedPort()
         {

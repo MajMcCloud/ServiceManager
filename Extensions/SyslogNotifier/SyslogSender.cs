@@ -1,5 +1,6 @@
 using ServiceManager.Extensions.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -121,6 +122,23 @@ namespace ServiceManager.Extensions.SyslogNotifier
         private static void Observe(Task task)
         {
             task.ContinueWith(t => { var ignored = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+        }
+
+
+        /// <summary>
+        /// What the settings dialog of this provider still shows as empty. The names are the labels of
+        /// that dialog, so a warning beside the provider points at the field to fill in.
+        /// </summary>
+        public static IList<String> MissingSettings(Config.Config config)
+        {
+            var settings = config ?? new Config.Config();
+
+            var missing = new List<String>();
+
+            if ((settings.Host ?? "").Trim() == "")
+                missing.Add("Syslog host");
+
+            return missing;
         }
 
 

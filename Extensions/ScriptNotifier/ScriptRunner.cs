@@ -1,5 +1,6 @@
 using ServiceManager.Extensions.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -244,6 +245,23 @@ namespace ServiceManager.Extensions.ScriptNotifier
                 return value ?? "";
 
             return value.Substring(0, max);
+        }
+
+
+        /// <summary>
+        /// What the settings dialog of this provider still shows as empty. The names are the labels of
+        /// that dialog, so a warning beside the provider points at the field to fill in.
+        /// </summary>
+        public static IList<String> MissingSettings(Config.Config config)
+        {
+            var settings = config ?? new Config.Config();
+
+            var missing = new List<String>();
+
+            if ((settings.ScriptPath ?? "").Trim() == "")
+                missing.Add("Program");
+
+            return missing;
         }
 
 

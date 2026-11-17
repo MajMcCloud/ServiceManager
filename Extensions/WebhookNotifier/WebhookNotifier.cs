@@ -16,7 +16,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
     /// serves a Slack incoming webhook, a Discord webhook, an n8n or Node-RED flow and a plain
     /// endpoint of our own.
     /// </summary>
-    public class WebhookNotifier : Interfaces.INotificationMessageExtension
+    public class WebhookNotifier : Interfaces.INotificationMessageExtension, Interfaces.INotificationSettingsCheck
     {
         public Guid Id => Guid.Parse("65c574ee-cc0b-4f15-89c4-7efdb052218a");
 
@@ -82,6 +82,27 @@ namespace ServiceManager.Extensions.WebhookNotifier
         public Task<String> Test(NotificationMessage message)
         {
             return Deliver(message);
+        }
+
+
+        /// <summary>
+        /// What the settings dialog of this provider still shows as empty. The names are the labels of
+        /// that dialog, so a warning beside the provider points at the field to fill in.
+        /// </summary>
+        public static IList<String> MissingSettings(Config.Config config)
+        {
+            var missing = new List<String>();
+
+            if (config == null || (config.Url ?? "").Trim() == "")
+                missing.Add("URL");
+
+            return missing;
+        }
+
+
+        public IList<String> MissingSettings()
+        {
+            return MissingSettings(__config);
         }
 
 

@@ -251,6 +251,29 @@ namespace ServiceManager.Extensions.SmtpNotifier
 
 
         /// <summary>
+        /// What the settings dialog of this provider still shows as empty. The names are the labels of
+        /// that dialog, so a warning beside the provider points at the field to fill in.
+        /// </summary>
+        public static IList<String> MissingSettings(Config.Config config)
+        {
+            var settings = config ?? new Config.Config();
+
+            var missing = new List<String>();
+
+            if ((settings.SmtpServer ?? "").Trim() == "")
+                missing.Add("SMTP server");
+
+            if ((settings.FromAddress ?? "").Trim() == "")
+                missing.Add("Sender");
+
+            if (Recipients(settings.ToAddresses).Count == 0)
+                missing.Add("Recipient(s)");
+
+            return missing;
+        }
+
+
+        /// <summary>
         /// A provider without a target is a configuration mistake, and one line per event would bury
         /// the console in it. The message appears again as soon as something was sent successfully.
         /// </summary>
