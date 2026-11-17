@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   build:
-    name: Build ( .NET Framework 4.8.1 )
+    name: Build ( .NET Framework 4.8 )
     runs-on: windows-latest
 
     steps:

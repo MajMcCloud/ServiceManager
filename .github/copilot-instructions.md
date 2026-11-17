@@ -6,7 +6,7 @@ Guidance for Copilot when working on this repository. It applies to the whole pr
 
 ServiceManager is a Windows service that watches services and processes and raises events
 (start, stop, crash, high memory, no response). Events can be forwarded to notification
-providers. Built on .NET Framework 4.8.1, a WinForms UI, a Windows service, and extensions
+providers. Built on .NET Framework 4.8, a WinForms UI, a Windows service, and extensions
 that are loaded at runtime from the `extensions` folder.
 
 Build with MSBuild (not `dotnet build`: the projects are `packages.config` style, the

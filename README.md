@@ -11,7 +11,7 @@ Only a member of the local Administrators group may connect, over both transport
 
 ## Build
 
-Targets the .NET Framework 4.8.1 (the last version of the classic .NET Framework). The reference assemblies are restored from NuGet, so no targeting pack has to be installed. No third party UI controls, so a plain clone builds out of the box:
+Targets the .NET Framework 4.8 (the last version of the classic .NET Framework). The reference assemblies are restored from NuGet, so no targeting pack has to be installed. No third party UI controls, so a plain clone builds out of the box:
 
 ```
 msbuild ServiceManager.sln /t:Restore /p:Configuration=Release

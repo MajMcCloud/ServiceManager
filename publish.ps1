@@ -417,7 +417,7 @@ $groups = Split-ChangeLog $subjects
 $notes = @(
     "## ServiceManager $Version",
     '',
-    "As of: $date - commit $sha - .NET Framework 4.8.1",
+    "As of: $date - commit $sha - .NET Framework 4.8",
     ''
 )
 
