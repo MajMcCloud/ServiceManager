@@ -285,8 +285,10 @@ the machine or type its name, and add the password. A domain account works as we
 or the user name is written as `DOMAIN\user`.
 
 The account has to be allowed to sign in on the computer it runs on, the "Log on locally" right. Without that right
-the logon is refused, the service goes offline and the log names the account that could not be used. The profile of
-the account is loaded for the process, so the process gets its own AppData folders and its own registry hive under
+the logon is refused, the service goes offline and the log names the account that could not be used together with the
+reason the operating system gave, for example `Logon failure: unknown user name or bad password (1326)`. That line goes
+into the live log of the service as well, because a process that never started leaves no output of its own. The profile
+of the account is loaded for the process, so the process gets its own AppData folders and its own registry hive under
 HKEY_CURRENT_USER.
 
 A stored password is never shown again: the settings dialog leaves the box empty and keeps the stored password until

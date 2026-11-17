@@ -338,6 +338,8 @@ namespace ServiceManager.Base
 
             if (account.Error != null)
             {
+                Console.WriteLine("ServiceManager: " + item.Title + " could not be started: " + account.Error);
+
                 StartFailed(item, sa, account.ErrorLine());
 
                 return;
@@ -381,11 +383,13 @@ namespace ServiceManager.Base
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
             }
-            catch
+            catch (Exception ex)
             {
-                StartFailed(item, sa, account.UsesLogon
-                    ? "SERVICE MANAGER: START FAILED, ACCOUNT " + account.FullName + "\r\n"
-                    : "SERVICE MANAGER: START FAILED\r\n");
+                //The operating system knows why the process is not running. Without that reason a wrong
+                //password, an account that may not log on and a missing file all look the same
+                Console.WriteLine(WindowsStartFailure.ConsoleLine(item.Title, account, ex));
+
+                StartFailed(item, sa, WindowsStartFailure.ErrorLine(account, ex));
 
                 return;
             }
@@ -419,6 +423,14 @@ namespace ServiceManager.Base
             sa.Exiting = null;
 
             sa.Status = ServiceAnalytics.eStatus.start_failed;
+
+            //A service that never got a process leaves no output of its own, so the reason is handed to the
+            //live log by hand: the window shows what the error stream already knows
+            var line = error.TrimEnd();
+
+            sa.AppendOutput(line + "\r\n");
+
+            Raise(eCallback.logs, item.ID, line);
 
             Raise(eCallback.updated, item, sa);
 
