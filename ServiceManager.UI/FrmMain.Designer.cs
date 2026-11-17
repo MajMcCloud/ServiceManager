@@ -77,6 +77,7 @@
             this.rmiServices_StopAll = new System.Windows.Forms.ToolStripMenuItem();
             this.radMenuSeparatorItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.rmiServices_OpenAllLiveLogs = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiView = new System.Windows.Forms.ToolStripMenuItem();
             this.tmPing = new System.Windows.Forms.Timer(this.components);
             this.lblVersion = new System.Windows.Forms.Label();
             this.menuMain = new System.Windows.Forms.MenuStrip();
@@ -370,6 +371,11 @@
             this.rmServiceRefresh.Interval = 10000;
             this.rmServiceRefresh.Tick += new System.EventHandler(this.rmServiceRefresh_Tick);
             // 
+            // rmiView
+            // 
+            this.rmiView.Name = "rmiView";
+            this.rmiView.Text = "View";
+            // 
             // rmiServices
             // 
             this.rmiServices.Enabled = false;
@@ -445,6 +451,7 @@
             this.rmiTesting,
             this.rmiService,
             this.rmiInstances,
+            this.rmiView,
             this.rmiServices});
             this.menuMain.Location = new System.Drawing.Point(0, 0);
             this.menuMain.Name = "menuMain";
@@ -518,6 +525,7 @@
         private System.Windows.Forms.ToolStripMenuItem rmiServices_OpenAllLiveLogs;
         private System.Windows.Forms.Timer tmPing;
         private System.Windows.Forms.MenuStrip menuMain;
+        private System.Windows.Forms.ToolStripMenuItem rmiView;
         private System.Windows.Forms.Label lblVersion;
     }
 }

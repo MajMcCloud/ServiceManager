@@ -83,9 +83,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Columns\ColumnText.cs" />
     <Compile Include="Columns\eColumn.cs" />
     <Compile Include="Columns\ServiceColumn.cs" />
     <Compile Include="Columns\ServiceColumnLayout.cs" />
+    <Compile Include="Columns\ValueFormat.cs" />
+    <Compile Include="Config\UiConfig.cs" />
     <Compile Include="Forms\FrmConnectTo.cs">
       <SubType>Form</SubType>
     </Compile>

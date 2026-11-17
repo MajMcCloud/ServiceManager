@@ -21,6 +21,7 @@ msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release
 which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bin\Release` folders as build artifacts.
 
 - [Main Window](#mainwindow)
+- [Service List Columns](#service-list-columns)
 - [Network Settings](#network-settings)
 - [Network Security](#network-security)
 - [Windows Service Settings](#windows-service-settings)
@@ -45,6 +46,28 @@ The operations that can take a while run behind a progress dialog: installing an
 starting, stopping and restarting it, connecting to a ServiceManager and starting or ending a test run. The
 window stays responsive while they work. An operation runs to its end, the dialog cannot be closed before it
 is through: stopping half way would leave the service or the connection half changed.
+
+
+## Service List Columns
+
+The service list shows one row per service and a set of columns next to it. Which columns are there and in
+which order they appear is defined in `ServiceManager.UI\Columns\ServiceColumnLayout.cs`, so a new column is
+described in one place: the heading, the width, whether the user can switch it off and whether it is on by
+default. The heading in the list and the entry in the View menu come from the same description.
+
+The View menu lists every column that can be switched off and ticks the ones that are visible. The choice
+belongs to the Windows account and is stored in `%LOCALAPPDATA%\ServiceManager\ui.cfg`, so a small list on one
+machine stays small on the next start. The Activity column stays, as it holds the icon and the check box.
+
+Memory, processor use and the thread count are measured by the ServiceManager itself, once per refresh of the
+list, and travel to the interface with the analytics of the service. The processor value is the difference
+between two refreshes, so the first value for a service appears one refresh after it starts. A value that
+cannot be measured shows as a dash: a service that is not running has no process, and a process that ends
+between two refreshes is gone before it can be measured.
+
+The uptime is the age of the process start time, the last reply is the age of the last time the ServiceManager
+saw the service running. Both are relative to the clock of the machine that measures them, so a list showing a
+remote ServiceManager compares those times with the clock of the local machine.
 
 
 ## Network Settings

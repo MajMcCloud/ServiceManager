@@ -6,6 +6,7 @@ using ServiceManager.Base.Windows;
 using ServiceManager.Base.Wcf;
 using ServiceManager.Base.Wcf.Models;
 using ServiceManager.UI.Columns;
+using ServiceManager.UI.Config;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
 using ServiceManager.UI.Progress;
@@ -41,7 +42,10 @@ namespace ServiceManager.UI
         private readonly IProcessElevation m_Elevation = new WindowsElevation();
 
         /// <summary>Which columns the list shows and where each of them sits in a row.</summary>
-        private readonly ServiceColumnLayout m_Columns = new ServiceColumnLayout();
+        private ServiceColumnLayout m_Columns;
+
+        /// <summary>What this machine shows in the service list, kept next to the person rather than an instance.</summary>
+        private readonly UiConfig m_Ui = UiConfig.Load();
 
         private static object _sync = new object();
 
@@ -53,7 +57,10 @@ namespace ServiceManager.UI
             rowImages.Images.Add("led_on", new Bitmap(Properties.Resources.led_on, 16, 16));
             lsvServices.SmallImageList = rowImages;
 
+            m_Columns = new ServiceColumnLayout(m_Ui.Columns);
+
             applyColumns();
+            buildViewMenu();
         }
         private void frmMain_Load(object sender, EventArgs e)
         {
@@ -261,21 +268,48 @@ namespace ServiceManager.UI
         /// <summary>The text one column shows for one service.</summary>
         private static String columnText(eColumn column, ServiceItem item, ServiceAnalytics analytics)
         {
-            switch (column)
+            return ColumnText.Get(column, item, analytics, DateTime.Now);
+        }
+
+        /// <summary>
+        /// The View menu offers every column that can be switched off. Its items come from the same definitions
+        /// the list is built from, so a new column is offered as soon as it is defined.
+        /// </summary>
+        private void buildViewMenu()
+        {
+            rmiView.DropDownItems.Clear();
+
+            foreach (ServiceColumn column in ServiceColumnLayout.All)
             {
-                case eColumn.Pid:
-                    return analytics.IsRunning ? analytics.ProcessID.ToString() : "-";
-                case eColumn.Title:
-                    return item.Title;
-                case eColumn.Status:
-                    return ServiceAnalytics.StatusText(analytics.Status);
-                case eColumn.Restarts:
-                    return analytics.Restarts.ToString();
-                case eColumn.AutoRestart:
-                    return item.ForceRestart ? "yes" : "no";
-                default:
-                    return String.Empty;
+                if (!column.Optional)
+                {
+                    continue;
+                }
+
+                ToolStripMenuItem item = new ToolStripMenuItem(column.Title);
+
+                item.Checked = m_Columns.IndexOf(column.Column) >= 0;
+                item.Tag = column.Column;
+                item.Click += viewColumn_Click;
+
+                rmiView.DropDownItems.Add(item);
             }
+        }
+
+        private void viewColumn_Click(object sender, EventArgs e)
+        {
+            eColumn column = (eColumn)((ToolStripMenuItem)sender).Tag;
+
+            m_Ui.Columns[column.ToString()] = m_Columns.IndexOf(column) < 0;
+            m_Ui.Store();
+
+            m_Columns = new ServiceColumnLayout(m_Ui.Columns);
+
+            applyColumns();
+            buildViewMenu();
+
+            //A row is built column by column, so the rows have to be built again
+            tmRefresh_Tick(this, EventArgs.Empty);
         }
 
         /// <summary>Writes one cell of a row, a column that is switched off takes no place.</summary>

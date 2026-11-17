@@ -23,6 +23,7 @@
     <ProjectReference Include="..\ServiceManager.ConfigBase\ServiceManager.ConfigBase.csproj" />
     <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj" />
     <ProjectReference Include="..\ServiceManager.Base\ServiceManager.Base.csproj" />
+    <ProjectReference Include="..\ServiceManager.UI\ServiceManager.UI.csproj" />
     <ProjectReference Include="..\Extensions\WebhookNotifier\ServiceManager.Extensions.WebhookNotifier.csproj" />
     <ProjectReference Include="..\Extensions\SmtpNotifier\ServiceManager.Extensions.SmtpNotifier.csproj" />
     <ProjectReference Include="..\Extensions\SyslogNotifier\ServiceManager.Extensions.SyslogNotifier.csproj" />

@@ -11,6 +11,11 @@ namespace ServiceManager.UI.Columns
         Title,
         Status,
         Restarts,
-        AutoRestart
+        AutoRestart,
+        Uptime,
+        LastReply,
+        Memory,
+        Cpu,
+        Threads
     }
 }
