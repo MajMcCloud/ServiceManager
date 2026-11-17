@@ -290,6 +290,11 @@ namespace ServiceManager.UI
 
             var extensions = Extensions.Extensions.GetNotificationExtensions();
 
+            // The dialog is refilled after a service was added, edited or removed, so the entries of the
+            // previous run have to go first or every provider shows up once more per reload.
+            cmbNotification_Extensions.BeginUpdate();
+            cmbNotification_Extensions.Items.Clear();
+
             // The list of providers grows with every extension dropped into the folder, so the choice is
             // offered in the order the names read rather than in the order the files are found.
             foreach (var extension in extensions.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase))
@@ -298,6 +303,8 @@ namespace ServiceManager.UI
                 cmbNotification_Extensions.Items.Add(new ExtensionItem(extension.Name, extension.Id));
 
             }
+
+            cmbNotification_Extensions.EndUpdate();
 
             if (cmbNotification_Extensions.Items.Count > 0)
                 cmbNotification_Extensions.SelectedIndex = 0;
