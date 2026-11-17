@@ -29,12 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn1 = new System.Windows.Forms.ColumnHeader();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn2 = new System.Windows.Forms.ColumnHeader();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn3 = new System.Windows.Forms.ColumnHeader();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn4 = new System.Windows.Forms.ColumnHeader();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn5 = new System.Windows.Forms.ColumnHeader();
-            System.Windows.Forms.ColumnHeader listViewDetailColumn6 = new System.Windows.Forms.ColumnHeader();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.tmRefresh = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -192,24 +186,7 @@
             this.lsvServices.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            listViewDetailColumn1.Text = "Activity";
-            listViewDetailColumn1.Width = 60;
-            listViewDetailColumn2.Text = "PID";
-            listViewDetailColumn2.Width = 60;
-            listViewDetailColumn3.Text = "Title";
-            listViewDetailColumn4.Text = "Status";
-            listViewDetailColumn4.Width = 150;
-            listViewDetailColumn5.Text = "Restarts";
-            listViewDetailColumn5.Width = 60;
-            listViewDetailColumn6.Text = "Auto Restart";
-            listViewDetailColumn6.Width = 80;
-            this.lsvServices.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            listViewDetailColumn1,
-            listViewDetailColumn2,
-            listViewDetailColumn3,
-            listViewDetailColumn4,
-            listViewDetailColumn5,
-            listViewDetailColumn6});
+            //The headings are built by ServiceColumnLayout, the designer holds no columns
             this.lsvServices.Location = new System.Drawing.Point(13, 59);
             this.lsvServices.FullRowSelect = true;
             this.lsvServices.MultiSelect = true;

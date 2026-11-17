@@ -5,6 +5,7 @@ using ServiceManager.Base.Progress;
 using ServiceManager.Base.Windows;
 using ServiceManager.Base.Wcf;
 using ServiceManager.Base.Wcf.Models;
+using ServiceManager.UI.Columns;
 using ServiceManager.UI.Forms;
 using ServiceManager.UI.Installer;
 using ServiceManager.UI.Progress;
@@ -39,6 +40,9 @@ namespace ServiceManager.UI
         /// <summary>Reads the rights of this process, asked whenever a menu opens.</summary>
         private readonly IProcessElevation m_Elevation = new WindowsElevation();
 
+        /// <summary>Which columns the list shows and where each of them sits in a row.</summary>
+        private readonly ServiceColumnLayout m_Columns = new ServiceColumnLayout();
+
         private static object _sync = new object();
 
         public FrmMain()
@@ -48,6 +52,8 @@ namespace ServiceManager.UI
             var rowImages = new ImageList { ColorDepth = ColorDepth.Depth32Bit, ImageSize = new Size(16, 16) };
             rowImages.Images.Add("led_on", new Bitmap(Properties.Resources.led_on, 16, 16));
             lsvServices.SmallImageList = rowImages;
+
+            applyColumns();
         }
         private void frmMain_Load(object sender, EventArgs e)
         {
@@ -77,7 +83,7 @@ namespace ServiceManager.UI
 
             dataItem.Selected = true;
 
-            if (dataItem.SubItems[3].Text == "running")
+            if (cellText(dataItem, eColumn.Status) == "running")
             {
                 tsmiMenu_Restart.Text = "Restart service";
             }
@@ -198,27 +204,23 @@ namespace ServiceManager.UI
                         itm.ImageIndex = -1;
                     }
 
-                    itm.SubItems.Add((a.IsRunning ? a.ProcessID.ToString() : "-"));
-                    itm.SubItems.Add(item.Title);
                     itm.Tag = item.ID;
+
+                    foreach (ServiceColumn column in m_Columns.Shown)
+                    {
+                        //The first column carries the text of the row and the image in front of it
+                        if (column.Column == eColumn.Activity)
+                        {
+                            continue;
+                        }
+
+                        itm.SubItems.Add(columnText(column.Column, item, a));
+                    }
+
                     lsvServices.Items.Add(itm);
 
                     if (a.IsRunning)
                         active++;
-
-                    //if (a.IsRunning && a.Exiting != null)
-                    //{
-                    //    itm.SubItems.Add("shutting down");
-                    //}
-                    //else
-                    //{
-                    //    itm.SubItems.Add(a.IsRunning ? "running" : "offline");
-                    //}
-
-                    itm.SubItems.Add(ServiceAnalytics.StatusText(a.Status));
-
-                    itm.SubItems.Add(a.Restarts.ToString());
-                    itm.SubItems.Add(item.ForceRestart ? "yes" : "no");
 
                 }
 
@@ -233,6 +235,73 @@ namespace ServiceManager.UI
 
                 lsvServices.EndUpdate();
             }
+        }
+
+        /// <summary>Builds the headings of the list from the columns that are shown.</summary>
+        private void applyColumns()
+        {
+            lsvServices.Columns.Clear();
+
+            foreach (ServiceColumn column in m_Columns.Shown)
+            {
+                ColumnHeader header = new ColumnHeader();
+
+                header.Text = column.Title;
+
+                //A width of zero leaves the column at the default of the control
+                if (column.Width > 0)
+                {
+                    header.Width = column.Width;
+                }
+
+                lsvServices.Columns.Add(header);
+            }
+        }
+
+        /// <summary>The text one column shows for one service.</summary>
+        private static String columnText(eColumn column, ServiceItem item, ServiceAnalytics analytics)
+        {
+            switch (column)
+            {
+                case eColumn.Pid:
+                    return analytics.IsRunning ? analytics.ProcessID.ToString() : "-";
+                case eColumn.Title:
+                    return item.Title;
+                case eColumn.Status:
+                    return ServiceAnalytics.StatusText(analytics.Status);
+                case eColumn.Restarts:
+                    return analytics.Restarts.ToString();
+                case eColumn.AutoRestart:
+                    return item.ForceRestart ? "yes" : "no";
+                default:
+                    return String.Empty;
+            }
+        }
+
+        /// <summary>Writes one cell of a row, a column that is switched off takes no place.</summary>
+        private void setCell(ListViewItem row, eColumn column, String text)
+        {
+            int index = m_Columns.IndexOf(column);
+
+            if (index < 0)
+            {
+                return;
+            }
+
+            row.SubItems[index].Text = text;
+        }
+
+        /// <summary>The text of one cell of a row, empty for a column that is switched off.</summary>
+        private String cellText(ListViewItem row, eColumn column)
+        {
+            int index = m_Columns.IndexOf(column);
+
+            if (index < 0)
+            {
+                return String.Empty;
+            }
+
+            return row.SubItems[index].Text;
         }
 
         private void loadConnections()
@@ -596,29 +665,28 @@ namespace ServiceManager.UI
                 {
                     case eStatus.offline:
 
-                        item.SubItems[1].Text = "-";
-                        item.SubItems[3].Text = "offline";
+                        setCell(item, eColumn.Pid, "-");
+                        setCell(item, eColumn.Status, "offline");
 
                         break;
 
                     case eStatus.waiting_for_dependency:
 
-                        item.SubItems[1].Text = "-";
-                        item.SubItems[3].Text = ServiceAnalytics.StatusText(en.Status);
+                        setCell(item, eColumn.Pid, "-");
+                        setCell(item, eColumn.Status, ServiceAnalytics.StatusText(en.Status));
 
                         break;
 
                     case eStatus.shutting_down:
 
-                        //item.SubItems[1].Text = en.PID.ToString();
-                        item.SubItems[3].Text = "shutting down";
+                        setCell(item, eColumn.Status, "shutting down");
 
                         break;
 
                     case eStatus.running:
 
-                        item.SubItems[1].Text = en.PID.ToString();
-                        item.SubItems[3].Text = "running";
+                        setCell(item, eColumn.Pid, en.PID.ToString());
+                        setCell(item, eColumn.Status, "running");
 
                         break;
 
@@ -629,14 +697,14 @@ namespace ServiceManager.UI
 
                     default:
 
-                        item.SubItems[3].Text = ServiceAnalytics.StatusText(en.Status);
+                        setCell(item, eColumn.Status, ServiceAnalytics.StatusText(en.Status));
 
                         break;
 
                 }
 
-                item.SubItems[4].Text = en.Restarts.ToString();
-                item.SubItems[5].Text = (en.AutoRestart ? "yes" : "no");
+                setCell(item, eColumn.Restarts, en.Restarts.ToString());
+                setCell(item, eColumn.AutoRestart, (en.AutoRestart ? "yes" : "no"));
 
             };
 
@@ -1204,14 +1272,14 @@ namespace ServiceManager.UI
             {
                 var item = i as ListViewItem;
 
-                if (item.SubItems[3].Text == "running")
+                if (cellText(item, eColumn.Status) == "running")
                 {
-                    if (MessageBox.Show($"Restart service {item.SubItems[1].Text} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    if (MessageBox.Show($"Restart service {cellText(item, eColumn.Pid)} ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                         return;
                 }
 
                 ids.Add((Guid)item.Tag);
-                names.Add(item.SubItems[1].Text);
+                names.Add(cellText(item, eColumn.Pid));
             }
 
             runWithProgress("Service restart", progress => runForServices(progress, ids, names, "Restarting", (a, id) => a.RestartService(id)));
@@ -1235,7 +1303,7 @@ namespace ServiceManager.UI
                 var item = i as ListViewItem;
 
                 ids.Add((Guid)item.Tag);
-                names.Add(item.SubItems[1].Text);
+                names.Add(cellText(item, eColumn.Pid));
             }
 
             runWithProgress("Service shutdown", progress => runForServices(progress, ids, names, "Shutting down", (a, id) => a.ShutdownService(id)));
@@ -1383,7 +1451,7 @@ namespace ServiceManager.UI
                 var item = i as ListViewItem;
 
                 ids.Add((Guid)item.Tag);
-                names.Add(item.SubItems[1].Text);
+                names.Add(cellText(item, eColumn.Pid));
             }
 
             runWithProgress("Starting services", progress => runForServices(progress, ids, names, "Starting", (a, id) => a.StartService(id)));
@@ -1405,7 +1473,7 @@ namespace ServiceManager.UI
                 var item = i as ListViewItem;
 
                 ids.Add((Guid)item.Tag);
-                names.Add(item.SubItems[1].Text);
+                names.Add(cellText(item, eColumn.Pid));
             }
 
             runWithProgress("Stopping services", progress => runForServices(progress, ids, names, "Stopping", (a, id) => a.ShutdownService(id)));
