@@ -85,6 +85,51 @@ namespace ServiceManager.Tests
             Assert.AreEqual("ServiceManager: Test application could not be started: The system cannot find the path specified (3)", line);
         }
 
+        [TestMethod]
+        public void hint_names_the_local_system_limit_for_a_refused_logon()
+        {
+            Exception ex = new Win32Exception(WindowsStartFailure.Error_Access_Denied, "Access is denied");
+
+            String hint = WindowsStartFailure.Hint(userAccount("MajMcCloud"), ex, true);
+
+            Assert.AreEqual(" - ServiceManager runs as LocalSystem, which cannot start a process under another account", hint);
+        }
+
+        [TestMethod]
+        public void hint_stays_quiet_for_a_wrong_password()
+        {
+            Exception ex = new Win32Exception(1326, "Logon failure: unknown user name or bad password");
+
+            String hint = WindowsStartFailure.Hint(userAccount("MajMcCloud"), ex, true);
+
+            Assert.AreEqual(String.Empty, hint);
+        }
+
+        [TestMethod]
+        public void hint_stays_quiet_when_the_manager_does_not_run_as_local_system()
+        {
+            Exception ex = new Win32Exception(WindowsStartFailure.Error_Access_Denied, "Access is denied");
+
+            String hint = WindowsStartFailure.Hint(userAccount("MajMcCloud"), ex, false);
+
+            Assert.AreEqual(String.Empty, hint);
+        }
+
+        [TestMethod]
+        public void hint_stays_quiet_for_a_process_that_inherits_the_account()
+        {
+            Exception ex = new Win32Exception(WindowsStartFailure.Error_Access_Denied, "Access is denied");
+
+            String hint = WindowsStartFailure.Hint(RunAsAccount.Of(new ServiceItem()), ex, true);
+
+            Assert.AreEqual(String.Empty, hint);
+        }
+
+        private static RunAsAccount userAccount(String user)
+        {
+            return userAccount(String.Empty, user);
+        }
+
         private static RunAsAccount userAccount(String domain, String user)
         {
             ServiceItem item = new ServiceItem();

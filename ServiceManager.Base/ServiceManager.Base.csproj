@@ -83,6 +83,7 @@
     <Compile Include="Windows\ProcessSampler.cs" />
     <Compile Include="Windows\WindowsDependencyWait.cs" />
     <Compile Include="Windows\WindowsElevation.cs" />
+    <Compile Include="Windows\WindowsHostAccount.cs" />
     <Compile Include="Windows\WindowsServiceInfo.cs" />
     <Compile Include="Windows\WindowsServiceLister.cs" />
     <Compile Include="Windows\WindowsServiceQuery.cs" />

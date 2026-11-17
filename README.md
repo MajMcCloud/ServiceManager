@@ -296,6 +296,12 @@ a new one is typed. It is saved protected through Windows DPAPI for the whole ma
 administrator of that machine can read it back. The built-in accounts LocalSystem, LocalService and NetworkService
 are not offered yet.
 
+One limit to know about: while ServiceManager itself runs as **LocalSystem** - the default of the Windows service
+installation - a managed process cannot be started under another account. Windows refuses that logon because it
+works with the logon identifier of the caller, and the LocalSystem token does not carry one, so the service goes
+offline with `Access is denied (5)` and the log says what it means. The interactive test run and a ServiceManager
+running under its own account do not have that limit.
+
 ## Service Settings - Shutdown
 
 Timeout before service gets killed when not responding to exit signal.
