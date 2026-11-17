@@ -150,7 +150,15 @@ namespace ServiceManager.Extensions
                     return null;
                 }
 
-                return new Extension() { Id = instance.Id, Name = instance.Name, Path = file, Notification = instance, MessageNotification = instance as INotificationMessageExtension };
+                return new Extension()
+                {
+                    Id = instance.Id,
+                    Name = instance.Name,
+                    Path = file,
+                    Notification = instance,
+                    MessageNotification = instance as INotificationMessageExtension,
+                    SettingsCheck = instance as INotificationSettingsCheck
+                };
             }
             catch (Exception ex)
             {

@@ -23,5 +23,11 @@ namespace ServiceManager.Extensions
         /// </summary>
         public INotificationMessageExtension MessageNotification { get; set; }
 
+        /// <summary>
+        /// Set when the assembly also offers INotificationSettingsCheck. Extensions without it are
+        /// treated as configured.
+        /// </summary>
+        public INotificationSettingsCheck SettingsCheck { get; set; }
+
     }
 }

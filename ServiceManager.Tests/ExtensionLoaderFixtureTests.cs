@@ -265,6 +265,31 @@ namespace ServiceManager.Tests
             Assert.IsFalse(cache.Contains(gone), "an extension that is no longer on disk must leave the cache");
         }
 
+        [TestMethod]
+        public void extensionOfferingTheSettingsCheck_isExposedWithItsReportedNames()
+        {
+            var fixture = ExtensionFixture.Compile("check", (id, name) => ExtensionFixture.SettingsCheckSource("CheckOne", id, name, "SMTP server", "Recipient(s)"));
+
+            var found = Find(fixture.Id);
+
+            Assert.IsNotNull(found, "the fixture has to be loaded before the interface can be checked");
+            Assert.IsNotNull(found.SettingsCheck, "the loader has to pick up the optional interface");
+
+            CollectionAssert.AreEqual(new String[] { "SMTP server", "Recipient(s)" }, found.SettingsCheck.MissingSettings().ToArray(),
+                "the loader hands out the instance, so the provider decides what it reports");
+        }
+
+        [TestMethod]
+        public void extensionWithoutTheSettingsCheck_leavesTheCheckNull()
+        {
+            var fixture = ExtensionFixture.Compile("nocheck", (id, name) => ExtensionFixture.StructuredSource("NoCheckOne", id, name));
+
+            var found = Find(fixture.Id);
+
+            Assert.IsNotNull(found);
+            Assert.IsNull(found.SettingsCheck, "an extension that does not answer the question reads as configured");
+        }
+
         private static IDictionary Cache()
         {
             var field = typeof(ExtensionLoader).GetField("m_Cache", BindingFlags.NonPublic | BindingFlags.Static);

@@ -325,6 +325,16 @@ namespace Fixtures
             return Fill(ThreadTemplate, className, id, name);
         }
 
+        /// <summary>
+        /// Provider that also answers the settings question. The names passed here are what the
+        /// provider reports, so every test decides for itself what counts as missing.
+        /// </summary>
+        public static String SettingsCheckSource(String className, Guid id, String name, params String[] missing)
+        {
+            return Fill(SettingsCheckTemplate, className, id, name)
+                .Replace("$MISSING$", String.Join(", ", missing.Select(a => "\"" + a + "\"")));
+        }
+
         private static String Fill(String template, String className, Guid id, String name)
         {
             return template
@@ -420,6 +430,36 @@ namespace Fixtures
         }
 
         public void Configure() { }
+    }
+}
+";
+
+        private const String SettingsCheckTemplate =
+@"using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using ServiceManager.Extensions.Interfaces;
+
+namespace Fixtures
+{
+    public class $CLASS$ : INotificationMessageExtension, INotificationSettingsCheck
+    {
+        public Guid Id { get { return new Guid(""$ID$""); } }
+
+        public String Name { get { return ""$NAME$""; } }
+
+        public String Description { get { return ""test fixture""; } }
+
+        public Task Send(String message) { return Task.CompletedTask; }
+
+        public Task Send(NotificationMessage message) { return Task.CompletedTask; }
+
+        public void Configure() { }
+
+        public IList<String> MissingSettings()
+        {
+            return new List<String> { $MISSING$ };
+        }
     }
 }
 ";
