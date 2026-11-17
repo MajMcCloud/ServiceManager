@@ -83,7 +83,8 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   "Add syslog notification provider".
 * One commit per topic. Application changes that are independent of the new feature go into
   their own commit first.
-* No AI or co-author trailers in commit messages.
+* Do not mention Copilot or AI assistance in commit messages or release content, including
+  release titles, notes and descriptions. Do not add AI or co-author trailers to commit messages.
 * `session-state` is ignored and stays out of commits.
 * Commits are created locally and never pushed on your own. Pushing is upload: ask first and
   wait for a clear yes, the same way as for a release.
