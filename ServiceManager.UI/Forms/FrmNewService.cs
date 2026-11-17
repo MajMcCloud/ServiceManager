@@ -1,5 +1,6 @@
 ﻿using ServiceManager.Base.Data;
 using ServiceManager.Base.Windows;
+using ServiceManager.UI.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,6 +26,12 @@ namespace ServiceManager.UI.Forms
         List<Guid> m_ServiceDependencies = new List<Guid>();
 
         WindowsServiceLister m_ServiceLister;
+
+        /// <summary>Reads the accounts of this machine for the account picker.</summary>
+        IUserAccountReader m_AccountReader = new LocalUserAccountReader();
+
+        /// <summary>The accounts of this machine, read once the first picker is opened.</summary>
+        List<UserAccountInfo> m_RunAsAccounts;
 
         public FrmNewService()
         {
@@ -68,6 +75,25 @@ namespace ServiceManager.UI.Forms
             Item.DependencyStartRule = selectedRule(cmbDependency_Start, ServiceItem.eDependencyStartRule.StartAnyway);
             Item.DependencyStopRule = selectedRule(cmbDependency_Stop, ServiceItem.eDependencyStopRule.StayRunning);
 
+            ServiceItem.eRunAs mode = selectedRule(cmbRunAs, ServiceItem.eRunAs.Inherit);
+            String accountName = txtRunAs_User.Text.Trim();
+
+            if (mode == ServiceItem.eRunAs.User && accountName.Length == 0)
+            {
+                MessageBox.Show("The service needs a user name to run under another account.", "Run as", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Item.RunAs = mode;
+            Item.RunAsUser = accountName;
+            Item.RunAsDomain = txtRunAs_Domain.Text.Trim();
+
+            //The stored password is never shown in the dialog, so it stays unless a new one was typed
+            if (txtRunAs_Password.Text.Length > 0)
+            {
+                Item.RunAsPassword = SecretStorage.Protect(txtRunAs_Password.Text);
+            }
+
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -77,6 +103,7 @@ namespace ServiceManager.UI.Forms
             //The rule boxes and the list of the other services are filled either way. A service that is being
             //created has nothing to wait for yet, but it still has to show what can be picked.
             fillRuleBoxes();
+            fillRunAsBoxes();
 
             if (this.Item != null)
             {
@@ -107,6 +134,10 @@ namespace ServiceManager.UI.Forms
                 selectRule(cmbDependency_Start, this.Item.DependencyStartRule);
                 selectRule(cmbDependency_Stop, this.Item.DependencyStopRule);
 
+                selectRule(cmbRunAs, this.Item.RunAs);
+                txtRunAs_User.Text = this.Item.RunAsUser;
+                txtRunAs_Domain.Text = this.Item.RunAsDomain;
+
                 fillDependencyList();
             }
             else
@@ -114,6 +145,8 @@ namespace ServiceManager.UI.Forms
                 selectRule(cmbDependency_Restart, ServiceItem.eDependencyRestartRule.Ignore);
                 selectRule(cmbDependency_Start, ServiceItem.eDependencyStartRule.StartAnyway);
                 selectRule(cmbDependency_Stop, ServiceItem.eDependencyStopRule.StayRunning);
+
+                selectRule(cmbRunAs, ServiceItem.eRunAs.Inherit);
             }
 
             fillServiceDependencies();
@@ -324,6 +357,76 @@ namespace ServiceManager.UI.Forms
             var graph = new ServiceDependencyGraph(otherServices().Concat(new List<ServiceItem> { test }));
 
             return graph.ReachesItself(test.ID);
+        }
+
+        private void cmbRunAs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            applyRunAsFields();
+        }
+
+        private void bnRunAs_Select_Click(object sender, EventArgs e)
+        {
+            if (m_RunAsAccounts == null)
+            {
+                try
+                {
+                    m_RunAsAccounts = m_AccountReader.ListAccounts();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("The accounts of this machine cannot be read: " + ex.Message, "Run as", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            using (var dialog = new FrmUserAccountPicker(m_RunAsAccounts, txtRunAs_User.Text))
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                txtRunAs_User.Text = dialog.Selected.Name;
+                txtRunAs_Domain.Text = dialog.Selected.Domain;
+
+                //The password is what the user has to add after picking an account
+                txtRunAs_Password.Focus();
+            }
+        }
+
+        /// <summary>Fills the account box with the ways a process can be started.</summary>
+        private void fillRunAsBoxes()
+        {
+            cmbRunAs.Items.Clear();
+
+            foreach (ServiceItem.eRunAs mode in Enum.GetValues(typeof(ServiceItem.eRunAs)))
+            {
+                cmbRunAs.Items.Add(new RuleItem(runAsText(mode), mode));
+            }
+
+            applyRunAsFields();
+        }
+
+        private static String runAsText(ServiceItem.eRunAs mode)
+        {
+            switch (mode)
+            {
+                case ServiceItem.eRunAs.User:
+                    return "Another account";
+                default:
+                    return "Account of the ServiceManager";
+            }
+        }
+
+        /// <summary>The account fields only make sense once an account was picked.</summary>
+        private void applyRunAsFields()
+        {
+            bool user = selectedRule(cmbRunAs, ServiceItem.eRunAs.Inherit) == ServiceItem.eRunAs.User;
+
+            txtRunAs_User.Enabled = user;
+            txtRunAs_Domain.Enabled = user;
+            txtRunAs_Password.Enabled = user;
+            bnRunAs_Select.Enabled = user;
         }
 
         /// <summary>Fills the rule boxes with the rules a dependent service can follow.</summary>

@@ -81,9 +81,23 @@
             this.cmbDependency_Start = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
             this.cmbDependency_Stop = new System.Windows.Forms.ComboBox();
+            this.tabRunAs = new System.Windows.Forms.TabPage();
+            this.lblRunAs_Account = new System.Windows.Forms.Label();
+            this.cmbRunAs = new System.Windows.Forms.ComboBox();
+            this.lblRunAs_User = new System.Windows.Forms.Label();
+            this.txtRunAs_User = new System.Windows.Forms.TextBox();
+            this.lblRunAs_Domain = new System.Windows.Forms.Label();
+            this.txtRunAs_Domain = new System.Windows.Forms.TextBox();
+            this.lblRunAs_Password = new System.Windows.Forms.Label();
+            this.txtRunAs_Password = new System.Windows.Forms.TextBox();
+            this.bnRunAs_Select = new System.Windows.Forms.Button();
+            this.lblRunAs_Hint = new System.Windows.Forms.Label();
+            this.lblRunAs_Right = new System.Windows.Forms.Label();
+            this.lblRunAs_Profile = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabBasic.SuspendLayout();
             this.tabStart.SuspendLayout();
+            this.tabRunAs.SuspendLayout();
             this.tabShutdown.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_Timeout)).BeginInit();
@@ -189,6 +203,7 @@
             // 
             this.tabMain.Controls.Add(this.tabBasic);
             this.tabMain.Controls.Add(this.tabStart);
+            this.tabMain.Controls.Add(this.tabRunAs);
             this.tabMain.Controls.Add(this.tabShutdown);
             this.tabMain.Controls.Add(this.tabLogging);
             this.tabMain.Controls.Add(this.tabDependencies);
@@ -260,6 +275,130 @@
             this.label6.Size = new System.Drawing.Size(95, 13);
             this.label6.TabIndex = 6;
             this.label6.Text = "Automatic restart";
+            // 
+            // tabRunAs
+            // 
+            this.tabRunAs.Controls.Add(this.lblRunAs_Account);
+            this.tabRunAs.Controls.Add(this.cmbRunAs);
+            this.tabRunAs.Controls.Add(this.lblRunAs_User);
+            this.tabRunAs.Controls.Add(this.txtRunAs_User);
+            this.tabRunAs.Controls.Add(this.lblRunAs_Domain);
+            this.tabRunAs.Controls.Add(this.txtRunAs_Domain);
+            this.tabRunAs.Controls.Add(this.lblRunAs_Password);
+            this.tabRunAs.Controls.Add(this.txtRunAs_Password);
+            this.tabRunAs.Controls.Add(this.bnRunAs_Select);
+            this.tabRunAs.Controls.Add(this.lblRunAs_Hint);
+            this.tabRunAs.Controls.Add(this.lblRunAs_Right);
+            this.tabRunAs.Controls.Add(this.lblRunAs_Profile);
+            this.tabRunAs.Location = new System.Drawing.Point(4, 22);
+            this.tabRunAs.Name = "tabRunAs";
+            this.tabRunAs.Size = new System.Drawing.Size(683, 393);
+            this.tabRunAs.TabIndex = 2;
+            this.tabRunAs.Text = "Run as";
+            // 
+            // lblRunAs_Account
+            // 
+            this.lblRunAs_Account.AutoSize = true;
+            this.lblRunAs_Account.Location = new System.Drawing.Point(22, 26);
+            this.lblRunAs_Account.Name = "lblRunAs_Account";
+            this.lblRunAs_Account.Size = new System.Drawing.Size(50, 13);
+            this.lblRunAs_Account.TabIndex = 0;
+            this.lblRunAs_Account.Text = "Account";
+            // 
+            // cmbRunAs
+            // 
+            this.cmbRunAs.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRunAs.Location = new System.Drawing.Point(285, 23);
+            this.cmbRunAs.Name = "cmbRunAs";
+            this.cmbRunAs.Size = new System.Drawing.Size(180, 21);
+            this.cmbRunAs.TabIndex = 1;
+            this.cmbRunAs.SelectedIndexChanged += new System.EventHandler(this.cmbRunAs_SelectedIndexChanged);
+            // 
+            // lblRunAs_User
+            // 
+            this.lblRunAs_User.AutoSize = true;
+            this.lblRunAs_User.Location = new System.Drawing.Point(22, 59);
+            this.lblRunAs_User.Name = "lblRunAs_User";
+            this.lblRunAs_User.Size = new System.Drawing.Size(60, 13);
+            this.lblRunAs_User.TabIndex = 2;
+            this.lblRunAs_User.Text = "User name";
+            // 
+            // txtRunAs_User
+            // 
+            this.txtRunAs_User.Location = new System.Drawing.Point(285, 56);
+            this.txtRunAs_User.Name = "txtRunAs_User";
+            this.txtRunAs_User.Size = new System.Drawing.Size(220, 20);
+            this.txtRunAs_User.TabIndex = 3;
+            // 
+            // lblRunAs_Domain
+            // 
+            this.lblRunAs_Domain.AutoSize = true;
+            this.lblRunAs_Domain.Location = new System.Drawing.Point(22, 89);
+            this.lblRunAs_Domain.Name = "lblRunAs_Domain";
+            this.lblRunAs_Domain.Size = new System.Drawing.Size(45, 13);
+            this.lblRunAs_Domain.TabIndex = 4;
+            this.lblRunAs_Domain.Text = "Domain";
+            // 
+            // txtRunAs_Domain
+            // 
+            this.txtRunAs_Domain.Location = new System.Drawing.Point(285, 86);
+            this.txtRunAs_Domain.Name = "txtRunAs_Domain";
+            this.txtRunAs_Domain.Size = new System.Drawing.Size(220, 20);
+            this.txtRunAs_Domain.TabIndex = 5;
+            // 
+            // lblRunAs_Password
+            // 
+            this.lblRunAs_Password.AutoSize = true;
+            this.lblRunAs_Password.Location = new System.Drawing.Point(22, 119);
+            this.lblRunAs_Password.Name = "lblRunAs_Password";
+            this.lblRunAs_Password.Size = new System.Drawing.Size(56, 13);
+            this.lblRunAs_Password.TabIndex = 6;
+            this.lblRunAs_Password.Text = "Password";
+            // 
+            // txtRunAs_Password
+            // 
+            this.txtRunAs_Password.Location = new System.Drawing.Point(285, 116);
+            this.txtRunAs_Password.Name = "txtRunAs_Password";
+            this.txtRunAs_Password.PasswordChar = '*';
+            this.txtRunAs_Password.Size = new System.Drawing.Size(220, 20);
+            this.txtRunAs_Password.TabIndex = 7;
+            // 
+            // bnRunAs_Select
+            // 
+            this.bnRunAs_Select.Location = new System.Drawing.Point(515, 55);
+            this.bnRunAs_Select.Name = "bnRunAs_Select";
+            this.bnRunAs_Select.Size = new System.Drawing.Size(110, 23);
+            this.bnRunAs_Select.TabIndex = 8;
+            this.bnRunAs_Select.Text = "Select account";
+            this.bnRunAs_Select.UseVisualStyleBackColor = true;
+            this.bnRunAs_Select.Click += new System.EventHandler(this.bnRunAs_Select_Click);
+            // 
+            // lblRunAs_Hint
+            // 
+            this.lblRunAs_Hint.AutoSize = true;
+            this.lblRunAs_Hint.Location = new System.Drawing.Point(22, 152);
+            this.lblRunAs_Hint.Name = "lblRunAs_Hint";
+            this.lblRunAs_Hint.Size = new System.Drawing.Size(380, 13);
+            this.lblRunAs_Hint.TabIndex = 9;
+            this.lblRunAs_Hint.Text = "Without an account the process runs under the account of the ServiceManager.";
+            // 
+            // lblRunAs_Right
+            // 
+            this.lblRunAs_Right.AutoSize = true;
+            this.lblRunAs_Right.Location = new System.Drawing.Point(22, 172);
+            this.lblRunAs_Right.Name = "lblRunAs_Right";
+            this.lblRunAs_Right.Size = new System.Drawing.Size(330, 13);
+            this.lblRunAs_Right.TabIndex = 10;
+            this.lblRunAs_Right.Text = "The account has to be allowed to sign in on this computer.";
+            // 
+            // lblRunAs_Profile
+            // 
+            this.lblRunAs_Profile.AutoSize = true;
+            this.lblRunAs_Profile.Location = new System.Drawing.Point(22, 192);
+            this.lblRunAs_Profile.Name = "lblRunAs_Profile";
+            this.lblRunAs_Profile.Size = new System.Drawing.Size(250, 13);
+            this.lblRunAs_Profile.TabIndex = 11;
+            this.lblRunAs_Profile.Text = "The profile of the account is loaded for the process.";
             // 
             // tabShutdown
             // 
@@ -609,6 +748,8 @@
             this.tabBasic.PerformLayout();
             this.tabStart.ResumeLayout(false);
             this.tabStart.PerformLayout();
+            this.tabRunAs.ResumeLayout(false);
+            this.tabRunAs.PerformLayout();
             this.tabShutdown.ResumeLayout(false);
             this.tabShutdown.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudShutdown_ENTER_Timeout)).EndInit();
@@ -678,5 +819,18 @@
         private System.Windows.Forms.ComboBox cmbDependency_Start;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.ComboBox cmbDependency_Stop;
+        private System.Windows.Forms.TabPage tabRunAs;
+        private System.Windows.Forms.Label lblRunAs_Account;
+        private System.Windows.Forms.ComboBox cmbRunAs;
+        private System.Windows.Forms.Label lblRunAs_User;
+        private System.Windows.Forms.TextBox txtRunAs_User;
+        private System.Windows.Forms.Label lblRunAs_Domain;
+        private System.Windows.Forms.TextBox txtRunAs_Domain;
+        private System.Windows.Forms.Label lblRunAs_Password;
+        private System.Windows.Forms.TextBox txtRunAs_Password;
+        private System.Windows.Forms.Button bnRunAs_Select;
+        private System.Windows.Forms.Label lblRunAs_Hint;
+        private System.Windows.Forms.Label lblRunAs_Right;
+        private System.Windows.Forms.Label lblRunAs_Profile;
     }
 }

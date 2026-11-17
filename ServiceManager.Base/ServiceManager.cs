@@ -324,6 +324,17 @@ namespace ServiceManager.Base
 
             StopRequests.Clear(item.ID);
 
+            //The account is read before anything is announced, a service whose settings name an account that
+            //cannot be used never tells anyone it was up
+            var account = RunAsAccount.Of(item);
+
+            if (account.Error != null)
+            {
+                StartFailed(item, sa, account.ErrorLine());
+
+                return;
+            }
+
             Raise(NotificationKind.ServiceStart, this.Config.Notifications.InstanceName + ": " + item.Title + "\r\nStatus: Started", item);
 
             Process proc = new Process();
@@ -336,6 +347,8 @@ namespace ServiceManager.Base
             proc.StartInfo.RedirectStandardOutput = true;
             proc.StartInfo.RedirectStandardError = true;
             proc.StartInfo.RedirectStandardInput = true;
+
+            account.Apply(proc.StartInfo);
 
             proc.EnableRaisingEvents = true;
 
@@ -362,18 +375,9 @@ namespace ServiceManager.Base
             }
             catch
             {
-                item.ForceRestart = false;
-                sa.AppendError("SERVICE MANAGER: START FAILED\r\n");
-                sa.ProcessID = 0;
-                sa.Started = null;
-                sa.Exited = DateTime.Now;
-                sa.Exiting = null;
-
-                sa.Status = ServiceAnalytics.eStatus.start_failed;
-
-                Raise(eCallback.updated, item, sa);
-
-                ApplyStartRules(item.ID);
+                StartFailed(item, sa, account.UsesLogon
+                    ? "SERVICE MANAGER: START FAILED, ACCOUNT " + account.FullName + "\r\n"
+                    : "SERVICE MANAGER: START FAILED\r\n");
 
                 return;
             }
@@ -391,6 +395,26 @@ namespace ServiceManager.Base
             sa.Status = ServiceAnalytics.eStatus.running;
 
             Raise(eCallback.started, item, sa);
+        }
+
+        /// <summary>
+        /// Takes a service that did not start offline and tells the log, the window and the dependents about it.
+        /// A service that cannot be started is not started again and again.
+        /// </summary>
+        private void StartFailed(ServiceItem item, ServiceAnalytics sa, String error)
+        {
+            item.ForceRestart = false;
+            sa.AppendError(error);
+            sa.ProcessID = 0;
+            sa.Started = null;
+            sa.Exited = DateTime.Now;
+            sa.Exiting = null;
+
+            sa.Status = ServiceAnalytics.eStatus.start_failed;
+
+            Raise(eCallback.updated, item, sa);
+
+            ApplyStartRules(item.ID);
         }
 
         public void ServiceEnd(ServiceItem item)

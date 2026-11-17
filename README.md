@@ -247,6 +247,24 @@ Enable automatic start with the Service (system) and allow automatic restart whe
 
 <img src="Screens/Settings_1.png" />
 
+## Service Settings - Run as
+
+By default a managed process runs under the account of ServiceManager: the machine account while ServiceManager
+runs as a Windows service, the signed-in user while it is started from the user interface. **Run as** starts the
+process under another account instead. Pick **Another account**, take it out of the list of the local accounts of
+the machine or type its name, and add the password. A domain account works as well: the domain goes in its own box,
+or the user name is written as `DOMAIN\user`.
+
+The account has to be allowed to sign in on the computer it runs on, the "Log on locally" right. Without that right
+the logon is refused, the service goes offline and the log names the account that could not be used. The profile of
+the account is loaded for the process, so the process gets its own AppData folders and its own registry hive under
+HKEY_CURRENT_USER.
+
+A stored password is never shown again: the settings dialog leaves the box empty and keeps the stored password until
+a new one is typed. It is saved protected through Windows DPAPI for the whole machine, which means every
+administrator of that machine can read it back. The built-in accounts LocalSystem, LocalService and NetworkService
+are not offered yet.
+
 ## Service Settings - Shutdown
 
 Timeout before service gets killed when not responding to exit signal.

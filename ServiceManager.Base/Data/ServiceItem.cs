@@ -16,6 +16,26 @@ namespace ServiceManager.Base.Data
 
         public String Path { get; set; }
 
+        /// <summary>
+        /// The account the process is started with.
+        /// </summary>
+        public eRunAs RunAs { get; set; } = eRunAs.Inherit;
+
+        /// <summary>
+        /// The name of the account, used when RunAs is User.
+        /// </summary>
+        public String RunAsUser { get; set; }
+
+        /// <summary>
+        /// The domain of the account. Empty for a local account.
+        /// </summary>
+        public String RunAsDomain { get; set; }
+
+        /// <summary>
+        /// The password of the account, stored protected with SecretStorage.
+        /// </summary>
+        public String RunAsPassword { get; set; }
+
         public bool Enabled { get; set; } = true;
 
 
@@ -119,6 +139,18 @@ namespace ServiceManager.Base.Data
 
             /// <summary>The dependent service is stopped as well.</summary>
             Stop = 1
+        }
+
+        /// <summary>
+        /// The account a managed process runs under. The numbers are kept because the settings file stores them.
+        /// </summary>
+        public enum eRunAs
+        {
+            /// <summary>The process runs under the account of the ServiceManager.</summary>
+            Inherit = 0,
+
+            /// <summary>The process runs under the account named in RunAsUser.</summary>
+            User = 1
         }
 
     }

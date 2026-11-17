@@ -113,6 +113,12 @@
     <Compile Include="Forms\FrmServicePicker.Designer.cs">
       <DependentUpon>FrmServicePicker.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmUserAccountPicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmUserAccountPicker.Designer.cs">
+      <DependentUpon>FrmUserAccountPicker.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,6 +138,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="ShieldIcon.cs" />
     <Compile Include="Progress\ProgressRunner.cs" />
+    <Compile Include="Windows\IUserAccountReader.cs" />
+    <Compile Include="Windows\LocalUserAccountReader.cs" />
+    <Compile Include="Windows\UserAccountInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\FrmConnectTo.resx">
       <DependentUpon>FrmConnectTo.cs</DependentUpon>
@@ -144,6 +153,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmServicePicker.resx">
       <DependentUpon>FrmServicePicker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmUserAccountPicker.resx">
+      <DependentUpon>FrmUserAccountPicker.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
