@@ -150,7 +150,16 @@ namespace ServiceManager.Base.Data
             Inherit = 0,
 
             /// <summary>The process runs under the account named in RunAsUser.</summary>
-            User = 1
+            User = 1,
+
+            /// <summary>The process runs as the LocalSystem account Windows builds in.</summary>
+            LocalSystem = 2,
+
+            /// <summary>The process runs as the LocalService account Windows builds in.</summary>
+            LocalService = 3,
+
+            /// <summary>The process runs as the NetworkService account Windows builds in.</summary>
+            NetworkService = 4
         }
 
     }

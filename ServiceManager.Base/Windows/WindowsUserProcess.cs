@@ -19,11 +19,21 @@ namespace ServiceManager.Base.Windows
     /// The process is created standing still and only runs once <see cref="Resume"/> is called, so the caller can
     /// put its watchers on it first. Its three standard streams cannot come from the framework either, they are
     /// handed over as pipes the manager keeps the other end of.
+    ///
+    /// A named user is logged on interactively, which is also what loads its profile. An account Windows builds in
+    /// has neither a password nor a profile of its own: it is logged on as a service by name alone, and the
+    /// environment block made from its token carries the folders the process expects.
     /// </summary>
     public sealed class WindowsUserProcess : IDisposable
     {
         /// <summary>The logon that asks for the interactive right of the account and loads its profile.</summary>
         public const int Logon_Type_Interactive = 2;
+
+        /// <summary>
+        /// The logon of an account Windows builds in. It carries no password and is only granted to a caller holding
+        /// the trusted computing privilege, which the LocalSystem of an installed service has.
+        /// </summary>
+        public const int Logon_Type_Service = 5;
 
         public const int Logon_Provider_Default = 0;
 
@@ -92,6 +102,20 @@ namespace ServiceManager.Base.Windows
         }
 
         /// <summary>
+        /// The logon type of an account. A built-in account has no password and is logged on as a service, a named
+        /// user logs on interactively, which is also what loads its profile.
+        /// </summary>
+        public static int LogonTypeOf(RunAsAccount account)
+        {
+            if (account != null && account.UsesBuiltInAccount)
+            {
+                return Logon_Type_Service;
+            }
+
+            return Logon_Type_Interactive;
+        }
+
+        /// <summary>
         /// The command line of the process. The path is quoted, a program in "Program Files" would otherwise be
         /// looked for under "Program".
         /// </summary>
@@ -142,7 +166,10 @@ namespace ServiceManager.Base.Windows
 
             try
             {
-                if (!LogonUser(account.UserName, account.Domain, account.Password, Logon_Type_Interactive, Logon_Provider_Default, out token))
+                //A built-in account has no secret to log on with, the logon of Windows takes its name alone
+                String password = account.UsesBuiltInAccount ? null : account.Password;
+
+                if (!LogonUser(account.UserName, account.Domain, password, LogonTypeOf(account), Logon_Provider_Default, out token))
                 {
                     throw new Win32Exception(Marshal.GetLastWin32Error(), "The logon of " + account.FullName + " was refused");
                 }

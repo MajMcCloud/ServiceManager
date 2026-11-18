@@ -297,8 +297,17 @@ HKEY_CURRENT_USER.
 
 A stored password is never shown again: the settings dialog leaves the box empty and keeps the stored password until
 a new one is typed. It is saved protected through Windows DPAPI for the whole machine, which means every
-administrator of that machine can read it back. The built-in accounts LocalSystem, LocalService and NetworkService
-are not offered yet.
+administrator of that machine can read it back.
+
+The dialog offers the three accounts Windows builds in as well: **LocalSystem**, **LocalService** and
+**NetworkService**. They have no password, their boxes stay empty and the account is logged on by its name alone.
+That logon is only granted to a caller holding the trusted computing privilege, which the LocalSystem of an installed
+Windows service has and a ServiceManager started from the desktop does not. A built-in account therefore only runs
+while ServiceManager itself runs as a Windows service under LocalSystem. The dialog says so while it is started from
+the desktop, and a start that was asked for anyway goes offline with that reason in the log. Such an account has no
+profile of its own, the process gets its folders through the environment block of its token instead.
+
+<img src="Screens/RunAsBuiltIn.png" />
 
 While ServiceManager itself runs as **LocalSystem** - the default of the Windows service installation - the
 account is taken through a Windows token instead: ServiceManager logs the account in, takes a copy of its token

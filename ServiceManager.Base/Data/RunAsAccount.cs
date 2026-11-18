@@ -10,6 +10,9 @@ namespace ServiceManager.Base.Data
     /// </summary>
     public class RunAsAccount
     {
+        /// <summary>The group the accounts Windows builds in belong to.</summary>
+        private const String Nt_Authority = "NT AUTHORITY";
+
         private RunAsAccount()
         {
         }
@@ -31,6 +34,29 @@ namespace ServiceManager.Base.Data
 
         /// <summary>True when the process runs under an account of its own rather than the manager's.</summary>
         public bool UsesLogon
+        {
+            get { return Mode == ServiceItem.eRunAs.User || UsesBuiltInAccount; }
+        }
+
+        /// <summary>True when the mode names one of the accounts Windows builds in.</summary>
+        public bool UsesBuiltInAccount
+        {
+            get { return IsBuiltIn(Mode); }
+        }
+
+        /// <summary>True when the mode names one of the accounts Windows builds in.</summary>
+        public static bool IsBuiltIn(ServiceItem.eRunAs mode)
+        {
+            return mode == ServiceItem.eRunAs.LocalSystem
+                || mode == ServiceItem.eRunAs.LocalService
+                || mode == ServiceItem.eRunAs.NetworkService;
+        }
+
+        /// <summary>
+        /// True when the framework can log the account on by itself. That path works with a password, which a
+        /// built-in account does not have.
+        /// </summary>
+        public bool UsesFrameworkLogon
         {
             get { return Mode == ServiceItem.eRunAs.User; }
         }
@@ -61,6 +87,17 @@ namespace ServiceManager.Base.Data
             account.UserName = trimmed(item != null ? item.RunAsUser : null);
             account.Domain = trimmed(item != null ? item.RunAsDomain : null);
             account.Password = String.Empty;
+
+            //A built-in account is named by the system, whatever an older settings file holds for it is ignored
+            String builtIn = builtInName(account.Mode);
+
+            if (builtIn != null)
+            {
+                account.UserName = builtIn;
+                account.Domain = Nt_Authority;
+
+                return account;
+            }
 
             if (!account.UsesLogon)
             {
@@ -111,12 +148,28 @@ namespace ServiceManager.Base.Data
         }
 
         /// <summary>
+        /// Marks the account unusable when this instance of ServiceManager cannot log it on. A built-in account has
+        /// no password, its logon is only granted to a caller holding the trusted computing privilege: the LocalSystem
+        /// of an installed Windows service has it, a ServiceManager started from the desktop does not.
+        /// </summary>
+        public void CheckHost(bool hostIsLocalSystem)
+        {
+            if (Error != null || !UsesBuiltInAccount || hostIsLocalSystem)
+            {
+                return;
+            }
+
+            Error = "THE BUILT-IN ACCOUNT " + FullName + " ASKS FOR SERVICE MANAGER RUNNING AS A WINDOWS SERVICE";
+        }
+
+        /// <summary>
         /// Puts the account on the start information of the process. An inherited account leaves it alone, which
-        /// is what makes the process run under the account of the ServiceManager.
+        /// is what makes the process run under the account of the ServiceManager. A built-in account is left alone
+        /// as well, the framework cannot log on an account that has no password.
         /// </summary>
         public void Apply(ProcessStartInfo startInfo)
         {
-            if (startInfo == null || !UsesLogon || Error != null)
+            if (startInfo == null || !UsesFrameworkLogon || Error != null)
             {
                 return;
             }
@@ -137,6 +190,25 @@ namespace ServiceManager.Base.Data
         private static String trimmed(String value)
         {
             return value != null ? value.Trim() : String.Empty;
+        }
+
+        /// <summary>
+        /// The name a built-in account carries in the logon of Windows, null for every other mode. The display names
+        /// LocalSystem or LocalService are not what the logon reads, it wants the names of the NT AUTHORITY group.
+        /// </summary>
+        private static String builtInName(ServiceItem.eRunAs mode)
+        {
+            switch (mode)
+            {
+                case ServiceItem.eRunAs.LocalSystem:
+                    return "SYSTEM";
+                case ServiceItem.eRunAs.LocalService:
+                    return "LOCAL SERVICE";
+                case ServiceItem.eRunAs.NetworkService:
+                    return "NETWORK SERVICE";
+                default:
+                    return null;
+            }
         }
 
         private static SecureString ToSecure(String value)

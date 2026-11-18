@@ -94,6 +94,7 @@
             this.lblRunAs_Hint = new System.Windows.Forms.Label();
             this.lblRunAs_Right = new System.Windows.Forms.Label();
             this.lblRunAs_Profile = new System.Windows.Forms.Label();
+            this.lblRunAs_BuiltIn = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabBasic.SuspendLayout();
             this.tabStart.SuspendLayout();
@@ -290,6 +291,7 @@
             this.tabRunAs.Controls.Add(this.lblRunAs_Hint);
             this.tabRunAs.Controls.Add(this.lblRunAs_Right);
             this.tabRunAs.Controls.Add(this.lblRunAs_Profile);
+            this.tabRunAs.Controls.Add(this.lblRunAs_BuiltIn);
             this.tabRunAs.Location = new System.Drawing.Point(4, 22);
             this.tabRunAs.Name = "tabRunAs";
             this.tabRunAs.Size = new System.Drawing.Size(683, 393);
@@ -399,6 +401,17 @@
             this.lblRunAs_Profile.Size = new System.Drawing.Size(250, 13);
             this.lblRunAs_Profile.TabIndex = 11;
             this.lblRunAs_Profile.Text = "The profile of the account is loaded for the process.";
+            // 
+            // lblRunAs_BuiltIn
+            // 
+            this.lblRunAs_BuiltIn.ForeColor = System.Drawing.Color.Firebrick;
+            this.lblRunAs_BuiltIn.Location = new System.Drawing.Point(22, 216);
+            this.lblRunAs_BuiltIn.Name = "lblRunAs_BuiltIn";
+            this.lblRunAs_BuiltIn.Size = new System.Drawing.Size(640, 32);
+            this.lblRunAs_BuiltIn.TabIndex = 12;
+            this.lblRunAs_BuiltIn.Text = "A built-in account has no password of its own. It only works while ServiceManager runs as a Windows service "
+                + "under LocalSystem.";
+            this.lblRunAs_BuiltIn.Visible = false;
             // 
             // tabShutdown
             // 
@@ -832,5 +845,6 @@
         private System.Windows.Forms.Label lblRunAs_Hint;
         private System.Windows.Forms.Label lblRunAs_Right;
         private System.Windows.Forms.Label lblRunAs_Profile;
+        private System.Windows.Forms.Label lblRunAs_BuiltIn;
     }
 }

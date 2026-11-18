@@ -38,6 +38,24 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
+        public void the_token_path_is_wanted_for_a_built_in_account_while_the_manager_is_localsystem()
+        {
+            Assert.IsTrue(WindowsUserProcess.WantsTokenPath(builtIn(ServiceItem.eRunAs.LocalService), true));
+        }
+
+        [TestMethod]
+        public void a_built_in_account_is_logged_on_as_a_service()
+        {
+            Assert.AreEqual(WindowsUserProcess.Logon_Type_Service, WindowsUserProcess.LogonTypeOf(builtIn(ServiceItem.eRunAs.NetworkService)));
+        }
+
+        [TestMethod]
+        public void a_named_user_is_logged_on_interactively()
+        {
+            Assert.AreEqual(WindowsUserProcess.Logon_Type_Interactive, WindowsUserProcess.LogonTypeOf(account(ServiceItem.eRunAs.User, "MajMcCloud")));
+        }
+
+        [TestMethod]
         public void the_command_line_quotes_the_path_of_the_program()
         {
             Assert.AreEqual("\"C:\\Program Files\\ServiceManager\\Test.exe\"", WindowsUserProcess.CommandLine("C:\\Program Files\\ServiceManager\\Test.exe"));
@@ -56,6 +74,14 @@ namespace ServiceManager.Tests
             item.RunAs = mode;
             item.RunAsUser = userName;
             item.RunAsPassword = SecretStorage.Protect("s3cret");
+
+            return RunAsAccount.Of(item);
+        }
+
+        private static RunAsAccount builtIn(ServiceItem.eRunAs mode)
+        {
+            ServiceItem item = new ServiceItem();
+            item.RunAs = mode;
 
             return RunAsAccount.Of(item);
         }

@@ -340,7 +340,10 @@ namespace ServiceManager.Base
 
             //The account is read before anything is announced, a service whose settings name an account that
             //cannot be used never tells anyone it was up
+            var hostIsLocalSystem = WindowsHostAccount.IsLocalSystem();
+
             var account = RunAsAccount.Of(item);
+            account.CheckHost(hostIsLocalSystem);
 
             if (account.Error != null)
             {
@@ -360,7 +363,7 @@ namespace ServiceManager.Base
 
             //A manager running as LocalSystem is refused the logon of the framework, that token carries no logon
             //identifier. Such a process is created from a token of the account instead
-            if (WindowsUserProcess.WantsTokenPath(account, WindowsHostAccount.IsLocalSystem()))
+            if (WindowsUserProcess.WantsTokenPath(account, hostIsLocalSystem))
             {
                 try
                 {

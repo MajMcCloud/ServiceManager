@@ -85,8 +85,10 @@ namespace ServiceManager.UI.Forms
             }
 
             Item.RunAs = mode;
-            Item.RunAsUser = accountName;
-            Item.RunAsDomain = txtRunAs_Domain.Text.Trim();
+
+            //A built-in account is named by the system, the boxes of the dialog stay empty for it
+            Item.RunAsUser = mode == ServiceItem.eRunAs.User ? accountName : String.Empty;
+            Item.RunAsDomain = mode == ServiceItem.eRunAs.User ? txtRunAs_Domain.Text.Trim() : String.Empty;
 
             //The stored password is never shown in the dialog, so it stays unless a new one was typed
             if (txtRunAs_Password.Text.Length > 0)
@@ -413,6 +415,12 @@ namespace ServiceManager.UI.Forms
             {
                 case ServiceItem.eRunAs.User:
                     return "Another account";
+                case ServiceItem.eRunAs.LocalSystem:
+                    return "LocalSystem";
+                case ServiceItem.eRunAs.LocalService:
+                    return "LocalService";
+                case ServiceItem.eRunAs.NetworkService:
+                    return "NetworkService";
                 default:
                     return "Account of the ServiceManager";
             }
@@ -421,12 +429,31 @@ namespace ServiceManager.UI.Forms
         /// <summary>The account fields only make sense once an account was picked.</summary>
         private void applyRunAsFields()
         {
-            bool user = selectedRule(cmbRunAs, ServiceItem.eRunAs.Inherit) == ServiceItem.eRunAs.User;
+            ServiceItem.eRunAs mode = selectedRule(cmbRunAs, ServiceItem.eRunAs.Inherit);
+
+            bool user = mode == ServiceItem.eRunAs.User;
+            bool builtIn = RunAsAccount.IsBuiltIn(mode);
 
             txtRunAs_User.Enabled = user;
             txtRunAs_Domain.Enabled = user;
             txtRunAs_Password.Enabled = user;
             bnRunAs_Select.Enabled = user;
+
+            //A built-in account has no password to type, and its logon is only granted to an installed service
+            lblRunAs_BuiltIn.Visible = builtIn;
+            lblRunAs_BuiltIn.Text = builtInText(mode);
+            lblRunAs_BuiltIn.ForeColor = builtIn && !WindowsHostAccount.IsLocalSystem() ? Color.Firebrick : SystemColors.ControlText;
+        }
+
+        /// <summary>What the dialog says about a built-in account, the reason out loud when this instance cannot run it.</summary>
+        private static String builtInText(ServiceItem.eRunAs mode)
+        {
+            if (WindowsHostAccount.IsLocalSystem())
+            {
+                return runAsText(mode) + " is an account Windows builds in. It has no password and no profile of its own, the process is started through its token.";
+            }
+
+            return runAsText(mode) + " is an account Windows builds in. It has no password, so it only works while ServiceManager runs as a Windows service under LocalSystem.";
         }
 
         /// <summary>Fills the rule boxes with the rules a dependent service can follow.</summary>

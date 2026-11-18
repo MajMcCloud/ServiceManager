@@ -182,6 +182,111 @@ namespace ServiceManager.Tests
             Assert.AreEqual(String.Empty, secureText(startInfo.Password));
         }
 
+        [TestMethod]
+        public void local_service_is_logged_on_by_the_name_of_the_system()
+        {
+            ServiceItem item = new ServiceItem();
+            item.RunAs = ServiceItem.eRunAs.LocalService;
+
+            RunAsAccount account = RunAsAccount.Of(item);
+
+            Assert.AreEqual("LOCAL SERVICE", account.UserName);
+            Assert.AreEqual("NT AUTHORITY", account.Domain);
+            Assert.AreEqual("NT AUTHORITY\\LOCAL SERVICE", account.FullName);
+        }
+
+        [TestMethod]
+        public void local_system_and_network_service_are_their_own_accounts()
+        {
+            Assert.AreEqual("SYSTEM", builtIn(ServiceItem.eRunAs.LocalSystem).UserName);
+            Assert.AreEqual("NETWORK SERVICE", builtIn(ServiceItem.eRunAs.NetworkService).UserName);
+        }
+
+        [TestMethod]
+        public void a_built_in_account_needs_no_stored_password()
+        {
+            RunAsAccount account = builtIn(ServiceItem.eRunAs.LocalService);
+
+            Assert.IsNull(account.Error);
+            Assert.AreEqual(String.Empty, account.Password);
+            Assert.IsTrue(account.UsesLogon);
+        }
+
+        [TestMethod]
+        public void the_account_of_an_older_settings_file_is_ignored_for_a_built_in_mode()
+        {
+            ServiceItem item = new ServiceItem();
+            item.RunAs = ServiceItem.eRunAs.NetworkService;
+            item.RunAsUser = "someone";
+            item.RunAsDomain = "CONTOSO";
+
+            RunAsAccount account = RunAsAccount.Of(item);
+
+            Assert.AreEqual("NETWORK SERVICE", account.UserName);
+            Assert.AreEqual("NT AUTHORITY", account.Domain);
+        }
+
+        [TestMethod]
+        public void a_built_in_account_is_not_started_by_the_framework()
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo("cmd.exe");
+
+            builtIn(ServiceItem.eRunAs.LocalService).Apply(startInfo);
+
+            Assert.AreEqual(String.Empty, startInfo.UserName);
+            Assert.IsNull(startInfo.Password);
+            Assert.IsFalse(startInfo.LoadUserProfile);
+        }
+
+        [TestMethod]
+        public void a_built_in_account_is_usable_while_the_manager_is_localsystem()
+        {
+            RunAsAccount account = builtIn(ServiceItem.eRunAs.LocalService);
+            account.CheckHost(true);
+
+            Assert.IsNull(account.Error);
+        }
+
+        [TestMethod]
+        public void a_built_in_account_outside_an_installed_service_is_refused()
+        {
+            RunAsAccount account = builtIn(ServiceItem.eRunAs.LocalService);
+            account.CheckHost(false);
+
+            Assert.IsNotNull(account.Error);
+            Assert.IsNotNull(account.ErrorLine());
+        }
+
+        [TestMethod]
+        public void a_named_user_is_usable_outside_an_installed_service()
+        {
+            ServiceItem item = new ServiceItem();
+            item.RunAs = ServiceItem.eRunAs.User;
+            item.RunAsUser = "serviceaccount";
+
+            RunAsAccount account = RunAsAccount.Of(item);
+            account.CheckHost(false);
+
+            Assert.IsNull(account.Error);
+        }
+
+        [TestMethod]
+        public void an_inherited_account_never_asks_for_an_installed_service()
+        {
+            RunAsAccount account = RunAsAccount.Of(new ServiceItem());
+            account.CheckHost(false);
+
+            Assert.IsNull(account.Error);
+        }
+
+        private static RunAsAccount builtIn(ServiceItem.eRunAs mode)
+        {
+            ServiceItem item = new ServiceItem();
+            item.RunAs = mode;
+
+            return RunAsAccount.Of(item);
+        }
+
         private static String secureText(SecureString value)
         {
             if (value == null)
