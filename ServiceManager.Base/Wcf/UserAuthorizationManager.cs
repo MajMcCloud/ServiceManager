@@ -9,24 +9,37 @@ using System.ServiceModel.Channels;
 namespace ServiceManager.Base.Wcf
 {
     /// <summary>
-    /// Allows administrators and the users named in the settings. An administrator never needs a
-    /// password, so the local user interface and the installed service keep working over a named pipe,
-    /// where nobody types one.
+    /// Allows the users named in the settings, and while the rule is Users the administrators as well. An
+    /// administrator never needs a password under that rule, so the local user interface and the installed
+    /// service keep working over a named pipe, where nobody types one.
     /// </summary>
     public class UserAuthorizationManager : ServiceAuthorizationManager
     {
         /// <summary>The accounts that may use a password, read from the settings file.</summary>
         public List<EndpointUser> Users { get; private set; }
 
+        /// <summary>
+        /// True when an administrator is let in by its rights alone. The UsersOnly rule turns it off, so
+        /// every account has to be listed and to name its password.
+        /// </summary>
+        public bool AllowAdministrators { get; private set; }
+
         public UserAuthorizationManager()
-            : this(null)
+            : this(null, true)
         {
         }
 
         public UserAuthorizationManager(IEnumerable<EndpointUser> Users)
+            : this(Users, true)
+        {
+        }
+
+        public UserAuthorizationManager(IEnumerable<EndpointUser> Users, bool AllowAdministrators)
         {
             // The manager lives as long as the host, so it keeps its own copy of the list.
             this.Users = Users == null ? new List<EndpointUser>() : new List<EndpointUser>(Users);
+
+            this.AllowAdministrators = AllowAdministrators;
         }
 
         public override bool CheckAccess(OperationContext operationContext, ref Message request)
@@ -36,7 +49,7 @@ namespace ServiceManager.Base.Wcf
                 return false;
             }
 
-            return IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, EndpointCredential.ReadFrom(request));
+            return IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, EndpointCredential.ReadFrom(request), this.AllowAdministrators);
         }
 
         /// <summary>
@@ -45,7 +58,16 @@ namespace ServiceManager.Base.Wcf
         /// </summary>
         public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users, EndpointCredential Credential)
         {
-            if (AdministratorAuthorizationManager.IsAdministrator(Identity))
+            return IsAllowed(Identity, Users, Credential, true);
+        }
+
+        /// <summary>
+        /// Tells whether the signed in account may use the endpoint. <paramref name="AllowAdministrators"/>
+        /// decides whether an administrator is let in without ever naming an account.
+        /// </summary>
+        public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users, EndpointCredential Credential, bool AllowAdministrators)
+        {
+            if (AllowAdministrators && AdministratorAuthorizationManager.IsAdministrator(Identity))
             {
                 return true;
             }

@@ -57,7 +57,10 @@ namespace ServiceManager.Base
             Everyone = 2,
 
             /// <summary>Administrators, and the accounts named in the settings with their password.</summary>
-            Users = 3
+            Users = 3,
+
+            /// <summary>Only the accounts named in the settings, an administrator needs an entry as well.</summary>
+            UsersOnly = 4
         }
 
         /// <summary>
@@ -396,6 +399,11 @@ namespace ServiceManager.Base
             if (this.Access == eAccess.Users)
             {
                 return new UserAuthorizationManager(this.Users);
+            }
+
+            if (this.Access == eAccess.UsersOnly)
+            {
+                return new UserAuthorizationManager(this.Users, false);
             }
 
             return new AdministratorAuthorizationManager();

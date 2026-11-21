@@ -353,8 +353,22 @@ namespace ServiceManager.Tests
 
             Assert.IsTrue(runtime.RequireAdministrator, "an older version still reads the file as closed for ordinary users");
 
-            StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Access\":3", "the config file stores the number");
-        }
+                StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Access\":3", "the config file stores the number");
+            }
+
+            [TestMethod]
+            public void the_users_only_rule_is_written_as_the_number_four()
+            {
+                var runtime = new Runtime();
+
+                runtime.ApplyAccess(Channel.eAccess.UsersOnly);
+
+                Assert.AreEqual(Channel.eAccess.UsersOnly, runtime.ResolveAccess());
+
+                Assert.IsTrue(runtime.RequireAdministrator, "an older version still reads the file as closed for ordinary users");
+
+                StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Access\":4", "the config file stores the number");
+            }
 
         [TestMethod]
         public void settings_round_trip_the_access_rule_and_its_users()
@@ -415,6 +429,34 @@ namespace ServiceManager.Tests
             channel.Access = Channel.eAccess.Users;
 
             Assert.IsInstanceOfType(channel.CreateAuthorizationManager(), typeof(UserAuthorizationManager));
+        }
+
+        [TestMethod]
+        public void the_users_rule_keeps_the_administrator_shortcut()
+        {
+            var channel = new Channel(true, "serviceman1234");
+
+            channel.Access = Channel.eAccess.Users;
+
+            var manager = channel.CreateAuthorizationManager() as UserAuthorizationManager;
+
+            Assert.IsNotNull(manager, "the users rule reads the configured accounts");
+
+            Assert.IsTrue(manager.AllowAdministrators, "an administrator is let in by its rights alone");
+        }
+
+        [TestMethod]
+        public void users_only_access_selects_the_user_policy_without_the_administrator_shortcut()
+        {
+            var channel = new Channel(true, "serviceman1234");
+
+            channel.Access = Channel.eAccess.UsersOnly;
+
+            var manager = channel.CreateAuthorizationManager() as UserAuthorizationManager;
+
+            Assert.IsNotNull(manager, "the users only rule reads the configured accounts");
+
+            Assert.IsFalse(manager.AllowAdministrators, "an administrator needs an entry of its own under this rule");
         }
 
         [TestMethod]
@@ -480,16 +522,72 @@ namespace ServiceManager.Tests
                 server.Start();
                 client.Start();
 
-                Assert.IsNotNull(WaitForCallbackChannel(server), "the configured account reaches the endpoint with its password");
+                        Assert.IsNotNull(WaitForCallbackChannel(server), "the configured account reaches the endpoint with its password");
 
-                Assert.IsTrue(Channel.ProbeTcp("localhost", port, account, EndpointPassword), "the test call carries the password as well");
-            }
-            finally
-            {
-                client.Stop();
-                server.Stop();
-            }
-        }
+                        Assert.IsTrue(Channel.ProbeTcp("localhost", port, account, EndpointPassword), "the test call carries the password as well");
+                    }
+                    finally
+                    {
+                        client.Stop();
+                        server.Stop();
+                    }
+                }
+
+                [TestMethod]
+                public void users_only_rule_lets_a_listed_account_connect()
+                {
+                    var port = FreeTcpPort();
+
+                    var account = WindowsIdentity.GetCurrent().Name;
+
+                    var server = new Channel(true, "localhost", port);
+                    server.Access = Channel.eAccess.UsersOnly;
+                    server.Users = new List<EndpointUser> { new EndpointUser(account, SecretStorage.Protect(EndpointPassword)) };
+
+                    var client = new Channel(false, "localhost", port);
+                    client.CredentialUser = account;
+                    client.CredentialPassword = EndpointPassword;
+
+                    try
+                    {
+                        server.Start();
+                        client.Start();
+
+                        Assert.IsNotNull(WaitForCallbackChannel(server), "the rule asks the account for its password even when it has the rights");
+                    }
+                    finally
+                    {
+                        client.Stop();
+                        server.Stop();
+                    }
+                }
+
+                [TestMethod]
+                public void users_only_rule_refuses_a_caller_that_sends_no_credential()
+                {
+                    var port = FreeTcpPort();
+
+                    var server = new Channel(true, "localhost", port);
+                    server.Access = Channel.eAccess.UsersOnly;
+                    server.Users = new List<EndpointUser> { new EndpointUser(WindowsIdentity.GetCurrent().Name, SecretStorage.Protect(EndpointPassword)) };
+
+                    var client = new Channel(false, "localhost", port);
+
+                    try
+                    {
+                        server.Start();
+                        client.Start();
+
+                        Assert.IsNull(WaitForCallbackChannel(server, 2000), "the rule reads no rights, only the accounts it was given");
+
+                        Assert.IsFalse(Channel.ProbeTcp("localhost", port), "the test call is refused as well");
+                    }
+                    finally
+                    {
+                        client.Stop();
+                        server.Stop();
+                    }
+                }
 
         [TestMethod]
         public void server_binding_caps_the_incoming_named_pipe_message()

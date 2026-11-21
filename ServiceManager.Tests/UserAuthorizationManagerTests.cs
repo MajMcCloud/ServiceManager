@@ -11,8 +11,9 @@ namespace ServiceManager.Tests
 {
     /// <summary>
     /// The Users rule lets an administrator through on its rights alone and asks everybody else for
-    /// the password of a configured account. The account named in the header has to be the one that
-    /// signed in over the transport, otherwise one password would open the endpoint for everyone.
+    /// the password of a configured account. The UsersOnly rule turns the rights off, so every account
+    /// has to be listed. The account named in the header has to be the one that signed in over the
+    /// transport, otherwise one password would open the endpoint for everyone.
     /// </summary>
     [TestClass]
     public class UserAuthorizationManagerTests
@@ -120,6 +121,54 @@ namespace ServiceManager.Tests
             }
 
             Assert.IsTrue(UserAuthorizationManager.IsAllowed(caller, new List<EndpointUser>(), null));
+        }
+
+        [TestMethod]
+        public void the_users_only_rule_refuses_an_administrator_that_is_not_listed()
+        {
+            var caller = WindowsIdentity.GetCurrent();
+
+            if (!AdministratorAuthorizationManager.IsAdministrator(caller))
+            {
+                Assert.Inconclusive("the test runner has no administrator rights, so there is nothing to take away here");
+            }
+
+            var users = new List<EndpointUser> { new EndpointUser("service.watcher", SecretStorage.Protect(Password)) };
+
+            Assert.IsFalse(UserAuthorizationManager.IsAllowed(caller, users, null, false));
+        }
+
+        [TestMethod]
+        public void the_users_only_rule_lets_a_listed_administrator_with_its_password()
+        {
+            var caller = WindowsIdentity.GetCurrent();
+
+            if (!AdministratorAuthorizationManager.IsAdministrator(caller))
+            {
+                Assert.Inconclusive("the test runner is not an administrator, so the rule cannot be tried here");
+            }
+
+            var users = new List<EndpointUser> { new EndpointUser(caller.Name, SecretStorage.Protect(Password)) };
+
+            Assert.IsTrue(UserAuthorizationManager.IsAllowed(caller, users, credential(caller.Name, Password), false));
+        }
+
+        [TestMethod]
+        public void the_users_only_rule_still_lets_a_listed_account_with_its_password_in()
+        {
+            var caller = nonAdministratorCaller();
+
+            var users = new List<EndpointUser> { new EndpointUser(caller.Name, SecretStorage.Protect(Password)) };
+
+            Assert.IsTrue(UserAuthorizationManager.IsAllowed(caller, users, credential(caller.Name, Password), false));
+        }
+
+        [TestMethod]
+        public void a_manager_can_be_told_to_ask_every_caller()
+        {
+            var manager = new UserAuthorizationManager(new List<EndpointUser> { new EndpointUser("service.watcher", SecretStorage.Protect(Password)) }, false);
+
+            Assert.IsFalse(manager.AllowAdministrators, "the UsersOnly rule reads no rights, only the accounts");
         }
 
         [TestMethod]
