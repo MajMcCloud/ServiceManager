@@ -1055,9 +1055,7 @@ namespace ServiceManager.UI
 
             lsvEndpointUsers.EndUpdate();
 
-            lsvEndpointUsers.Enabled = asksForAccounts();
-            bnEndpointUsers_Add.Enabled = asksForAccounts();
-            bnEndpointUsers_Remove.Enabled = asksForAccounts() && selectedEndpointUser() != null;
+            showEndpointUserControls();
         }
 
         /// <summary>True when the chosen rule reads the list, so the list is only editable then.</summary>
@@ -1078,10 +1076,25 @@ namespace ServiceManager.UI
             return lsvEndpointUsers.SelectedItems[0].Tag as EndpointUser;
         }
 
-        private void cmbAccess_SelectedIndexChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Rebuilds the state of the list and its buttons. Clearing the list drops the selection, so every
+        /// change to the accounts has to settle the Remove button again.
+        /// </summary>
+        private void showEndpointUserControls()
         {
             lsvEndpointUsers.Enabled = asksForAccounts();
             bnEndpointUsers_Add.Enabled = asksForAccounts();
+            bnEndpointUsers_Remove.Enabled = asksForAccounts() && selectedEndpointUser() != null;
+        }
+
+        private void cmbAccess_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            showEndpointUserControls();
+        }
+
+        private void lsvEndpointUsers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bnEndpointUsers_Remove.Enabled = asksForAccounts() && selectedEndpointUser() != null;
         }
 
         private void bnEndpointUsers_Add_Click(object sender, EventArgs e)

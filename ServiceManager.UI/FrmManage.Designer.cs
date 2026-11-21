@@ -281,6 +281,7 @@
             this.lsvEndpointUsers.UseCompatibleStateImageBehavior = false;
             this.lsvEndpointUsers.View = System.Windows.Forms.View.Details;
             this.lsvEndpointUsers.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lsvEndpointUsers_MouseDoubleClick);
+            this.lsvEndpointUsers.SelectedIndexChanged += new System.EventHandler(this.lsvEndpointUsers_SelectedIndexChanged);
             // 
             // colEndpointUser
             // 
