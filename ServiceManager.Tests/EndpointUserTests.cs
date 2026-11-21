@@ -1,47 +1,70 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
 using System;
 
 namespace ServiceManager.Tests
 {
     /// <summary>
-    /// A configured endpoint user is matched by its Windows account, and its password is the one
-    /// sealed on this machine. Both answers decide whether a caller may use the endpoint.
+    /// A configured endpoint account names one Windows account, and the spelling of the name decides
+    /// which one it is. That is the only thing that stands between two identically named accounts.
     /// </summary>
     [TestClass]
     public class EndpointUserTests
     {
         [TestMethod]
-        public void the_domain_spelling_matches_the_plain_account()
+        public void a_plain_name_is_the_account_of_this_machine()
         {
-            var user = new EndpointUser("CORP\\service.watcher", SecretStorage.Protect("s3cret"));
+            var user = new EndpointUser("bob");
 
-            Assert.IsTrue(user.MatchesName("service.watcher"));
+            Assert.IsTrue(user.MatchesName(Environment.MachineName + "\\bob"));
         }
 
         [TestMethod]
-        public void the_upn_spelling_matches_the_plain_account()
+        public void the_local_account_matches_a_plain_name()
         {
-            var user = new EndpointUser("service.watcher@corp.example", SecretStorage.Protect("s3cret"));
+            var user = new EndpointUser(Environment.MachineName + "\\bob");
 
-            Assert.IsTrue(user.MatchesName("service.watcher"));
+            Assert.IsTrue(user.MatchesName("bob"));
+        }
+
+        [TestMethod]
+        public void a_plain_name_never_names_the_account_of_another_machine()
+        {
+            var user = new EndpointUser("otherpc\\bob");
+
+            Assert.IsFalse(user.MatchesName("bob"));
         }
 
         [TestMethod]
         public void the_two_spellings_of_one_account_match_each_other()
         {
-            var user = new EndpointUser("CORP\\service.watcher", SecretStorage.Protect("s3cret"));
+            var user = new EndpointUser("CORP\\bob");
 
-            Assert.IsTrue(user.MatchesName("service.watcher@corp.example"));
+            Assert.IsTrue(user.MatchesName("bob@CORP"));
         }
 
         [TestMethod]
-        public void the_full_spelling_is_matched_by_the_short_one_of_the_other_side()
+        public void a_name_is_matched_by_the_short_spelling_of_the_other_side()
         {
-            var user = new EndpointUser("service.watcher", SecretStorage.Protect("s3cret"));
+            var user = new EndpointUser("bob@CORP");
 
-            Assert.IsTrue(user.MatchesName("CORP\\service.watcher"));
+            Assert.IsTrue(user.MatchesName("CORP\\bob"));
+        }
+
+        [TestMethod]
+        public void the_account_of_another_domain_does_not_match()
+        {
+            var user = new EndpointUser("CORP\\bob");
+
+            Assert.IsFalse(user.MatchesName("OTHERCORP\\bob"));
+        }
+
+        [TestMethod]
+        public void the_domain_has_to_be_written_the_way_windows_names_it()
+        {
+            var user = new EndpointUser("CORP\\bob");
+
+            Assert.IsFalse(user.MatchesName("bob@corp.example"));
         }
 
         [TestMethod]
@@ -75,47 +98,6 @@ namespace ServiceManager.Tests
         {
             Assert.IsFalse(EndpointUser.MatchesName("service.watcher", null));
             Assert.IsFalse(EndpointUser.MatchesName("service.watcher", String.Empty));
-        }
-
-        [TestMethod]
-        public void the_stored_password_is_accepted()
-        {
-            var user = new EndpointUser("service.watcher", SecretStorage.Protect("s3cret"));
-
-            Assert.IsTrue(user.CheckPassword("s3cret"));
-        }
-
-        [TestMethod]
-        public void a_different_password_is_refused()
-        {
-            var user = new EndpointUser("service.watcher", SecretStorage.Protect("s3cret"));
-
-            Assert.IsFalse(user.CheckPassword("wrong"));
-        }
-
-        [TestMethod]
-        public void an_empty_password_is_refused()
-        {
-            var user = new EndpointUser("service.watcher", SecretStorage.Protect("s3cret"));
-
-            Assert.IsFalse(user.CheckPassword(String.Empty));
-            Assert.IsFalse(user.CheckPassword(null));
-        }
-
-        [TestMethod]
-        public void a_user_without_a_stored_password_refuses_every_attempt()
-        {
-            var user = new EndpointUser("service.watcher", null);
-
-            Assert.IsFalse(user.CheckPassword("s3cret"));
-        }
-
-        [TestMethod]
-        public void a_password_that_cannot_be_read_on_this_machine_is_refused()
-        {
-            var user = new EndpointUser("service.watcher", "dpapi:not base64!");
-
-            Assert.IsFalse(user.CheckPassword("s3cret"));
         }
     }
 }

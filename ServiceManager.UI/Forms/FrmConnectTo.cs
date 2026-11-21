@@ -16,12 +16,6 @@ namespace ServiceManager.UI.Forms
 
         public int Port { get; set; }
 
-        /// <summary>The account the service may ask for, empty when the caller connects by rights alone.</summary>
-        public String User { get; set; }
-
-        /// <summary>The ServiceManager password that belongs to <see cref="User"/>.</summary>
-        public String Password { get; set; }
-
         public FrmConnectTo()
         {
             InitializeComponent();
@@ -41,9 +35,6 @@ namespace ServiceManager.UI.Forms
 
             this.IPOrHost = txtHost.Text;
             this.Port = p;
-
-            this.User = txtUser.Text.Trim();
-            this.Password = txtPassword.Text;
 
             this.DialogResult = DialogResult.OK;
         }

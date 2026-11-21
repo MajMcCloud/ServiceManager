@@ -8,7 +8,7 @@ Developed with C# using the standard WinForms controls.
 The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
 
 By default only a member of the local Administrators group may connect, over both transports; the settings can
-also let named accounts in with a ServiceManager password. See [Network Security](#network-security).
+also name the Windows accounts that may connect. See [Network Security](#network-security).
 
 ## Build
 
@@ -80,10 +80,9 @@ Choose between Net Pipes and TCP connection for your Service Manager.
 *Who may connect* decides which clients the ServiceManager answers. *Administrators only* is the default, and the
 service has to be restarted after the rule changes.
 
-The list beside it holds the accounts of the two rules that name accounts. *Add* asks for the Windows account and
-the ServiceManager password, *Remove* drops the selected account, and double-clicking an entry changes its
-password. A stored password is never shown again: the dialog leaves the box empty and keeps the stored one until a
-new one is typed.
+The list beside it holds the accounts of the two rules that name accounts. *Add* asks for the Windows account,
+*Remove* drops the selected entry, and double-clicking an entry changes its name. Nothing else is asked for: the
+caller signs in over the transport, and the service only compares that account with the list.
 
 <img src="Screens/Settings.png" />
 
@@ -99,11 +98,16 @@ Both transports check the caller before a single managed service can be read or 
 | Users | administrators, and the accounts named in the settings | an ordinary account on a machine you cannot promote |
 | UsersOnly | only the accounts named in the settings | a machine where the administrators sign in as well |
 
-A named account proves itself twice: it signs in over the transport, and it names the password that is stored for
-it. The password travels in a header of the request, because a TCP transport credential would ask for a certificate
-the product does not ship, so the two rules are meant for the named pipes and for a TCP endpoint on the local
-machine or behind a network you trust. The settings file keeps the password sealed with the DPAPI key of this
-machine, the same way the *Run as* passwords are kept.
+A named account is the account that signs in over the transport. The named pipes and Windows authenticated TCP
+hand the service the `DOMAIN\user` of the caller, and the service compares that name with its list, so nothing but
+the Windows logon proves the caller. The two rules are therefore only as strong as the logon of the machine the
+request comes from: use them on the named pipes, or on a TCP endpoint of the local machine or behind a network you
+trust.
+
+An entry is written the way Windows writes the account: `MACHINE\bob` for a local account and `DOMAIN\bob` for a
+domain account. The plain `bob` stands for `MACHINE\bob` of the machine the service runs on, so the two spellings of
+one account match each other while the identically named account of another machine never does. Windows names a
+domain account by its NetBIOS domain, so write `CORP\bob` rather than `bob@corp.example`.
 
 A request that does not match its rule is refused before the service call runs. The check runs on every call
 rather than only while the connection is opened: WCF protects a named pipe with its own default security, but a
@@ -120,10 +124,10 @@ What that means in practice:
 - A script that talks to the ServiceManager has to run elevated as well.
 - *Testing* -> *Start testing* needs no administrator rights. That run hosts the service inside the UI process and
   answers the account of that process only, so the endpoint stays closed for every other local account.
-- An ordinary account connects through *Manager* -> *Connect to*, which has a *User* and a *Password* box beside
-  the host and the port. Both stay empty for an account that is let in by its rights.
+- An ordinary account connects through *Manager* -> *Connect to*, which asks for the host and the port only: the
+  account that runs the UI signs the request, so that account has to be in the list.
 - *Only the accounts below* closes the endpoint for the administrators as well: every account that wants to connect
-  needs an entry in the list and has to name its password.
+  needs an entry in the list.
 - Choose *Everyone* to hand the endpoint to any local account again. The rule is stored as `Access` in
   `default.cfg`, and as the older `RequireAdministrator` beside it, so a settings file of an older version keeps
   the service closed.

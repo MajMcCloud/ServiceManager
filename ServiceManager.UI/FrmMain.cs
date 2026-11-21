@@ -410,18 +410,16 @@ namespace ServiceManager.UI
 
             String host = frm.IPOrHost;
             int port = frm.Port;
-            String user = frm.User;
-            String password = frm.Password;
 
             // Opening the channel waits for the whole timeout when nothing answers, so the attempt runs behind the dialog.
             runWithProgress("Connection", progress =>
             {
                 progress.Report(ProgressReport.Running($"Contacting {host}:{port}..."));
 
-                NetTcpTest(host, port, user, password);
+                NetTcpTest(host, port);
             });
 
-            StartWatching(host, port, user, password);
+            StartWatching(host, port);
         }
 
         private void Item_CheckedChanged(object sender, EventArgs e)
@@ -530,9 +528,9 @@ namespace ServiceManager.UI
             return Channel.ProbePipes("localhost", "serviceman" + processId);
         }
 
-        private bool NetTcpTest(String HostOrIP, int Port, String User, String Password)
+        private bool NetTcpTest(String HostOrIP, int Port)
         {
-            return Channel.ProbeTcp(HostOrIP, Port, User, Password);
+            return Channel.ProbeTcp(HostOrIP, Port);
         }
 
         /// <summary>
@@ -587,25 +585,17 @@ namespace ServiceManager.UI
 
         private void StartWatching(String IPOrHost, int port)
         {
-            StartWatching(IPOrHost, port, null, null);
-        }
-
-        private void StartWatching(String IPOrHost, int port, String User, String Password)
-        {
             if (this.InvokeRequired)
             {
                 this.Invoke((Action)(() =>
                 {
-                    StartWatching(IPOrHost, port, User, Password);
+                    StartWatching(IPOrHost, port);
                 }));
                 return;
             }
 
             //this.WatchingProcessID = processId;
             WatchConnection = new Channel(false, IPOrHost, port);
-
-            WatchConnection.CredentialUser = User;
-            WatchConnection.CredentialPassword = Password;
 
             tmRefresh.Enabled = true;
             tmPing.Enabled = true;

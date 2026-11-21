@@ -1,5 +1,4 @@
 using ServiceManager.Base.Data.Settings;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
@@ -9,18 +8,18 @@ using System.ServiceModel.Channels;
 namespace ServiceManager.Base.Wcf
 {
     /// <summary>
-    /// Allows the users named in the settings, and while the rule is Users the administrators as well. An
-    /// administrator never needs a password under that rule, so the local user interface and the installed
-    /// service keep working over a named pipe, where nobody types one.
+    /// Allows the accounts named in the settings, and while the rule is Users the administrators as well.
+    /// Windows has already authenticated the account of the connection before this manager is asked, so
+    /// the list only decides which of the authenticated accounts may use the endpoint.
     /// </summary>
     public class UserAuthorizationManager : ServiceAuthorizationManager
     {
-        /// <summary>The accounts that may use a password, read from the settings file.</summary>
+        /// <summary>The accounts that may connect, read from the settings file.</summary>
         public List<EndpointUser> Users { get; private set; }
 
         /// <summary>
         /// True when an administrator is let in by its rights alone. The UsersOnly rule turns it off, so
-        /// every account has to be listed and to name its password.
+        /// every account has to be listed.
         /// </summary>
         public bool AllowAdministrators { get; private set; }
 
@@ -49,50 +48,38 @@ namespace ServiceManager.Base.Wcf
                 return false;
             }
 
-            return IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, EndpointCredential.ReadFrom(request), this.AllowAdministrators);
+            return IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, this.AllowAdministrators);
         }
 
         /// <summary>
-        /// Tells whether the signed in account may use the endpoint, with its administrator rights or
-        /// with the password of a configured user.
+        /// Tells whether the signed in account may use the endpoint, with its administrator rights or by
+        /// being one of the configured accounts.
         /// </summary>
-        public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users, EndpointCredential Credential)
+        public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users)
         {
-            return IsAllowed(Identity, Users, Credential, true);
+            return IsAllowed(Identity, Users, true);
         }
 
         /// <summary>
         /// Tells whether the signed in account may use the endpoint. <paramref name="AllowAdministrators"/>
         /// decides whether an administrator is let in without ever naming an account.
         /// </summary>
-        public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users, EndpointCredential Credential, bool AllowAdministrators)
+        public static bool IsAllowed(WindowsIdentity Identity, IEnumerable<EndpointUser> Users, bool AllowAdministrators)
         {
             if (AllowAdministrators && AdministratorAuthorizationManager.IsAdministrator(Identity))
             {
                 return true;
             }
 
-            if (Credential == null || Users == null || String.IsNullOrEmpty(Credential.User))
+            if (Identity == null || Users == null)
             {
                 return false;
             }
 
-            EndpointUser user = Users.FirstOrDefault(a => a != null && a.MatchesName(Credential.User));
-
-            if (user == null)
-            {
-                return false;
-            }
-
-            // The header names the account the password belongs to, and that account has to be the one
-            // that signed in over the transport. Otherwise one password would open the endpoint for
-            // every local user.
-            if (Identity == null || !user.MatchesName(Identity.Name))
-            {
-                return false;
-            }
-
-            return user.CheckPassword(Credential.Password);
+            // A caller that is not on the list gets in under a rule with administrators at most. The name
+            // comes from Windows, so nobody can claim to be somebody else, and a name written without a
+            // domain is read as the account of this machine.
+            return Users.Any(a => a != null && a.MatchesName(Identity.Name));
         }
     }
 }

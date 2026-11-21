@@ -39,8 +39,7 @@ namespace ServiceManager.Base.Data.Settings
         public Channel.eAccess? Access { get; set; }
 
         /// <summary>
-        /// The accounts that may connect with a ServiceManager password. They are only asked for while
-        /// the rule is Users.
+        /// The Windows accounts that may connect. The list is read while the rule is Users or UsersOnly.
         /// </summary>
         public List<EndpointUser> Users { get; set; } = new List<EndpointUser>();
 

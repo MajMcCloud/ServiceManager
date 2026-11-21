@@ -1106,10 +1106,10 @@ namespace ServiceManager.UI
                     return;
                 }
 
-                // The endpoint answers an account once, so the same name twice would only ask for one password.
+                // The endpoint judges an account by its name, so listing the same one twice adds nothing.
                 if (m_EndpointUsers.Any(a => EndpointUser.MatchesName(a.Name, frm.User.Name)))
                 {
-                    MessageBox.Show("This account is already listed, double-click it in the list to change its password.", "Accounts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("This account is already listed, double-click it in the list to change its name.", "Accounts", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 

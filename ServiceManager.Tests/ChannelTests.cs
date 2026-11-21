@@ -24,7 +24,6 @@ namespace ServiceManager.Tests
     [TestClass]
     public class ChannelTests
     {
-        private const String EndpointPassword = "s3cret endpoint password";
 
         [TestMethod]
         public void pipeConstructor_selectsNamedPipesAndKeepsTheTcpDefaultsUnused()
@@ -380,7 +379,7 @@ namespace ServiceManager.Tests
                 var cfg = ServiceConfig.load(path);
 
                 cfg.RuntimeSettings.ApplyAccess(Channel.eAccess.Users);
-                cfg.RuntimeSettings.Users.Add(new EndpointUser("service.watcher", SecretStorage.Protect("s3cret")));
+                cfg.RuntimeSettings.Users.Add(new EndpointUser(@"CORP\service.watcher"));
 
                 cfg.save(path);
 
@@ -388,8 +387,7 @@ namespace ServiceManager.Tests
 
                 Assert.AreEqual(Channel.eAccess.Users, again.RuntimeSettings.ResolveAccess());
                 Assert.AreEqual(1, again.RuntimeSettings.Users.Count);
-                Assert.IsTrue(again.RuntimeSettings.Users[0].MatchesName("service.watcher"));
-                Assert.IsTrue(again.RuntimeSettings.Users[0].CheckPassword("s3cret"), "the sealed password survives the file");
+                Assert.IsTrue(again.RuntimeSettings.Users[0].MatchesName(@"CORP\service.watcher"));
             }
             finally
             {
@@ -460,18 +458,16 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
-        public void a_channel_sends_no_credential_by_default()
+        public void a_channel_starts_with_an_empty_account_list()
         {
             var channel = new Channel(false, "10.0.0.5", 51000);
-
-            Assert.IsNull(channel.CredentialUser, "a caller that names no account sends no header");
 
             Assert.IsNotNull(channel.Users);
             Assert.AreEqual(0, channel.Users.Count);
         }
 
         [TestMethod]
-        public void users_rule_refuses_a_caller_that_sends_no_credential()
+        public void users_rule_refuses_a_caller_that_is_not_listed()
         {
             if (AdministratorAuthorizationManager.IsAdministrator(WindowsIdentity.GetCurrent()))
             {
@@ -482,7 +478,7 @@ namespace ServiceManager.Tests
 
             var server = new Channel(true, "localhost", port);
             server.Access = Channel.eAccess.Users;
-            server.Users = new List<EndpointUser> { new EndpointUser(WindowsIdentity.GetCurrent().Name, SecretStorage.Protect(EndpointPassword)) };
+            server.Users = new List<EndpointUser> { new EndpointUser("service.watcher") };
 
             var client = new Channel(false, "localhost", port);
 
@@ -491,7 +487,7 @@ namespace ServiceManager.Tests
                 server.Start();
                 client.Start();
 
-                Assert.IsNull(WaitForCallbackChannel(server, 2000), "the service never stores the callbacks of a caller without a password");
+                Assert.IsNull(WaitForCallbackChannel(server, 2000), "the service never stores the callbacks of an unlisted caller");
 
                 Assert.IsFalse(Channel.ProbeTcp("localhost", port), "the test call is refused as well");
             }
@@ -503,7 +499,7 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
-        public void users_rule_lets_a_configured_account_connect()
+        public void users_rule_lets_a_listed_account_connect()
         {
             var port = FreeTcpPort();
 
@@ -511,83 +507,79 @@ namespace ServiceManager.Tests
 
             var server = new Channel(true, "localhost", port);
             server.Access = Channel.eAccess.Users;
-            server.Users = new List<EndpointUser> { new EndpointUser(account, SecretStorage.Protect(EndpointPassword)) };
+            server.Users = new List<EndpointUser> { new EndpointUser(account) };
 
             var client = new Channel(false, "localhost", port);
-            client.CredentialUser = account;
-            client.CredentialPassword = EndpointPassword;
 
             try
             {
                 server.Start();
                 client.Start();
 
-                        Assert.IsNotNull(WaitForCallbackChannel(server), "the configured account reaches the endpoint with its password");
+                Assert.IsNotNull(WaitForCallbackChannel(server), "a listed account reaches the endpoint, signed in over the transport");
 
-                        Assert.IsTrue(Channel.ProbeTcp("localhost", port, account, EndpointPassword), "the test call carries the password as well");
-                    }
-                    finally
-                    {
-                        client.Stop();
-                        server.Stop();
-                    }
-                }
+                Assert.IsTrue(Channel.ProbeTcp("localhost", port), "the test call reaches it the same way");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
 
-                [TestMethod]
-                public void users_only_rule_lets_a_listed_account_connect()
-                {
-                    var port = FreeTcpPort();
+        [TestMethod]
+        public void users_only_rule_lets_a_listed_account_connect()
+        {
+            var port = FreeTcpPort();
 
-                    var account = WindowsIdentity.GetCurrent().Name;
+            var account = WindowsIdentity.GetCurrent().Name;
 
-                    var server = new Channel(true, "localhost", port);
-                    server.Access = Channel.eAccess.UsersOnly;
-                    server.Users = new List<EndpointUser> { new EndpointUser(account, SecretStorage.Protect(EndpointPassword)) };
+            var server = new Channel(true, "localhost", port);
+            server.Access = Channel.eAccess.UsersOnly;
+            server.Users = new List<EndpointUser> { new EndpointUser(account) };
 
-                    var client = new Channel(false, "localhost", port);
-                    client.CredentialUser = account;
-                    client.CredentialPassword = EndpointPassword;
+            var client = new Channel(false, "localhost", port);
 
-                    try
-                    {
-                        server.Start();
-                        client.Start();
+            try
+            {
+                server.Start();
+                client.Start();
 
-                        Assert.IsNotNull(WaitForCallbackChannel(server), "the rule asks the account for its password even when it has the rights");
-                    }
-                    finally
-                    {
-                        client.Stop();
-                        server.Stop();
-                    }
-                }
+                Assert.IsNotNull(WaitForCallbackChannel(server), "the rule reads the accounts, and the caller signs in over the transport");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
 
-                [TestMethod]
-                public void users_only_rule_refuses_a_caller_that_sends_no_credential()
-                {
-                    var port = FreeTcpPort();
+        [TestMethod]
+        public void users_only_rule_refuses_a_caller_that_is_not_listed()
+        {
+            var port = FreeTcpPort();
 
-                    var server = new Channel(true, "localhost", port);
-                    server.Access = Channel.eAccess.UsersOnly;
-                    server.Users = new List<EndpointUser> { new EndpointUser(WindowsIdentity.GetCurrent().Name, SecretStorage.Protect(EndpointPassword)) };
+            var server = new Channel(true, "localhost", port);
+            server.Access = Channel.eAccess.UsersOnly;
+            server.Users = new List<EndpointUser> { new EndpointUser("service.watcher") };
 
-                    var client = new Channel(false, "localhost", port);
+            var client = new Channel(false, "localhost", port);
 
-                    try
-                    {
-                        server.Start();
-                        client.Start();
+            try
+            {
+                server.Start();
+                client.Start();
 
-                        Assert.IsNull(WaitForCallbackChannel(server, 2000), "the rule reads no rights, only the accounts it was given");
+                Assert.IsNull(WaitForCallbackChannel(server, 2000), "the rule reads no rights, only the accounts it was given");
 
-                        Assert.IsFalse(Channel.ProbeTcp("localhost", port), "the test call is refused as well");
-                    }
-                    finally
-                    {
-                        client.Stop();
-                        server.Stop();
-                    }
-                }
+                Assert.IsFalse(Channel.ProbeTcp("localhost", port), "the test call is refused as well");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
 
         [TestMethod]
         public void server_binding_caps_the_incoming_named_pipe_message()
