@@ -57,6 +57,7 @@
     <Compile Include="Data\ServiceConfig.cs" />
     <Compile Include="Data\ServiceDependencyGraph.cs" />
     <Compile Include="Data\ServiceItem.cs" />
+    <Compile Include="Data\Settings\EndpointUser.cs" />
     <Compile Include="Data\StopRequestTracker.cs" />
     <Compile Include="Events\eCallback.cs" />
     <Compile Include="Events\eGroup.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Progress\ProgressReport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceManager.cs" />
+    <Compile Include="Wcf\EndpointCredential.cs" />
     <Compile Include="Windows\CpuUsage.cs" />
     <Compile Include="Windows\ElevationRules.cs" />
     <Compile Include="Windows\IProcessElevation.cs" />
