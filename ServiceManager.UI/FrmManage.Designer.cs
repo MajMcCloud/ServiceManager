@@ -58,7 +58,14 @@
             this.lblRunMode = new System.Windows.Forms.Label();
             this.rrbMode_TCP = new System.Windows.Forms.RadioButton();
             this.rrbMode_NetPipes = new System.Windows.Forms.RadioButton();
-            this.chkRequireAdministrator = new System.Windows.Forms.CheckBox();
+            this.lblAccess = new System.Windows.Forms.Label();
+            this.cmbAccess = new System.Windows.Forms.ComboBox();
+            this.lblEndpointUsers = new System.Windows.Forms.Label();
+            this.lsvEndpointUsers = new System.Windows.Forms.ListView();
+            this.colEndpointUser = new System.Windows.Forms.ColumnHeader();
+            this.bnEndpointUsers_Add = new System.Windows.Forms.Button();
+            this.bnEndpointUsers_Remove = new System.Windows.Forms.Button();
+            this.lblEndpointUsers_Hint = new System.Windows.Forms.Label();
             this.tabNotifications = new System.Windows.Forms.TabPage();
             this.txtNotifications_InstanceName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -214,7 +221,13 @@
             this.tabSettings.Controls.Add(this.lblDependencyTimeoutUnit);
             this.tabSettings.Controls.Add(this.lblDependencyTimeout);
             this.tabSettings.Controls.Add(this.bnSettings_Save);
-            this.tabSettings.Controls.Add(this.chkRequireAdministrator);
+            this.tabSettings.Controls.Add(this.lblEndpointUsers_Hint);
+            this.tabSettings.Controls.Add(this.bnEndpointUsers_Remove);
+            this.tabSettings.Controls.Add(this.bnEndpointUsers_Add);
+            this.tabSettings.Controls.Add(this.lsvEndpointUsers);
+            this.tabSettings.Controls.Add(this.lblEndpointUsers);
+            this.tabSettings.Controls.Add(this.cmbAccess);
+            this.tabSettings.Controls.Add(this.lblAccess);
             this.tabSettings.Controls.Add(this.nudStartup_Delay);
             this.tabSettings.Controls.Add(this.lblDelayUnit);
             this.tabSettings.Controls.Add(this.lblDelay);
@@ -229,14 +242,79 @@
             this.tabSettings.Size = new System.Drawing.Size(758, 401);
             this.tabSettings.Text = "Settings";
             // 
-            // chkRequireAdministrator
+            // lblAccess
             // 
-            this.chkRequireAdministrator.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkRequireAdministrator.Location = new System.Drawing.Point(32, 180);
-            this.chkRequireAdministrator.Name = "chkRequireAdministrator";
-            this.chkRequireAdministrator.AutoSize = true;
-            this.chkRequireAdministrator.TabIndex = 4;
-            this.chkRequireAdministrator.Text = "Only administrators may connect";
+            this.lblAccess.AutoSize = true;
+            this.lblAccess.Location = new System.Drawing.Point(32, 181);
+            this.lblAccess.Name = "lblAccess";
+            this.lblAccess.TabIndex = 4;
+            this.lblAccess.Text = "Who may connect: ";
+            // 
+            // cmbAccess
+            // 
+            this.cmbAccess.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbAccess.Location = new System.Drawing.Point(158, 178);
+            this.cmbAccess.Name = "cmbAccess";
+            this.cmbAccess.Size = new System.Drawing.Size(170, 21);
+            this.cmbAccess.TabIndex = 5;
+            this.cmbAccess.SelectedIndexChanged += new System.EventHandler(this.cmbAccess_SelectedIndexChanged);
+            // 
+            // lblEndpointUsers
+            // 
+            this.lblEndpointUsers.AutoSize = true;
+            this.lblEndpointUsers.Location = new System.Drawing.Point(360, 140);
+            this.lblEndpointUsers.Name = "lblEndpointUsers";
+            this.lblEndpointUsers.TabIndex = 6;
+            this.lblEndpointUsers.Text = "Accounts with a ServiceManager password:";
+            // 
+            // lsvEndpointUsers
+            // 
+            this.lsvEndpointUsers.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colEndpointUser});
+            this.lsvEndpointUsers.FullRowSelect = true;
+            this.lsvEndpointUsers.HideSelection = false;
+            this.lsvEndpointUsers.Location = new System.Drawing.Point(360, 160);
+            this.lsvEndpointUsers.MultiSelect = false;
+            this.lsvEndpointUsers.Name = "lsvEndpointUsers";
+            this.lsvEndpointUsers.Size = new System.Drawing.Size(250, 110);
+            this.lsvEndpointUsers.TabIndex = 7;
+            this.lsvEndpointUsers.UseCompatibleStateImageBehavior = false;
+            this.lsvEndpointUsers.View = System.Windows.Forms.View.Details;
+            this.lsvEndpointUsers.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lsvEndpointUsers_MouseDoubleClick);
+            // 
+            // colEndpointUser
+            // 
+            this.colEndpointUser.Text = "Account";
+            this.colEndpointUser.Width = 240;
+            // 
+            // bnEndpointUsers_Add
+            // 
+            this.bnEndpointUsers_Add.Location = new System.Drawing.Point(616, 160);
+            this.bnEndpointUsers_Add.Name = "bnEndpointUsers_Add";
+            this.bnEndpointUsers_Add.Size = new System.Drawing.Size(75, 28);
+            this.bnEndpointUsers_Add.TabIndex = 8;
+            this.bnEndpointUsers_Add.Text = "Add";
+            this.bnEndpointUsers_Add.UseVisualStyleBackColor = true;
+            this.bnEndpointUsers_Add.Click += new System.EventHandler(this.bnEndpointUsers_Add_Click);
+            // 
+            // bnEndpointUsers_Remove
+            // 
+            this.bnEndpointUsers_Remove.Location = new System.Drawing.Point(616, 194);
+            this.bnEndpointUsers_Remove.Name = "bnEndpointUsers_Remove";
+            this.bnEndpointUsers_Remove.Size = new System.Drawing.Size(75, 28);
+            this.bnEndpointUsers_Remove.TabIndex = 9;
+            this.bnEndpointUsers_Remove.Text = "Remove";
+            this.bnEndpointUsers_Remove.UseVisualStyleBackColor = true;
+            this.bnEndpointUsers_Remove.Click += new System.EventHandler(this.bnEndpointUsers_Remove_Click);
+            // 
+            // lblEndpointUsers_Hint
+            // 
+            this.lblEndpointUsers_Hint.Location = new System.Drawing.Point(360, 278);
+            this.lblEndpointUsers_Hint.Name = "lblEndpointUsers_Hint";
+            this.lblEndpointUsers_Hint.Size = new System.Drawing.Size(331, 60);
+            this.lblEndpointUsers_Hint.TabIndex = 10;
+            this.lblEndpointUsers_Hint.Text = "A listed account connects with its Windows name and the ServiceManager password set " +
+    "here. Only a rule with administrators lets an administrator in without one.";
             // 
             // bnSettings_Save
             // 
@@ -848,7 +926,14 @@
         private System.Windows.Forms.NumericUpDown nudDependency_Wait_Timeout;
         private System.Windows.Forms.Label lblDependencyTimeoutUnit;
         private System.Windows.Forms.Label lblDependencyTimeout;
-        private System.Windows.Forms.CheckBox chkRequireAdministrator;
+        private System.Windows.Forms.Label lblAccess;
+        private System.Windows.Forms.ComboBox cmbAccess;
+        private System.Windows.Forms.Label lblEndpointUsers;
+        private System.Windows.Forms.ListView lsvEndpointUsers;
+        private System.Windows.Forms.ColumnHeader colEndpointUser;
+        private System.Windows.Forms.Button bnEndpointUsers_Add;
+        private System.Windows.Forms.Button bnEndpointUsers_Remove;
+        private System.Windows.Forms.Label lblEndpointUsers_Hint;
         private System.Windows.Forms.TabPage tabWindowsService;
         private System.Windows.Forms.TabPage tabDependencies;
         private System.Windows.Forms.TreeView trvDependencies;
