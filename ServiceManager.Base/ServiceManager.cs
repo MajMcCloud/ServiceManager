@@ -116,7 +116,9 @@ namespace ServiceManager.Base
                     throw new ArgumentOutOfRangeException(nameof(this.Config.RuntimeSettings.Mode));
             }
 
-            Connection.Access = this.Access ?? (this.Config.RuntimeSettings.RequireAdministrator ? Channel.eAccess.Administrators : Channel.eAccess.Everyone);
+            Connection.Access = this.Access ?? this.Config.RuntimeSettings.ResolveAccess();
+
+            Connection.Users = this.Config.RuntimeSettings.Users;
 
             try
             {

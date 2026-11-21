@@ -5,6 +5,7 @@ using ServiceManager.Base.Data;
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Wcf;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -23,6 +24,8 @@ namespace ServiceManager.Tests
     [TestClass]
     public class ChannelTests
     {
+        private const String EndpointPassword = "s3cret endpoint password";
+
         [TestMethod]
         public void pipeConstructor_selectsNamedPipesAndKeepsTheTcpDefaultsUnused()
         {
@@ -211,14 +214,7 @@ namespace ServiceManager.Tests
         [TestMethod]
         public void probe_tcp_is_false_for_a_port_nobody_listens_on()
         {
-            var listener = new TcpListener(IPAddress.Loopback, 0);
-            listener.Start();
-
-            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-
-            listener.Stop();
-
-            Assert.IsFalse(Channel.ProbeTcp("localhost", port));
+            Assert.IsFalse(Channel.ProbeTcp("localhost", FreeTcpPort()));
         }
 
         [TestMethod]
@@ -338,6 +334,164 @@ namespace ServiceManager.Tests
         }
 
         [TestMethod]
+        public void a_fresh_settings_file_answers_the_rule_through_the_old_property()
+        {
+            var runtime = new Runtime();
+
+            Assert.IsNull(runtime.Access, "a new file carries no rule of its own yet");
+            Assert.AreEqual(Channel.eAccess.Administrators, runtime.ResolveAccess());
+        }
+
+        [TestMethod]
+        public void the_access_rule_is_written_with_the_old_property()
+        {
+            var runtime = new Runtime();
+
+            runtime.ApplyAccess(Channel.eAccess.Users);
+
+            Assert.AreEqual(Channel.eAccess.Users, runtime.ResolveAccess());
+
+            Assert.IsTrue(runtime.RequireAdministrator, "an older version still reads the file as closed for ordinary users");
+
+            StringAssert.Contains(JsonConvert.SerializeObject(runtime), "\"Access\":3", "the config file stores the number");
+        }
+
+        [TestMethod]
+        public void settings_round_trip_the_access_rule_and_its_users()
+        {
+            var path = TestConfigPath();
+
+            try
+            {
+                var cfg = ServiceConfig.load(path);
+
+                cfg.RuntimeSettings.ApplyAccess(Channel.eAccess.Users);
+                cfg.RuntimeSettings.Users.Add(new EndpointUser("service.watcher", SecretStorage.Protect("s3cret")));
+
+                cfg.save(path);
+
+                var again = ServiceConfig.load(path);
+
+                Assert.AreEqual(Channel.eAccess.Users, again.RuntimeSettings.ResolveAccess());
+                Assert.AreEqual(1, again.RuntimeSettings.Users.Count);
+                Assert.IsTrue(again.RuntimeSettings.Users[0].MatchesName("service.watcher"));
+                Assert.IsTrue(again.RuntimeSettings.Users[0].CheckPassword("s3cret"), "the sealed password survives the file");
+            }
+            finally
+            {
+                DeleteConfigDirectory(path);
+            }
+        }
+
+        [TestMethod]
+        public void settings_file_without_the_access_rule_keeps_the_rule_of_the_old_property()
+        {
+            var path = TestConfigPath();
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                File.WriteAllText(path, "{\"RuntimeSettings\":{\"Mode\":0,\"TCPPort\":50000,\"Startup_Delay\":0,\"RequireAdministrator\":false}}");
+
+                var cfg = ServiceConfig.load(path);
+
+                Assert.AreEqual(Channel.eAccess.Everyone, cfg.RuntimeSettings.ResolveAccess(), "an older file that opened the endpoint stays open");
+
+                Assert.IsNotNull(cfg.RuntimeSettings.Users, "the user list is never missing");
+                Assert.AreEqual(0, cfg.RuntimeSettings.Users.Count);
+            }
+            finally
+            {
+                DeleteConfigDirectory(path);
+            }
+        }
+
+        [TestMethod]
+        public void users_access_selects_the_user_policy()
+        {
+            var channel = new Channel(true, "serviceman1234");
+
+            channel.Access = Channel.eAccess.Users;
+
+            Assert.IsInstanceOfType(channel.CreateAuthorizationManager(), typeof(UserAuthorizationManager));
+        }
+
+        [TestMethod]
+        public void a_channel_sends_no_credential_by_default()
+        {
+            var channel = new Channel(false, "10.0.0.5", 51000);
+
+            Assert.IsNull(channel.CredentialUser, "a caller that names no account sends no header");
+
+            Assert.IsNotNull(channel.Users);
+            Assert.AreEqual(0, channel.Users.Count);
+        }
+
+        [TestMethod]
+        public void users_rule_refuses_a_caller_that_sends_no_credential()
+        {
+            if (AdministratorAuthorizationManager.IsAdministrator(WindowsIdentity.GetCurrent()))
+            {
+                Assert.Inconclusive("an elevated test runner is let in by its rights, so nothing can be refused here");
+            }
+
+            var port = FreeTcpPort();
+
+            var server = new Channel(true, "localhost", port);
+            server.Access = Channel.eAccess.Users;
+            server.Users = new List<EndpointUser> { new EndpointUser(WindowsIdentity.GetCurrent().Name, SecretStorage.Protect(EndpointPassword)) };
+
+            var client = new Channel(false, "localhost", port);
+
+            try
+            {
+                server.Start();
+                client.Start();
+
+                Assert.IsNull(WaitForCallbackChannel(server, 2000), "the service never stores the callbacks of a caller without a password");
+
+                Assert.IsFalse(Channel.ProbeTcp("localhost", port), "the test call is refused as well");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
+
+        [TestMethod]
+        public void users_rule_lets_a_configured_account_connect()
+        {
+            var port = FreeTcpPort();
+
+            var account = WindowsIdentity.GetCurrent().Name;
+
+            var server = new Channel(true, "localhost", port);
+            server.Access = Channel.eAccess.Users;
+            server.Users = new List<EndpointUser> { new EndpointUser(account, SecretStorage.Protect(EndpointPassword)) };
+
+            var client = new Channel(false, "localhost", port);
+            client.CredentialUser = account;
+            client.CredentialPassword = EndpointPassword;
+
+            try
+            {
+                server.Start();
+                client.Start();
+
+                Assert.IsNotNull(WaitForCallbackChannel(server), "the configured account reaches the endpoint with its password");
+
+                Assert.IsTrue(Channel.ProbeTcp("localhost", port, account, EndpointPassword), "the test call carries the password as well");
+            }
+            finally
+            {
+                client.Stop();
+                server.Stop();
+            }
+        }
+
+        [TestMethod]
         public void server_binding_caps_the_incoming_named_pipe_message()
         {
             var binding = (NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
@@ -395,6 +549,32 @@ namespace ServiceManager.Tests
         private static String ProbePipeName()
         {
             return "servicemanprobe" + Guid.NewGuid().ToString("N");
+        }
+
+        // A tcp endpoint needs a port of its own, and a listener is the only way to know one is free.
+        private static int FreeTcpPort()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            listener.Stop();
+
+            return port;
+        }
+
+        private static String TestConfigPath()
+        {
+            return Path.Combine(Path.GetTempPath(), "servicemanager-tests", Guid.NewGuid().ToString("N"), "default.cfg");
+        }
+
+        private static void DeleteConfigDirectory(String ConfigFile)
+        {
+            var directory = Path.GetDirectoryName(ConfigFile);
+
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
         }
 
         // Init is a one way call, so the service stores the channel some milliseconds later.

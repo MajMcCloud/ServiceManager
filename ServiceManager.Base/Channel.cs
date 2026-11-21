@@ -1,4 +1,5 @@
-﻿using ServiceManager.Base.Wcf;
+﻿using ServiceManager.Base.Data.Settings;
+using ServiceManager.Base.Wcf;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -53,7 +54,10 @@ namespace ServiceManager.Base
             OwnUser = 1,
 
             /// <summary>Every local user, the escape hatch of the settings.</summary>
-            Everyone = 2
+            Everyone = 2,
+
+            /// <summary>Administrators, and the accounts named in the settings with their password.</summary>
+            Users = 3
         }
 
         /// <summary>
@@ -61,6 +65,21 @@ namespace ServiceManager.Base
         /// a test run inside the UI needs, Everyone lets ordinary users watch the logs as well.
         /// </summary>
         public eAccess Access { get; set; } = eAccess.Administrators;
+
+        /// <summary>
+        /// The accounts that may answer with a password. Only the server reads them, and an empty list
+        /// refuses every caller that is not an administrator.
+        /// </summary>
+        public List<EndpointUser> Users { get; set; } = new List<EndpointUser>();
+
+        /// <summary>
+        /// The account the client names in its credential header. Without one no header is sent, and the
+        /// caller is judged by its Windows identity alone.
+        /// </summary>
+        public String CredentialUser { get; set; }
+
+        /// <summary>The password that belongs to <see cref="CredentialUser"/>.</summary>
+        public String CredentialPassword { get; set; }
 
         private ServiceHost host { get; set; }
 
@@ -104,12 +123,36 @@ namespace ServiceManager.Base
         // from the UI that is connected. Ping answers over the same session and registers nothing.
         public static bool ProbePipes(String Hostname, String PipeName)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
+            return ProbePipes(Hostname, PipeName, null, null);
+        }
+
+        public static bool ProbePipes(String Hostname, String PipeName, String User, String Password)
+        {
+            return Probe(() => WithCredential(new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")), User, Password));
         }
 
         public static bool ProbeTcp(String Hostname, int Port)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
+            return ProbeTcp(Hostname, Port, null, null);
+        }
+
+        public static bool ProbeTcp(String Hostname, int Port, String User, String Password)
+        {
+            return Probe(() => WithCredential(new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")), User, Password));
+        }
+
+        // A server in the Users rule refuses a call that carries no credential, so a connection test
+        // has to send one as well.
+        private static DuplexChannelFactory<IManagerService> WithCredential(DuplexChannelFactory<IManagerService> Factory, String User, String Password)
+        {
+            if (String.IsNullOrEmpty(User))
+            {
+                return Factory;
+            }
+
+            Factory.Endpoint.Behaviors.Add(new EndpointCredentialBehavior(User, Password));
+
+            return Factory;
         }
 
         private static bool Probe(Func<DuplexChannelFactory<IManagerService>> CreateFactory)
@@ -245,7 +288,8 @@ namespace ServiceManager.Base
                     throw new ArgumentOutOfRangeException(nameof(this.Mode));
             }
 
-
+            // The credential belongs to the factory, so every later call over it carries the header too.
+            WithCredential(channelFactory, this.CredentialUser, this.CredentialPassword);
 
             m_clientChannel = channelFactory.CreateChannel();
 
@@ -347,6 +391,11 @@ namespace ServiceManager.Base
             if (this.Access == eAccess.OwnUser)
             {
                 return new OwnUserAuthorizationManager();
+            }
+
+            if (this.Access == eAccess.Users)
+            {
+                return new UserAuthorizationManager(this.Users);
             }
 
             return new AdministratorAuthorizationManager();
