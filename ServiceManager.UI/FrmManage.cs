@@ -48,6 +48,9 @@ namespace ServiceManager.UI
         /// <summary>The provider the checkboxes currently show, the one <see cref="commitCheckboxes"/> writes to.</summary>
         private NotificationTarget m_DisplayedTarget;
 
+        /// <summary>The accounts of the settings file, edited before they are saved.</summary>
+        private List<EndpointUser> m_EndpointUsers = new List<EndpointUser>();
+
         /// <summary>Image of a provider whose settings are still incomplete.</summary>
         private const String WarningImage = "warning";
 
@@ -277,7 +280,7 @@ namespace ServiceManager.UI
 
             nudDependency_Wait_Timeout.Value = slist.RuntimeSettings.Dependency_Wait_Timeout;
 
-            chkRequireAdministrator.Checked = slist.RuntimeSettings.RequireAdministrator;
+            loadAccess(slist);
 
 
             //Windows service settings
@@ -991,6 +994,154 @@ namespace ServiceManager.UI
             }
         }
 
+        private static String accessText(Base.Channel.eAccess access)
+        {
+            switch (access)
+            {
+                case Base.Channel.eAccess.OwnUser:
+
+                    return "The account of the service";
+
+                case Base.Channel.eAccess.Users:
+
+                    return "Administrators and the accounts below";
+
+                case Base.Channel.eAccess.UsersOnly:
+
+                    return "Only the accounts below";
+
+                case Base.Channel.eAccess.Everyone:
+
+                    return "Everyone";
+
+                default:
+
+                    return "Administrators only";
+            }
+        }
+
+        /// <summary>
+        /// Fills the rule box and the accounts of the settings file. The own user rule is what the test run
+        /// of the UI uses, the settings do not offer it.
+        /// </summary>
+        private void loadAccess(ServiceConfig slist)
+        {
+            cmbAccess.Items.Clear();
+
+            foreach (var access in new[] { Base.Channel.eAccess.Administrators, Base.Channel.eAccess.Users, Base.Channel.eAccess.UsersOnly, Base.Channel.eAccess.Everyone })
+            {
+                cmbAccess.Items.Add(new ChoiceItem(accessText(access), access));
+            }
+
+            selectChoice(cmbAccess, slist.RuntimeSettings.ResolveAccess());
+
+            m_EndpointUsers = (slist.RuntimeSettings.Users ?? new List<EndpointUser>()).ToList();
+
+            reloadEndpointUsers();
+        }
+
+        private void reloadEndpointUsers()
+        {
+            lsvEndpointUsers.BeginUpdate();
+            lsvEndpointUsers.Items.Clear();
+
+            foreach (var user in m_EndpointUsers.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                var itm = new ListViewItem(user.Name);
+                itm.Tag = user;
+
+                lsvEndpointUsers.Items.Add(itm);
+            }
+
+            lsvEndpointUsers.EndUpdate();
+
+            lsvEndpointUsers.Enabled = asksForAccounts();
+            bnEndpointUsers_Add.Enabled = asksForAccounts();
+            bnEndpointUsers_Remove.Enabled = asksForAccounts() && selectedEndpointUser() != null;
+        }
+
+        /// <summary>True when the chosen rule reads the list, so the list is only editable then.</summary>
+        private bool asksForAccounts()
+        {
+            var access = selectedChoice(cmbAccess, Base.Channel.eAccess.Administrators);
+
+            return access == Base.Channel.eAccess.Users || access == Base.Channel.eAccess.UsersOnly;
+        }
+
+        private EndpointUser selectedEndpointUser()
+        {
+            if (lsvEndpointUsers.SelectedItems.Count == 0)
+            {
+                return null;
+            }
+
+            return lsvEndpointUsers.SelectedItems[0].Tag as EndpointUser;
+        }
+
+        private void cmbAccess_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lsvEndpointUsers.Enabled = asksForAccounts();
+            bnEndpointUsers_Add.Enabled = asksForAccounts();
+        }
+
+        private void bnEndpointUsers_Add_Click(object sender, EventArgs e)
+        {
+            using (var frm = new FrmEndpointUser())
+            {
+                if (frm.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                // The endpoint answers an account once, so the same name twice would only ask for one password.
+                if (m_EndpointUsers.Any(a => EndpointUser.MatchesName(a.Name, frm.User.Name)))
+                {
+                    MessageBox.Show("This account is already listed, double-click it in the list to change its password.", "Accounts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                m_EndpointUsers.Add(frm.User);
+
+                reloadEndpointUsers();
+            }
+        }
+
+        private void lsvEndpointUsers_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            var user = selectedEndpointUser();
+
+            if (user == null)
+            {
+                return;
+            }
+
+            using (var frm = new FrmEndpointUser(user))
+            {
+                if (frm.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                m_EndpointUsers[m_EndpointUsers.IndexOf(user)] = frm.User;
+
+                reloadEndpointUsers();
+            }
+        }
+
+        private void bnEndpointUsers_Remove_Click(object sender, EventArgs e)
+        {
+            var user = selectedEndpointUser();
+
+            if (user == null)
+            {
+                return;
+            }
+
+            m_EndpointUsers.Remove(user);
+
+            reloadEndpointUsers();
+        }
+
         private void bnSettings_Save_Click(object sender, EventArgs e)
         {
             var slist = ServiceConfig.load();
@@ -1012,7 +1163,21 @@ namespace ServiceManager.UI
 
             slist.RuntimeSettings.Dependency_Wait_Timeout = (int)nudDependency_Wait_Timeout.Value;
 
-            slist.RuntimeSettings.RequireAdministrator = chkRequireAdministrator.Checked;
+            var access = selectedChoice(cmbAccess, slist.RuntimeSettings.ResolveAccess());
+
+            // The rule reads no rights at all, so an empty list closes the endpoint for everybody.
+            if (access == Base.Channel.eAccess.UsersOnly && m_EndpointUsers.Count == 0)
+            {
+                if (MessageBox.Show("No account is listed, so nobody would be allowed to connect. Save the rule anyway?",
+                    "Accounts", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            slist.RuntimeSettings.ApplyAccess(access);
+
+            slist.RuntimeSettings.Users = m_EndpointUsers.OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase).ToList();
 
             try
             {

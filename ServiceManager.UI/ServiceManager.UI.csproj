@@ -95,6 +95,12 @@
     <Compile Include="Forms\FrmConnectTo.Designer.cs">
       <DependentUpon>FrmConnectTo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FrmEndpointUser.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmEndpointUser.Designer.cs">
+      <DependentUpon>FrmEndpointUser.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmLogs.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -151,6 +157,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\FrmConnectTo.resx">
       <DependentUpon>FrmConnectTo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmEndpointUser.resx">
+      <DependentUpon>FrmEndpointUser.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmLogs.resx">
       <DependentUpon>FrmLogs.cs</DependentUpon>

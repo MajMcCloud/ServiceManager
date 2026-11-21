@@ -7,7 +7,8 @@ Developed with C# using the standard WinForms controls.
 
 The network communication is done via WCF. It allows you to use Net Pipes or TCP connections with a custom Port.
 
-Only a member of the local Administrators group may connect, over both transports. See [Network Security](#network-security).
+By default only a member of the local Administrators group may connect, over both transports; the settings can
+also let named accounts in with a ServiceManager password. See [Network Security](#network-security).
 
 ## Build
 
@@ -76,20 +77,33 @@ remote ServiceManager compares those times with the clock of the local machine.
 
 Choose between Net Pipes and TCP connection for your Service Manager.
 
-*Only administrators may connect* decides whether the ServiceManager answers a client whose user is not a member
-of the local Administrators group. It is on by default, and the service has to be restarted after changing it.
+*Who may connect* decides which clients the ServiceManager answers. *Administrators only* is the default, and the
+service has to be restarted after the rule changes.
+
+The list beside it holds the accounts of the two rules that name accounts. *Add* asks for the Windows account and
+the ServiceManager password, *Remove* drops the selected account, and double-clicking an entry changes its
+password. A stored password is never shown again: the dialog leaves the box empty and keeps the stored one until a
+new one is typed.
 
 <img src="Screens/Settings.png" />
 
 ## Network Security
 
-Both transports check the caller before a single managed service can be read or started. Three rules exist:
+Both transports check the caller before a single managed service can be read or started. Five rules exist:
 
 | Rule | Who may connect | Used by |
 |------|-----------------|---------|
 | Administrators | members of the local Administrators group | the installed service, this is the default |
 | OwnUser | the account that runs the service | the test run inside the UI |
-| Everyone | any process that can reach the endpoint | only when the checkbox is switched off |
+| Everyone | any process that can reach the endpoint | only when the rule is chosen on purpose |
+| Users | administrators, and the accounts named in the settings | an ordinary account on a machine you cannot promote |
+| UsersOnly | only the accounts named in the settings | a machine where the administrators sign in as well |
+
+A named account proves itself twice: it signs in over the transport, and it names the password that is stored for
+it. The password travels in a header of the request, because a TCP transport credential would ask for a certificate
+the product does not ship, so the two rules are meant for the named pipes and for a TCP endpoint on the local
+machine or behind a network you trust. The settings file keeps the password sealed with the DPAPI key of this
+machine, the same way the *Run as* passwords are kept.
 
 A request that does not match its rule is refused before the service call runs. The check runs on every call
 rather than only while the connection is opened: WCF protects a named pipe with its own default security, but a
@@ -106,8 +120,13 @@ What that means in practice:
 - A script that talks to the ServiceManager has to run elevated as well.
 - *Testing* -> *Start testing* needs no administrator rights. That run hosts the service inside the UI process and
   answers the account of that process only, so the endpoint stays closed for every other local account.
-- Switch the checkbox off to hand the endpoint to a normal user account again. The setting is stored as
-  `RequireAdministrator` in `default.cfg`, and a settings file of an older version keeps the service closed.
+- An ordinary account connects through *Manager* -> *Connect to*, which has a *User* and a *Password* box beside
+  the host and the port. Both stay empty for an account that is let in by its rights.
+- *Only the accounts below* closes the endpoint for the administrators as well: every account that wants to connect
+  needs an entry in the list and has to name its password.
+- Choose *Everyone* to hand the endpoint to any local account again. The rule is stored as `Access` in
+  `default.cfg`, and as the older `RequireAdministrator` beside it, so a settings file of an older version keeps
+  the service closed.
 
 The endpoints also limit what a caller can send: 64 KB per message on the service side, with a bounded depth and
 size for the XML reader, and at most 20 open sessions and 16 calls at the same time. The console and error output
