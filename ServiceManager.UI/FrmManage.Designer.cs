@@ -66,6 +66,9 @@
             this.bnEndpointUsers_Add = new System.Windows.Forms.Button();
             this.bnEndpointUsers_Remove = new System.Windows.Forms.Button();
             this.lblEndpointUsers_Hint = new System.Windows.Forms.Label();
+            this.grpEndpoint = new System.Windows.Forms.GroupBox();
+            this.grpStartup = new System.Windows.Forms.GroupBox();
+            this.grpAccess = new System.Windows.Forms.GroupBox();
             this.tabNotifications = new System.Windows.Forms.TabPage();
             this.txtNotifications_InstanceName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -110,6 +113,9 @@
             this.tabMain.SuspendLayout();
             this.tabServices.SuspendLayout();
             this.tabSettings.SuspendLayout();
+            this.grpEndpoint.SuspendLayout();
+            this.grpStartup.SuspendLayout();
+            this.grpAccess.SuspendLayout();
             this.tabWindowsService.SuspendLayout();
             this.tabDependencies.SuspendLayout();
             this.grpWindowsService.SuspendLayout();
@@ -217,35 +223,65 @@
             // 
             // tabSettings
             // 
-            this.tabSettings.Controls.Add(this.nudDependency_Wait_Timeout);
-            this.tabSettings.Controls.Add(this.lblDependencyTimeoutUnit);
-            this.tabSettings.Controls.Add(this.lblDependencyTimeout);
+            this.tabSettings.Controls.Add(this.grpAccess);
+            this.tabSettings.Controls.Add(this.grpStartup);
+            this.tabSettings.Controls.Add(this.grpEndpoint);
             this.tabSettings.Controls.Add(this.bnSettings_Save);
-            this.tabSettings.Controls.Add(this.lblEndpointUsers_Hint);
-            this.tabSettings.Controls.Add(this.bnEndpointUsers_Remove);
-            this.tabSettings.Controls.Add(this.bnEndpointUsers_Add);
-            this.tabSettings.Controls.Add(this.lsvEndpointUsers);
-            this.tabSettings.Controls.Add(this.lblEndpointUsers);
-            this.tabSettings.Controls.Add(this.cmbAccess);
-            this.tabSettings.Controls.Add(this.lblAccess);
-            this.tabSettings.Controls.Add(this.nudStartup_Delay);
-            this.tabSettings.Controls.Add(this.lblDelayUnit);
-            this.tabSettings.Controls.Add(this.lblDelay);
-            this.tabSettings.Controls.Add(this.nud_TCPPort);
-            this.tabSettings.Controls.Add(this.lblPort);
-            this.tabSettings.Controls.Add(this.lblRunMode);
-            this.tabSettings.Controls.Add(this.rrbMode_TCP);
-            this.tabSettings.Controls.Add(this.rrbMode_NetPipes);
             this.tabSettings.TabIndex = 1;
             this.tabSettings.Location = new System.Drawing.Point(4, 22);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.Size = new System.Drawing.Size(758, 401);
             this.tabSettings.Text = "Settings";
             // 
+            // grpEndpoint
+            // 
+            this.grpEndpoint.Controls.Add(this.lblRunMode);
+            this.grpEndpoint.Controls.Add(this.rrbMode_NetPipes);
+            this.grpEndpoint.Controls.Add(this.rrbMode_TCP);
+            this.grpEndpoint.Controls.Add(this.lblPort);
+            this.grpEndpoint.Controls.Add(this.nud_TCPPort);
+            this.grpEndpoint.Location = new System.Drawing.Point(12, 12);
+            this.grpEndpoint.Name = "grpEndpoint";
+            this.grpEndpoint.Size = new System.Drawing.Size(330, 92);
+            this.grpEndpoint.TabIndex = 0;
+            this.grpEndpoint.TabStop = false;
+            this.grpEndpoint.Text = "Connection";
+            // 
+            // grpStartup
+            // 
+            this.grpStartup.Controls.Add(this.lblDelay);
+            this.grpStartup.Controls.Add(this.nudStartup_Delay);
+            this.grpStartup.Controls.Add(this.lblDelayUnit);
+            this.grpStartup.Controls.Add(this.lblDependencyTimeout);
+            this.grpStartup.Controls.Add(this.nudDependency_Wait_Timeout);
+            this.grpStartup.Controls.Add(this.lblDependencyTimeoutUnit);
+            this.grpStartup.Location = new System.Drawing.Point(350, 12);
+            this.grpStartup.Name = "grpStartup";
+            this.grpStartup.Size = new System.Drawing.Size(400, 92);
+            this.grpStartup.TabIndex = 1;
+            this.grpStartup.TabStop = false;
+            this.grpStartup.Text = "Startup";
+            // 
+            // grpAccess
+            // 
+            this.grpAccess.Controls.Add(this.lblAccess);
+            this.grpAccess.Controls.Add(this.cmbAccess);
+            this.grpAccess.Controls.Add(this.lblEndpointUsers_Hint);
+            this.grpAccess.Controls.Add(this.lblEndpointUsers);
+            this.grpAccess.Controls.Add(this.lsvEndpointUsers);
+            this.grpAccess.Controls.Add(this.bnEndpointUsers_Add);
+            this.grpAccess.Controls.Add(this.bnEndpointUsers_Remove);
+            this.grpAccess.Location = new System.Drawing.Point(12, 112);
+            this.grpAccess.Name = "grpAccess";
+            this.grpAccess.Size = new System.Drawing.Size(738, 250);
+            this.grpAccess.TabIndex = 2;
+            this.grpAccess.TabStop = false;
+            this.grpAccess.Text = "Endpoint access";
+            // 
             // lblAccess
             // 
             this.lblAccess.AutoSize = true;
-            this.lblAccess.Location = new System.Drawing.Point(32, 181);
+            this.lblAccess.Location = new System.Drawing.Point(14, 28);
             this.lblAccess.Name = "lblAccess";
             this.lblAccess.TabIndex = 4;
             this.lblAccess.Text = "Who may connect: ";
@@ -253,19 +289,19 @@
             // cmbAccess
             // 
             this.cmbAccess.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbAccess.Location = new System.Drawing.Point(158, 178);
+            this.cmbAccess.Location = new System.Drawing.Point(190, 25);
             this.cmbAccess.Name = "cmbAccess";
-            this.cmbAccess.Size = new System.Drawing.Size(170, 21);
+            this.cmbAccess.Size = new System.Drawing.Size(240, 21);
             this.cmbAccess.TabIndex = 5;
             this.cmbAccess.SelectedIndexChanged += new System.EventHandler(this.cmbAccess_SelectedIndexChanged);
             // 
             // lblEndpointUsers
             // 
             this.lblEndpointUsers.AutoSize = true;
-            this.lblEndpointUsers.Location = new System.Drawing.Point(360, 140);
+            this.lblEndpointUsers.Location = new System.Drawing.Point(14, 96);
             this.lblEndpointUsers.Name = "lblEndpointUsers";
             this.lblEndpointUsers.TabIndex = 6;
-            this.lblEndpointUsers.Text = "Accounts with a ServiceManager password:";
+            this.lblEndpointUsers.Text = "Accounts that may connect:";
             // 
             // lsvEndpointUsers
             // 
@@ -273,10 +309,10 @@
             this.colEndpointUser});
             this.lsvEndpointUsers.FullRowSelect = true;
             this.lsvEndpointUsers.HideSelection = false;
-            this.lsvEndpointUsers.Location = new System.Drawing.Point(360, 160);
+            this.lsvEndpointUsers.Location = new System.Drawing.Point(14, 116);
             this.lsvEndpointUsers.MultiSelect = false;
             this.lsvEndpointUsers.Name = "lsvEndpointUsers";
-            this.lsvEndpointUsers.Size = new System.Drawing.Size(250, 110);
+            this.lsvEndpointUsers.Size = new System.Drawing.Size(612, 120);
             this.lsvEndpointUsers.TabIndex = 7;
             this.lsvEndpointUsers.UseCompatibleStateImageBehavior = false;
             this.lsvEndpointUsers.View = System.Windows.Forms.View.Details;
@@ -286,13 +322,13 @@
             // colEndpointUser
             // 
             this.colEndpointUser.Text = "Account";
-            this.colEndpointUser.Width = 240;
+            this.colEndpointUser.Width = 580;
             // 
             // bnEndpointUsers_Add
             // 
-            this.bnEndpointUsers_Add.Location = new System.Drawing.Point(616, 160);
+            this.bnEndpointUsers_Add.Location = new System.Drawing.Point(636, 116);
             this.bnEndpointUsers_Add.Name = "bnEndpointUsers_Add";
-            this.bnEndpointUsers_Add.Size = new System.Drawing.Size(75, 28);
+            this.bnEndpointUsers_Add.Size = new System.Drawing.Size(90, 28);
             this.bnEndpointUsers_Add.TabIndex = 8;
             this.bnEndpointUsers_Add.Text = "Add";
             this.bnEndpointUsers_Add.UseVisualStyleBackColor = true;
@@ -300,9 +336,9 @@
             // 
             // bnEndpointUsers_Remove
             // 
-            this.bnEndpointUsers_Remove.Location = new System.Drawing.Point(616, 194);
+            this.bnEndpointUsers_Remove.Location = new System.Drawing.Point(636, 150);
             this.bnEndpointUsers_Remove.Name = "bnEndpointUsers_Remove";
-            this.bnEndpointUsers_Remove.Size = new System.Drawing.Size(75, 28);
+            this.bnEndpointUsers_Remove.Size = new System.Drawing.Size(90, 28);
             this.bnEndpointUsers_Remove.TabIndex = 9;
             this.bnEndpointUsers_Remove.Text = "Remove";
             this.bnEndpointUsers_Remove.UseVisualStyleBackColor = true;
@@ -310,16 +346,16 @@
             // 
             // lblEndpointUsers_Hint
             // 
-            this.lblEndpointUsers_Hint.Location = new System.Drawing.Point(360, 278);
+            this.lblEndpointUsers_Hint.Location = new System.Drawing.Point(14, 56);
             this.lblEndpointUsers_Hint.Name = "lblEndpointUsers_Hint";
-            this.lblEndpointUsers_Hint.Size = new System.Drawing.Size(331, 60);
+            this.lblEndpointUsers_Hint.Size = new System.Drawing.Size(710, 34);
             this.lblEndpointUsers_Hint.TabIndex = 10;
-            this.lblEndpointUsers_Hint.Text = "A listed account connects with its Windows name and the ServiceManager password set " +
-    "here. Only a rule with administrators lets an administrator in without one.";
+            this.lblEndpointUsers_Hint.Text = "The list belongs to the two rules with accounts. An entry names a Windows account of this machine or doma" +
+    "in, written the way Windows writes it, so bob is the local bob and never the bob of another computer.";
             // 
             // bnSettings_Save
             // 
-            this.bnSettings_Save.Location = new System.Drawing.Point(30, 325);
+            this.bnSettings_Save.Location = new System.Drawing.Point(12, 372);
             this.bnSettings_Save.Name = "bnSettings_Save";
             this.bnSettings_Save.Size = new System.Drawing.Size(110, 24);
             this.bnSettings_Save.TabIndex = 3;
@@ -328,7 +364,7 @@
             // 
             // nudStartup_Delay
             // 
-            this.nudStartup_Delay.Location = new System.Drawing.Point(158, 140);
+            this.nudStartup_Delay.Location = new System.Drawing.Point(186, 25);
             this.nudStartup_Delay.Maximum = new decimal(new int[] {
             600,
             0,
@@ -340,7 +376,7 @@
             // 
             // lblDelayUnit
             // 
-            this.lblDelayUnit.Location = new System.Drawing.Point(239, 141);
+            this.lblDelayUnit.Location = new System.Drawing.Point(267, 28);
             this.lblDelayUnit.Name = "lblDelayUnit";
             this.lblDelayUnit.AutoSize = true;
             this.lblDelayUnit.TabIndex = 1;
@@ -348,7 +384,7 @@
             // 
             // lblDelay
             // 
-            this.lblDelay.Location = new System.Drawing.Point(32, 140);
+            this.lblDelay.Location = new System.Drawing.Point(14, 28);
             this.lblDelay.Name = "lblDelay";
             this.lblDelay.AutoSize = true;
             this.lblDelay.TabIndex = 1;
@@ -356,7 +392,7 @@
             // 
             // lblDependencyTimeout
             // 
-            this.lblDependencyTimeout.Location = new System.Drawing.Point(32, 214);
+            this.lblDependencyTimeout.Location = new System.Drawing.Point(14, 56);
             this.lblDependencyTimeout.Name = "lblDependencyTimeout";
             this.lblDependencyTimeout.AutoSize = true;
             this.lblDependencyTimeout.TabIndex = 1;
@@ -364,7 +400,7 @@
             // 
             // lblDependencyTimeoutUnit
             // 
-            this.lblDependencyTimeoutUnit.Location = new System.Drawing.Point(239, 215);
+            this.lblDependencyTimeoutUnit.Location = new System.Drawing.Point(267, 56);
             this.lblDependencyTimeoutUnit.Name = "lblDependencyTimeoutUnit";
             this.lblDependencyTimeoutUnit.AutoSize = true;
             this.lblDependencyTimeoutUnit.TabIndex = 1;
@@ -372,7 +408,7 @@
             // 
             // nudDependency_Wait_Timeout
             // 
-            this.nudDependency_Wait_Timeout.Location = new System.Drawing.Point(158, 214);
+            this.nudDependency_Wait_Timeout.Location = new System.Drawing.Point(186, 53);
             this.nudDependency_Wait_Timeout.Maximum = new decimal(new int[] {
             3600,
             0,
@@ -385,7 +421,7 @@
             // nud_TCPPort
             // 
             this.nud_TCPPort.Enabled = false;
-            this.nud_TCPPort.Location = new System.Drawing.Point(158, 89);
+            this.nud_TCPPort.Location = new System.Drawing.Point(120, 67);
             this.nud_TCPPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -408,7 +444,7 @@
             // lblPort
             // 
             this.lblPort.Enabled = false;
-            this.lblPort.Location = new System.Drawing.Point(111, 90);
+            this.lblPort.Location = new System.Drawing.Point(14, 70);
             this.lblPort.Name = "lblPort";
             this.lblPort.AutoSize = true;
             this.lblPort.TabIndex = 1;
@@ -416,15 +452,15 @@
             // 
             // lblRunMode
             // 
-            this.lblRunMode.Location = new System.Drawing.Point(70, 18);
+            this.lblRunMode.Location = new System.Drawing.Point(14, 28);
             this.lblRunMode.Name = "lblRunMode";
             this.lblRunMode.AutoSize = true;
             this.lblRunMode.TabIndex = 1;
-            this.lblRunMode.Text = "Run Mode";
+            this.lblRunMode.Text = "Run mode:";
             // 
             // rrbMode_TCP
             // 
-            this.rrbMode_TCP.Location = new System.Drawing.Point(88, 66);
+            this.rrbMode_TCP.Location = new System.Drawing.Point(120, 48);
             this.rrbMode_TCP.Name = "rrbMode_TCP";
             this.rrbMode_TCP.AutoSize = true;
             this.rrbMode_TCP.TabIndex = 0;
@@ -433,7 +469,7 @@
             // 
             // rrbMode_NetPipes
             // 
-            this.rrbMode_NetPipes.Location = new System.Drawing.Point(88, 42);
+            this.rrbMode_NetPipes.Location = new System.Drawing.Point(120, 26);
             this.rrbMode_NetPipes.Name = "rrbMode_NetPipes";
             this.rrbMode_NetPipes.AutoSize = true;
             this.rrbMode_NetPipes.TabIndex = 0;
@@ -892,6 +928,12 @@
             this.tabDependencies.PerformLayout();
             this.grpWindowsService.ResumeLayout(false);
             this.grpWindowsService.PerformLayout();
+            this.grpEndpoint.ResumeLayout(false);
+            this.grpEndpoint.PerformLayout();
+            this.grpStartup.ResumeLayout(false);
+            this.grpStartup.PerformLayout();
+            this.grpAccess.ResumeLayout(false);
+            this.grpAccess.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudStartup_Delay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudDependency_Wait_Timeout)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nud_TCPPort)).EndInit();
@@ -941,6 +983,9 @@
         private System.Windows.Forms.Label lblDependencies_Hint;
         private System.Windows.Forms.Button bnWindowsService_Save;
         private System.Windows.Forms.GroupBox grpWindowsService;
+        private System.Windows.Forms.GroupBox grpEndpoint;
+        private System.Windows.Forms.GroupBox grpStartup;
+        private System.Windows.Forms.GroupBox grpAccess;
         private System.Windows.Forms.Label lblService_StartMode;
         private System.Windows.Forms.ComboBox cmbService_StartMode;
         private System.Windows.Forms.Label lblService_Account;
