@@ -14,11 +14,11 @@ namespace ServiceManager.Tests
     public class ExtensionLoaderTests
     {
         [TestMethod]
-        public void extensionFolder_isTheExtensionsDirectoryNextToTheExecutable()
+        public void defaultExtensionFolder_isTheExtensionsDirectoryNextToTheExecutable()
         {
             Assert.AreEqual(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "extensions"),
-                ExtensionLoader.ExtensionFolder,
+                ExtensionLoader.DefaultExtensionFolder,
                 "the service is installed as one folder and loads its extensions from <BaseDirectory>\\extensions");
         }
 

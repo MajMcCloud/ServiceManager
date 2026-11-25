@@ -11,8 +11,8 @@ using System.Threading;
 namespace ServiceManager.Tests
 {
     /// <summary>
-    /// Compiles a throwaway extension assembly into <test output>\extensions\<name>\ so the loader
-    /// can be exercised against real DLLs. Runtime compilation instead of fixture projects keeps
+    /// Compiles a throwaway extension assembly into %TEMP%\servicemanager-tests\extensions\<name>\ so the
+    /// loader can be exercised against real DLLs. Runtime compilation instead of fixture projects keeps
     /// every test isolated: each one gets its own assembly, its own Id and its own folder.
     ///
     /// A loaded assembly cannot be deleted while the process lives (the CLR locks the file), so the
@@ -35,11 +35,28 @@ namespace ServiceManager.Tests
 
         private static int m_Counter;
 
+        private static String m_RootFolder;
+
         private static readonly Type HostInterface = typeof(global::ServiceManager.Extensions.Interfaces.INotificationExtension);
 
+        /// <summary>
+        /// The folder every fixture is compiled into. It is a temporary directory rather than the
+        /// extensions folder of the test host, because the host can sit in a write protected
+        /// installation folder. The loader is pointed at the same directory, so it finds the fixtures.
+        /// </summary>
         public static String RootFolder
         {
-            get { return global::ServiceManager.Extensions.Extensions.ExtensionFolder; }
+            get
+            {
+                if (m_RootFolder == null)
+                {
+                    m_RootFolder = Path.Combine(Path.GetTempPath(), "servicemanager-tests", "extensions");
+
+                    global::ServiceManager.Extensions.Extensions.ExtensionFolder = m_RootFolder;
+                }
+
+                return m_RootFolder;
+            }
         }
 
         private static Assembly HostExtensionsAssembly

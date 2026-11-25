@@ -17,6 +17,8 @@ namespace ServiceManager.Extensions
 
         private static readonly Dictionary<String, Extension> m_Cache = new Dictionary<String, Extension>(StringComparer.OrdinalIgnoreCase);
 
+        private static String m_ExtensionFolder;
+
 
         /// <summary>
         /// The instances are kept, so an extension is built once per process instead of once per call:
@@ -294,11 +296,36 @@ namespace ServiceManager.Extensions
 
 
 
-        public static String ExtensionFolder
+        /// <summary>
+        /// Where the extensions sit without any override: next to the executable, which is why the
+        /// service is installed as one folder.
+        /// </summary>
+        public static String DefaultExtensionFolder
         {
             get
             {
                 return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "extensions");
+            }
+        }
+
+        /// <summary>
+        /// The folder the loader reads. A test run points it at a temporary directory, because the
+        /// folder of the test host is write protected and the fixture assemblies are written into it.
+        /// </summary>
+        public static String ExtensionFolder
+        {
+            get
+            {
+                return m_ExtensionFolder ?? DefaultExtensionFolder;
+            }
+            set
+            {
+                lock (m_Sync)
+                {
+                    m_ExtensionFolder = value;
+
+                    m_Cache.Clear();
+                }
             }
         }
 
