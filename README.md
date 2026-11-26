@@ -385,6 +385,11 @@ in its live log, and the next step is taken anyway. A service whose process cann
 rather than left in the list as running, and what was measured on it - the run time, the memory, the processor use
 and the thread count - is cleared as soon as it is offline.
 
+The context menu of the service list offers *Kill service* and the *Services* menu offers *Kill all services*. A kill
+skips every step above: no enter key, no window message and no waiting for either, the process tree of the service
+is ended at once. Everything else stays the stop - the services waiting for it follow their stop rules and the auto
+restart of the killed service stays off, so a kill does not bring the process straight back.
+
 <img src="Screens/Settings_2.png" />
 
 ## Service Settings - Logging

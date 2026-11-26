@@ -145,6 +145,66 @@ namespace ServiceManager.Tests
 
 
         [TestMethod]
+        public void killing_a_waiting_service_ends_the_wait_without_a_process()
+        {
+            var item = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+
+            manager.PrepareService(item);
+
+            manager.Analytics.Services[0].Status = ServiceAnalytics.eStatus.waiting_for_dependency;
+
+            manager.KillService(item);
+
+            Assert.AreEqual(ServiceAnalytics.eStatus.offline, manager.Analytics.Services[0].Status);
+
+            Assert.AreEqual(1, bus.Events.Count);
+            Assert.AreEqual(eCallback.updated, bus.Events[0].Callback);
+        }
+
+
+        [TestMethod]
+        public void killing_a_service_follows_the_stop_rules_of_the_dependents()
+        {
+            var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };
+
+            var child = new ServiceItem()
+            {
+                ID = Child,
+                Title = "TelegramBot",
+                Dependencies = new List<Guid> { Service },
+                DependencyStopRule = ServiceItem.eDependencyStopRule.Stop
+            };
+
+            var bus = new RecordingBus();
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(parent);
+            manager.Config.ServiceList.Add(child);
+            manager.Analytics = new Analytics();
+            manager.Events = bus;
+
+            manager.KillService(parent);
+
+            Assert.AreEqual(1, bus.Events.Count, "a kill is a stop, so the dependents that go with it follow");
+
+            var e = bus.Events[0];
+
+            Assert.AreEqual(NotificationKind.ServiceStop, e.Kind);
+            Assert.AreEqual(Child, e.ServiceId);
+        }
+
+
+        [TestMethod]
         public void stopping_a_service_stops_the_dependents_that_go_with_it()
         {
             var parent = new ServiceItem() { ID = Service, Title = "TelegramApi" };

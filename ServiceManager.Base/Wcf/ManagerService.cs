@@ -47,6 +47,10 @@ namespace ServiceManager.Base.Wcf
 
         [OperationContract(IsOneWay = true)]
 [CWC.OperationContract(IsOneWay = true)]
+        void KillService(Guid serviceId);
+
+        [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void ToggleEnable(Guid serviceId);
 
         [OperationContract]
@@ -200,6 +204,37 @@ namespace ServiceManager.Base.Wcf
             if (!analytics.IsRunning)
             {
                 ServiceLog(serviceId, "Service has been ended.");
+            }
+        }
+
+        public void KillService(Guid serviceId)
+        {
+            var service = Manager.Config.ServiceList.FirstOrDefault(a => a.ID == serviceId);
+
+            if (service == null)
+            {
+                return;
+            }
+
+            var analytics = Manager.Analytics.Services.FirstOrDefault(a => a.ServiceID == serviceId);
+
+            if (!analytics.IsRunning && analytics.Status != ServiceAnalytics.eStatus.waiting_for_dependency)
+            {
+                ServiceLog(serviceId, "Service is already offline.");
+                return;
+            }
+
+            ServiceLog(serviceId, "Service process will be killed.");
+
+            //Without the flag the own restart path of the service would bring it straight back up
+            service.ForceRestart = false;
+
+            //The rules of the services that wait for this one are applied by the manager
+            Manager.KillService(service);
+
+            if (!analytics.IsRunning)
+            {
+                ServiceLog(serviceId, "Service process has been killed.");
             }
         }
 

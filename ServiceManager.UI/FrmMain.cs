@@ -1345,6 +1345,30 @@ namespace ServiceManager.UI
             runWithProgress("Service shutdown", progress => runForServices(progress, ids, names, "Shutting down", (a, id) => a.ShutdownService(id)));
         }
 
+        private void tsmiMenu_Kill_Click(object sender, EventArgs e)
+        {
+            cmsMenu.Close();
+
+            if (this.WatchConnection == null)
+                return;
+
+            if (MessageBox.Show("Kill service?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.SelectedItems)
+            {
+                var item = i as ListViewItem;
+
+                ids.Add((Guid)item.Tag);
+                names.Add(cellText(item, eColumn.Pid));
+            }
+
+            runWithProgress("Killing service", progress => runForServices(progress, ids, names, "Killing", (a, id) => a.KillService(id)));
+        }
+
 
         private void tsmiMenu_Logs_Click(object sender, EventArgs e)
         {
@@ -1513,6 +1537,31 @@ namespace ServiceManager.UI
             }
 
             runWithProgress("Stopping services", progress => runForServices(progress, ids, names, "Stopping", (a, id) => a.ShutdownService(id)));
+        }
+
+        private void rmiServices_KillAll_Click(object sender, EventArgs e)
+        {
+            if (this.WatchConnection == null)
+                return;
+
+            if (lsvServices.Items.Count == 0)
+                return;
+
+            if (MessageBox.Show("Kill all services?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+
+            List<Guid> ids = new List<Guid>();
+            List<String> names = new List<String>();
+
+            foreach (var i in lsvServices.Items)
+            {
+                var item = i as ListViewItem;
+
+                ids.Add((Guid)item.Tag);
+                names.Add(cellText(item, eColumn.Pid));
+            }
+
+            runWithProgress("Killing services", progress => runForServices(progress, ids, names, "Killing", (a, id) => a.KillService(id)));
         }
 
         private void rmiServices_OpenAllLiveLogs_Click(object sender, EventArgs e)

@@ -35,6 +35,7 @@
             this.cmsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiMenu_Restart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Shutdown = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMenu_Kill = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMenu_Logs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMenu_Livelogs = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,6 +77,7 @@
             this.radMenuSeparatorItem4 = new System.Windows.Forms.ToolStripSeparator();
             this.rmiServices_StartAll = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiServices_StopAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiServices_KillAll = new System.Windows.Forms.ToolStripMenuItem();
             this.radMenuSeparatorItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.rmiServices_OpenAllLiveLogs = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiView = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,6 +107,7 @@
             this.cmsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiMenu_Restart,
             this.tsmiMenu_Shutdown,
+            this.tsmiMenu_Kill,
             this.toolStripSeparator4,
             this.tsmiMenu_Logs,
             this.tsmiMenu_Livelogs,
@@ -131,6 +134,13 @@
             this.tsmiMenu_Shutdown.Size = new System.Drawing.Size(177, 22);
             this.tsmiMenu_Shutdown.Text = "Shutdown service";
             this.tsmiMenu_Shutdown.Click += new System.EventHandler(this.tsmiMenu_Shutdown_Click);
+            // 
+            // tsmiMenu_Kill
+            // 
+            this.tsmiMenu_Kill.Name = "tsmiMenu_Kill";
+            this.tsmiMenu_Kill.Size = new System.Drawing.Size(177, 22);
+            this.tsmiMenu_Kill.Text = "Kill service";
+            this.tsmiMenu_Kill.Click += new System.EventHandler(this.tsmiMenu_Kill_Click);
             // 
             // toolStripSeparator4
             // 
@@ -392,6 +402,7 @@
             this.radMenuSeparatorItem4,
             this.rmiServices_StartAll,
             this.rmiServices_StopAll,
+            this.rmiServices_KillAll,
             this.radMenuSeparatorItem5,
             this.rmiServices_OpenAllLiveLogs});
             this.rmiServices.Name = "rmiServices";
@@ -420,6 +431,12 @@
             this.rmiServices_StopAll.Name = "rmiServices_StopAll";
             this.rmiServices_StopAll.Text = "Stop all services";
             this.rmiServices_StopAll.Click += new System.EventHandler(this.rmiServices_StopAll_Click);
+            // 
+            // rmiServices_KillAll
+            // 
+            this.rmiServices_KillAll.Name = "rmiServices_KillAll";
+            this.rmiServices_KillAll.Text = "Kill all services";
+            this.rmiServices_KillAll.Click += new System.EventHandler(this.rmiServices_KillAll_Click);
             // 
             // radMenuSeparatorItem5
             // 
@@ -489,6 +506,7 @@
         private System.Windows.Forms.ContextMenuStrip cmsMenu;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Restart;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Shutdown;
+        private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Kill;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Logs;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_Livelogs;
@@ -529,6 +547,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiMenu_OpenExplorer;
         private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem4;
         private System.Windows.Forms.ToolStripMenuItem rmiServices_StopAll;
+        private System.Windows.Forms.ToolStripMenuItem rmiServices_KillAll;
         private System.Windows.Forms.ToolStripMenuItem rmiServices_StartAll;
         private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem5;
         private System.Windows.Forms.ToolStripMenuItem rmiServices_OpenAllLiveLogs;

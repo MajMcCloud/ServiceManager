@@ -501,6 +501,15 @@ namespace ServiceManager.Base
 
         public void ServiceEnd(ServiceItem item)
         {
+            ServiceEnd(item, false);
+        }
+
+        /// <summary>
+        /// Ends one service. The soft steps of EndProcess are taken unless only the kill of the process is asked
+        /// for: a kill skips the enter key, the window message and the waiting for them.
+        /// </summary>
+        private void ServiceEnd(ServiceItem item, bool killOnly)
+        {
             var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID) ?? new ServiceAnalytics();
 
             StopRequests.Mark(item.ID);
@@ -551,7 +560,14 @@ namespace ServiceManager.Base
                         Raise(eCallback.exiting, item, sa);
                     }
 
-                    EndProcess(item, sa, proc, 1);
+                    if (killOnly)
+                    {
+                        KillProcess(item, sa, proc);
+                    }
+                    else
+                    {
+                        EndProcess(item, sa, proc, 1);
+                    }
                 }
 
                 sa.Status = ServiceAnalytics.eStatus.offline;
@@ -605,6 +621,15 @@ namespace ServiceManager.Base
             {
                 TryEndStep(item, sa, () => proc.Kill());
             }
+        }
+
+        /// <summary>
+        /// Ends a process without asking it first. The whole tree goes with it, a service that started workers
+        /// of its own leaves no orphan behind.
+        /// </summary>
+        internal void KillProcess(ServiceItem item, ServiceAnalytics sa, Process proc)
+        {
+            TryEndStep(item, sa, () => proc.Kill(true));
         }
 
         /// <summary>
@@ -732,6 +757,31 @@ namespace ServiceManager.Base
             }
 
             ServiceEnd(item);
+
+            ApplyStopRules(item.ID);
+        }
+
+        /// <summary>
+        /// Kills one service the way the window asks for it: the process is ended without being asked first.
+        /// Everything else is the stop, so the rules of the services that wait for it are applied as well and
+        /// the auto restart stays off.
+        /// </summary>
+        public void KillService(ServiceItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var sa = this.Analytics.Services.FirstOrDefault(a => a.ServiceID == item.ID);
+
+            //A service that is only waiting has no process, ServiceEnd ends the wait for it
+            if (sa != null && sa.IsRunning)
+            {
+                sa.Exiting = DateTime.Now;
+            }
+
+            ServiceEnd(item, true);
 
             ApplyStopRules(item.ID);
         }
