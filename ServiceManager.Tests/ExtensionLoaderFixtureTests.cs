@@ -65,6 +65,25 @@ namespace ServiceManager.Tests
             Assert.IsNotNull(Find(fixture.Id), "the scan runs with SearchOption.AllDirectories");
         }
 
+        /// <summary>
+        /// A provider keeps its libraries in its own folder under extensions\, and the loader has to read
+        /// them from there: the folder of the host has no idea about them.
+        /// </summary>
+        [TestMethod]
+        public void libraryNextToTheExtension_isResolvedFromThatFolder()
+        {
+            var fixture = ExtensionFixture.Compile("privatedll",
+                (id, name) => ExtensionFixture.PrivateDependencySource("PrivateOne", id, name),
+                withPrivateDependency: true);
+
+            var found = Find(fixture.Id);
+
+            Assert.IsNotNull(found, "a provider that calls a library of its own folder has to load");
+
+            Assert.IsTrue(File.Exists(Path.Combine(fixture.Folder, "dependency.log")),
+                "the library sitting next to the extension is the one that ran");
+        }
+
         [TestMethod]
         public void throwingConstructor_isSkippedButTheRestOfTheScanSurvives()
         {

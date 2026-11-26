@@ -1,10 +1,10 @@
+using CoreWCF.Channels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Wcf;
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
-using System.ServiceModel.Channels;
 
 namespace ServiceManager.Tests
 {

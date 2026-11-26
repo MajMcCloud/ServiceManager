@@ -1,9 +1,9 @@
+using CoreWCF;
+using CoreWCF.Channels;
 using ServiceManager.Base.Data.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
 
 namespace ServiceManager.Base.Wcf
 {

@@ -584,7 +584,7 @@ namespace ServiceManager.Tests
         [TestMethod]
         public void server_binding_caps_the_incoming_named_pipe_message()
         {
-            var binding = (NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
+            var binding = (CoreWCF.NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
 
             Assert.AreEqual(64 * 1024, binding.MaxReceivedMessageSize, "nobody sends more than a command to the service");
             Assert.AreEqual(binding.MaxReceivedMessageSize, binding.MaxBufferSize);
@@ -593,7 +593,7 @@ namespace ServiceManager.Tests
         [TestMethod]
         public void server_binding_caps_the_incoming_tcp_message()
         {
-            var binding = (NetTcpBinding)Channel.CreateServerBinding(Runtime.eMode.Tcp);
+            var binding = (CoreWCF.NetTcpBinding)Channel.CreateServerBinding(Runtime.eMode.Tcp);
 
             Assert.AreEqual(64 * 1024, binding.MaxReceivedMessageSize);
         }
@@ -628,7 +628,7 @@ namespace ServiceManager.Tests
         [TestMethod]
         public void server_binding_limits_the_reader_quotas()
         {
-            var binding = (NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
+            var binding = (CoreWCF.NetNamedPipeBinding)Channel.CreateServerBinding(Runtime.eMode.NetPipes);
 
             Assert.AreEqual(32, binding.ReaderQuotas.MaxDepth);
             Assert.AreEqual(1024 * 1024, binding.ReaderQuotas.MaxStringContentLength);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>InputExample</RootNamespace>
     <AssemblyName>InputExample</AssemblyName>

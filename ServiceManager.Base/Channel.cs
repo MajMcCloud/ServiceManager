@@ -1,4 +1,9 @@
-﻿using ServiceManager.Base.Data.Settings;
+using CoreWCF.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Wcf;
 using System;
 using System.Collections.Generic;
@@ -9,10 +14,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using System.ServiceModel.Description;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CWC = CoreWCF;
 using static ServiceManager.Base.Data.Settings.Runtime;
 
 namespace ServiceManager.Base
@@ -24,9 +29,8 @@ namespace ServiceManager.Base
 
         private const int MaxAnswerMessageSize = 2 * 1024 * 1024;
 
+        // CoreWCF has no throttle for the calls of a session, the connections it accepts are the limit.
         private const int MaxConcurrentSessions = 20;
-
-        private const int MaxConcurrentCalls = 16;
 
         public bool Failed { get; set; } = false;
 
@@ -75,7 +79,9 @@ namespace ServiceManager.Base
         /// </summary>
         public List<EndpointUser> Users { get; set; } = new List<EndpointUser>();
 
-        private ServiceHost host { get; set; }
+        private WebApplication host { get; set; }
+
+        private bool hostStarted { get; set; } = false;
 
         private IManagerService m_clientChannel { get; set; }
 
@@ -117,12 +123,12 @@ namespace ServiceManager.Base
         // from the UI that is connected. Ping answers over the same session and registers nothing.
         public static bool ProbePipes(String Hostname, String PipeName)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new InstanceContext(new Callbacks()), CreateProbeBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{Hostname}/{PipeName}")));
         }
 
         public static bool ProbeTcp(String Hostname, int Port)
         {
-            return Probe(() => new DuplexChannelFactory<IManagerService>(new Callbacks(), CreateProbeBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
+            return Probe(() => new DuplexChannelFactory<IManagerService>(new InstanceContext(new Callbacks()), CreateProbeBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{Hostname}:{Port}/servicemanager")));
         }
 
         private static bool Probe(Func<DuplexChannelFactory<IManagerService>> CreateFactory)
@@ -182,27 +188,32 @@ namespace ServiceManager.Base
             {
                 m_serverInstance = new ManagerService();
 
+                WebApplicationBuilder builder = WebApplication.CreateBuilder(Array.Empty<string>());
+
+                // The service reports what happens through its own events, so the host adds nothing.
+                builder.Logging.ClearProviders();
+
+                // The named pipe and the tcp endpoint are the only listeners, the host never opens an http port.
+                builder.WebHost.UseKestrelCore();
+
+                builder.Services.AddServiceModelServices();
+
+                // CoreWCF asks the container for the single instance of the service, so it has to be given
+                // the one this class keeps a reference to.
+                builder.Services.AddSingleton(m_serverInstance);
+
                 switch (this.Mode)
                 {
                     case eMode.NetPipes:
 
-                        host = new ServiceHost(m_serverInstance, new Uri[] { new Uri($"net.pipe://{this.Hostname}") });
-
-                        host.OpenTimeout = new TimeSpan(0, 0, 15);
-                        host.CloseTimeout = new TimeSpan(0, 0, 15);
-                        
-
-                        var endpoint = host.AddServiceEndpoint(typeof(IManagerService), CreateServerBinding(eMode.NetPipes), this.PipeName);
+                        // The OS pipe name is the first path segment of the address, so the pipe name has to be
+                        // part of the address CoreWCF listens on.
+                        builder.WebHost.UseNetNamedPipe(options => options.Listen($"net.pipe://{this.Hostname}/{this.PipeName}"));
 
                         break;
                     case eMode.Tcp:
 
-                        host = new ServiceHost(m_serverInstance);
-
-                        host.OpenTimeout = new TimeSpan(0, 0, 15);
-                        host.CloseTimeout = new TimeSpan(0, 0, 15);
-
-                        var endpoint2 = host.AddServiceEndpoint(typeof(IManagerService), CreateServerBinding(eMode.Tcp), $"net.tcp://{this.Hostname}:{this.Port}/servicemanager");
+                        builder.WebHost.UseNetTcp(options => options.Listen($"net.tcp://{this.Hostname}:{this.Port}"));
 
                         break;
                     default:
@@ -213,28 +224,35 @@ namespace ServiceManager.Base
 
                 Failed = false;
 
-                if (this.Access != eAccess.Everyone)
+                host = builder.Build();
+
+                host.UseServiceModel(serviceBuilder =>
                 {
-                    ServiceAuthorizationBehavior authorization = host.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
-                    if (authorization != null)
+                    serviceBuilder.AddService<ManagerService>();
+
+                    if (this.Mode == eMode.NetPipes)
                     {
-                        authorization.ServiceAuthorizationManager = CreateAuthorizationManager();
+                        serviceBuilder.AddServiceEndpoint<ManagerService, IManagerService>(CreateServerBinding(eMode.NetPipes), string.Empty);
                     }
-                }
+                    else
+                    {
+                        serviceBuilder.AddServiceEndpoint<ManagerService, IManagerService>(CreateServerBinding(eMode.Tcp), "/servicemanager");
+                    }
 
-                if (host.Description.Behaviors.Find<ServiceThrottlingBehavior>() == null)
-                {
-                    ServiceThrottlingBehavior throttling = new ServiceThrottlingBehavior();
-                    throttling.MaxConcurrentSessions = MaxConcurrentSessions;
-                    throttling.MaxConcurrentCalls = MaxConcurrentCalls;
-                    host.Description.Behaviors.Add(throttling);
-                }
+                    if (this.Access != eAccess.Everyone)
+                    {
+                        serviceBuilder.ConfigureServiceHostBase<ManagerService>(serviceHost =>
+                        {
+                            serviceHost.Authorization.ServiceAuthorizationManager = CreateAuthorizationManager();
+                        });
+                    }
+                });
 
-                host.Opened += Host_Opened;
-                host.Closed += Host_Closed;
-                host.Faulted += Host_Faulted;
+                host.StartAsync().GetAwaiter().GetResult();
 
-                host.Open();
+                hostStarted = true;
+
+                Host_Opened(this, new EventArgs());
 
                 return;
             }
@@ -245,12 +263,12 @@ namespace ServiceManager.Base
             {
                 case eMode.NetPipes:
 
-                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, CreateClientBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{this.Hostname}/" + this.PipeName));
+                    channelFactory = new DuplexChannelFactory<IManagerService>(new InstanceContext(m_ClientCallbacks), CreateClientBinding(eMode.NetPipes), new EndpointAddress($"net.pipe://{this.Hostname}/" + this.PipeName));
 
                     break;
                 case eMode.Tcp:
 
-                    channelFactory = new DuplexChannelFactory<IManagerService>(m_ClientCallbacks, CreateClientBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{this.Hostname}:{this.Port}/servicemanager"));
+                    channelFactory = new DuplexChannelFactory<IManagerService>(new InstanceContext(m_ClientCallbacks), CreateClientBinding(eMode.Tcp), new EndpointAddress($"net.tcp://{this.Hostname}:{this.Port}/servicemanager"));
 
                     break;
                 default:
@@ -281,9 +299,9 @@ namespace ServiceManager.Base
             channelFactory.Closed += ChannelFactory_Closed;
         }
 
-        internal static Binding CreateServerBinding(eMode mode)
+        internal static CWC.Channels.Binding CreateServerBinding(eMode mode)
         {
-            Binding binding = CreateBinding(mode, MaxIncomingMessageSize);
+            CWC.Channels.Binding binding = CreateServerTransport(mode, MaxIncomingMessageSize);
 
             // A duplex session has no traffic while it is idle, so a receive
             // timeout would end the session of every idle console.
@@ -344,6 +362,38 @@ namespace ServiceManager.Base
             }
         }
 
+        // The server side is hosted by CoreWCF, so its bindings come from that library.
+        private static CWC.Channels.Binding CreateServerTransport(eMode mode, int maxMessageSize)
+        {
+            switch (mode)
+            {
+                case eMode.NetPipes:
+                {
+                    CWC.NetNamedPipeBinding binding = new CWC.NetNamedPipeBinding(CWC.NetNamedPipeSecurityMode.Transport);
+                    binding.MaxReceivedMessageSize = maxMessageSize;
+                    binding.MaxBufferSize = maxMessageSize;
+                    binding.MaxBufferPoolSize = maxMessageSize;
+                    binding.MaxConnections = MaxConcurrentSessions;
+                    ApplyReaderQuotas(binding.ReaderQuotas);
+
+                    return binding;
+                }
+                case eMode.Tcp:
+                {
+                    CWC.NetTcpBinding binding = new CWC.NetTcpBinding(CWC.SecurityMode.Transport);
+                    binding.MaxReceivedMessageSize = maxMessageSize;
+                    binding.MaxBufferSize = maxMessageSize;
+                    binding.MaxBufferPoolSize = maxMessageSize;
+                    binding.MaxConnections = MaxConcurrentSessions;
+                    ApplyReaderQuotas(binding.ReaderQuotas);
+
+                    return binding;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode));
+            }
+        }
+
         private static void ApplyReaderQuotas(System.Xml.XmlDictionaryReaderQuotas quotas)
         {
             quotas.MaxDepth = 32;
@@ -353,7 +403,7 @@ namespace ServiceManager.Base
             quotas.MaxNameTableCharCount = 16384;
         }
 
-        internal ServiceAuthorizationManager CreateAuthorizationManager()
+        internal CWC.ServiceAuthorizationManager CreateAuthorizationManager()
         {
             if (this.Access == eAccess.OwnUser)
             {
@@ -442,21 +492,27 @@ namespace ServiceManager.Base
                 if (host == null)
                     return;
 
-                if (host.State != CommunicationState.Opened)
+                if (!hostStarted)
                     return;
-
 
                 try
                 {
                     //this?.Try(a => a.ShutdownStarted());
 
-                    host.Abort();
-                    //host.Close(new TimeSpan(0, 0, 5));
+                    using CancellationTokenSource timeout = new CancellationTokenSource(new TimeSpan(0, 0, 0, 5));
+
+                    host.StopAsync(timeout.Token).GetAwaiter().GetResult();
+                    host.DisposeAsync().AsTask().GetAwaiter().GetResult();
                 }
                 catch
                 {
 
                 }
+
+                hostStarted = false;
+                host = null;
+
+                Host_Closed(this, new EventArgs());
 
                 return;
             }

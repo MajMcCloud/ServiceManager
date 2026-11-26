@@ -1,20 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <RootNamespace>ServiceManager.ConfigBase</RootNamespace>
     <AssemblyName>ServiceManager.ConfigBase</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>

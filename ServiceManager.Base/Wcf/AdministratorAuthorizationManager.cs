@@ -1,7 +1,7 @@
+using CoreWCF;
+using CoreWCF.Channels;
 using System;
 using System.Security.Principal;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
 
 namespace ServiceManager.Base.Wcf
 {

@@ -17,30 +17,39 @@
   <PropertyGroup>
     <SMVersion Condition="'$(SMVersion)' == ''">0.0.0.0</SMVersion>
 
-    <!-- SDK style projects (Examples\ENTERTest) generate the attributes out of $(Version). -->
-    <Version Condition="'$(UsingMicrosoftNETSdk)' == 'true'">$(SMVersion)</Version>
+    <!-- The projects that let the SDK write their assembly info take the version from here. -->
+    <Version>$(SMVersion)</Version>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
-    <Compile Include="$(IntermediateOutputPath)$(MSBuildProjectName).versioninfo.cs" />
-  </ItemGroup>
-
-  <Target Name="GenerateAssemblyVersionInfo" BeforeTargets="CoreCompile">
+  <!--
+    Every other project keeps its own AssemblyInfo.cs, so the SDK writes no assembly info for it and
+    the attributes have to be compiled in here. The platform attribute belongs in the same file: the
+    SDK only adds it to the assembly info it generates itself, and without it the analyzer treats a
+    -windows project as platform neutral and reports every WinForms call as CA1416.
+  -->
+  <Target Name="GenerateAssemblyAttributes" BeforeTargets="CoreCompile">
 
     <PropertyGroup>
-      <_VersionInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).versioninfo.cs</_VersionInfoFile>
+      <_AttributeFile>$(IntermediateOutputPath)$(MSBuildProjectName).assemblyattributes.cs</_AttributeFile>
+      <_PlatformAttribute Condition="'$(TargetPlatformIdentifier)' == 'Windows'">[assembly: global::System.Runtime.Versioning.SupportedOSPlatform(&quot;windows&quot;)]</_PlatformAttribute>
     </PropertyGroup>
 
     <ItemGroup>
-      <_VersionLines Include="[assembly: System.Reflection.AssemblyVersion(&quot;$(SMVersion)&quot;)]" />
-      <_VersionLines Include="[assembly: System.Reflection.AssemblyFileVersion(&quot;$(SMVersion)&quot;)]" />
-      <_VersionLines Include="[assembly: System.Reflection.AssemblyInformationalVersion(&quot;$(SMVersion)&quot;)]" />
+      <_AttributeLines Include="[assembly: System.Reflection.AssemblyVersion(&quot;$(SMVersion)&quot;)]" />
+      <_AttributeLines Include="[assembly: System.Reflection.AssemblyFileVersion(&quot;$(SMVersion)&quot;)]" />
+      <_AttributeLines Include="[assembly: System.Reflection.AssemblyInformationalVersion(&quot;$(SMVersion)&quot;)]" />
+      <_AttributeLines Include="$(_PlatformAttribute)" Condition="'$(_PlatformAttribute)' != ''" />
     </ItemGroup>
 
-    <WriteLinesToFile File="$(_VersionInfoFile)"
-                      Lines="@(_VersionLines)"
+    <WriteLinesToFile File="$(_AttributeFile)"
+                      Lines="@(_AttributeLines)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
+
+    <!-- The file lands in the target framework folder of obj, so only the target knows its path. -->
+    <ItemGroup Condition="'$(GenerateAssemblyInfo)' != 'true'">
+      <Compile Include="$(_AttributeFile)" />
+    </ItemGroup>
 
   </Target>
 

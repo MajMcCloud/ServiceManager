@@ -1,28 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <RootNamespace>ServiceManager.Base</RootNamespace>
     <AssemblyName>ServiceManager.Base</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceManager.ConfigBase\ServiceManager.ConfigBase.csproj" />
     <ProjectReference Include="..\ServiceManager.Extensions\ServiceManager.Extensions.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CoreWCF.NetNamedPipe" Version="1.9.2" />
+    <PackageReference Include="CoreWCF.NetTcp" Version="1.9.2" />
+    <PackageReference Include="CoreWCF.Primitives" Version="1.9.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Threading.Channels" Version="11.0.0" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="11.0.0" />
+    <PackageReference Include="System.ServiceModel.NetNamedPipe" Version="10.1.0" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="10.1.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="11.0.0" />
   </ItemGroup>
 </Project>

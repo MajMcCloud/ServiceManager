@@ -1,31 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>ServiceManager.Extensions.EventLogNotifier</RootNamespace>
     <AssemblyName>ServiceManager.Extensions.EventLogNotifier</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\..\ServiceManager.UI\bin\Debug\extensions\EventLogNotifier\</OutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceManager.ConfigBase\ServiceManager.ConfigBase.csproj" />
     <ProjectReference Include="..\..\ServiceManager.Extensions\ServiceManager.Extensions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Resources.Extensions" Version="11.0.0" />
-    
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>

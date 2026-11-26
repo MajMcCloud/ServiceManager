@@ -1,14 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <RootNamespace>ServiceManager.Extensions</RootNamespace>
     <AssemblyName>ServiceManager.Extensions</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
 </Project>

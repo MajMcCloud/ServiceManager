@@ -100,9 +100,14 @@ namespace ServiceManager.Tests
         {
             var path = Path.Combine(__temp, name + ".exe");
 
+            // The compiled hook has no app host of its own, so it is built against the .NET Framework
+            // that is part of Windows. Windows starts such an program on its own, which is what this
+            // test needs: the hook receives its arguments the way the operating system passes them.
             var references = new List<MetadataReference>()
             {
-                MetadataReference.CreateFromFile(typeof(Object).Assembly.Location),
+                MetadataReference.CreateFromFile(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    "Microsoft.NET", "Framework64", "v4.0.30319", "mscorlib.dll")),
             };
 
             var compilation = CSharpCompilation.Create(

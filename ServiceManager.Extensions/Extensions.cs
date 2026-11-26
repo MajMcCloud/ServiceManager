@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.IO;
+using System.Runtime.Loader;
 using System.Threading;
 
 namespace ServiceManager.Extensions
@@ -78,8 +79,8 @@ namespace ServiceManager.Extensions
 
         /// <summary>
         /// Forgets every cached instance. An extension keeps its settings in memory, so this has to run
-        /// after its settings were changed. A replaced assembly is not picked up either way, the CLR
-        /// keeps it for the lifetime of the AppDomain.
+        /// after its settings were changed. A replaced assembly is not picked up either way, a loaded
+        /// assembly stays in its load context for the lifetime of the process.
         /// </summary>
         public static void Reload()
         {
@@ -125,7 +126,7 @@ namespace ServiceManager.Extensions
 
             try
             {
-                asm = Assembly.LoadFrom(file);
+                asm = new ExtensionLoadContext(Path.GetDirectoryName(file)).LoadFromAssemblyPath(file);
             }
             catch (Exception ex)
             {
@@ -215,6 +216,57 @@ namespace ServiceManager.Extensions
                 return false;
             }
         }
+
+        /// <summary>
+        /// A provider ships its dependencies inside its own folder under extensions\, while the default
+        /// loader only knows the folder of the host. Every extension is therefore read through a context
+        /// of its own that answers from the folder of the provider.
+        /// </summary>
+        private sealed class ExtensionLoadContext : AssemblyLoadContext
+        {
+            private readonly String m_Folder;
+
+
+            public ExtensionLoadContext(String folder)
+                : base("extensions:" + Path.GetFileName(folder))
+            {
+                m_Folder = folder;
+            }
+
+
+            /// <summary>
+            /// Returning null hands the request to the default context, which is what the host assemblies
+            /// and the runtime need: an extension has to implement the interfaces of the running process
+            /// rather than a copy of ServiceManager.Extensions.dll from its own folder.
+            /// </summary>
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                var name = assemblyName?.Name;
+
+                if (String.IsNullOrEmpty(name))
+                {
+                    return null;
+                }
+
+                if (name.StartsWith("ServiceManager", StringComparison.OrdinalIgnoreCase) ||
+                    name.StartsWith("System", StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(name, "mscorlib", StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(name, "netstandard", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                var candidate = Path.Combine(m_Folder, name + ".dll");
+
+                if (!File.Exists(candidate))
+                {
+                    return null;
+                }
+
+                return LoadFromAssemblyPath(candidate);
+            }
+        }
+
 
         public static Extension GetExtension(Guid? id)
         {

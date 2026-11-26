@@ -1,4 +1,4 @@
-﻿using ServiceManager.Base.Data;
+using ServiceManager.Base.Data;
 using ServiceManager.Base.Events;
 using ServiceManager.Base.Wcf.Models;
 using System;
@@ -6,59 +6,76 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using CWC = CoreWCF;
 
 namespace ServiceManager.Base.Wcf
 {
 
+    // The contract carries both attribute sets: CoreWCF on the server only reads its own attributes,
+    // the System.ServiceModel channel of the UI only reads the ones it knows.
     [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(ICallbacks))]
+    [CWC.ServiceContract(SessionMode = CWC.SessionMode.Required, CallbackContract = typeof(ICallbacks))]
     public interface IManagerService
     {
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void Init();
 
         [OperationContract]
+[CWC.OperationContract]
         GetServiceAnalyticsResponse GetServiceAnalytics(Guid serviceId);
 
         [OperationContract]
+[CWC.OperationContract]
         GetServicesAnalyticsResponse GetServicesAnalytics();
 
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void StartService(Guid serviceId);
 
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void RestartService(Guid serviceId);
 
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void ShutdownService(Guid serviceId);
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void ToggleEnable(Guid serviceId);
 
         [OperationContract]
+[CWC.OperationContract]
         GetServiceLogsResponse GetServiceLogs(Guid serviceId);
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void BeginLiveLogs(Guid serviceId);
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void EndLiveLogs(Guid serviceId);
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void SendInput(Guid serviceId, String input);
 
         [OperationContract(IsOneWay = true)]
+[CWC.OperationContract(IsOneWay = true)]
         void ToggleAutoRestart(Guid serviceId);
 
         [OperationContract]
+[CWC.OperationContract]
         void Ping();
 
     }
 
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, AutomaticSessionShutdown = true, ConcurrencyMode = ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = false, UseSynchronizationContext = false)]
+    [CWC.ServiceBehavior(InstanceContextMode = CWC.InstanceContextMode.Single, ConcurrencyMode = CWC.ConcurrencyMode.Multiple, IncludeExceptionDetailInFaults = false, UseSynchronizationContext = false)]
     public class ManagerService : IManagerService
     {
         public ICallbacks CallbackChannel { get; set; }
@@ -67,7 +84,7 @@ namespace ServiceManager.Base.Wcf
 
         public void Init()
         {
-            this.CallbackChannel = OperationContext.Current.GetCallbackChannel<ICallbacks>();
+            this.CallbackChannel = CWC.OperationContext.Current.GetCallbackChannel<ICallbacks>();
         }
 
         public GetServiceAnalyticsResponse GetServiceAnalytics(Guid serviceId)

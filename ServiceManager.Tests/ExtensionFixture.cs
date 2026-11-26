@@ -96,7 +96,7 @@ namespace ServiceManager.Tests
         /// The source factory receives the identity, so a test can compile a twin that shares the Id
         /// of another fixture.
         /// </summary>
-        public static ExtensionFixture Compile(String prefix, Func<Guid, String, String> sourceFactory, Guid? id = null, String name = null, bool copyHostExtensionsAssembly = false)
+        public static ExtensionFixture Compile(String prefix, Func<Guid, String, String> sourceFactory, Guid? id = null, String name = null, bool copyHostExtensionsAssembly = false, bool withPrivateDependency = false)
         {
             var identity = id ?? Guid.NewGuid();
             var extensionName = name ?? prefix + "-" + identity.ToString("N").Substring(0, 8);
@@ -107,7 +107,20 @@ namespace ServiceManager.Tests
 
             var assemblyPath = Path.Combine(folder, extensionName + ".dll");
 
-            Emit(sourceFactory(identity, extensionName), assemblyPath);
+            MetadataReference dependency = null;
+
+            if (withPrivateDependency)
+            {
+                // A release ships the libraries of a provider inside the folder of that provider, so the
+                // loader has to read them from there rather than from the folder of the host.
+                var dependencyPath = Path.Combine(folder, "ProviderHelper.dll");
+
+                Emit(DependencySource, dependencyPath);
+
+                dependency = MetadataReference.CreateFromFile(dependencyPath);
+            }
+
+            Emit(sourceFactory(identity, extensionName), assemblyPath, dependency);
 
             if (copyHostExtensionsAssembly)
             {
@@ -119,15 +132,25 @@ namespace ServiceManager.Tests
             return new ExtensionFixture(folder, assemblyPath, identity, extensionName);
         }
 
-        private static void Emit(String source, String assemblyPath)
+        private static void Emit(String source, String assemblyPath, MetadataReference extraReference = null)
         {
+            // The fixtures are written against the contracts of the runtime they run on, so the compile
+            // needs System.Runtime next to the assemblies of the types the source names directly.
+            var runtimeFolder = Path.GetDirectoryName(typeof(Object).Assembly.Location);
+
             var references = new List<MetadataReference>
             {
                 MetadataReference.CreateFromFile(typeof(Object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                MetadataReference.CreateFromFile(Path.Combine(runtimeFolder, "System.Runtime.dll")),
                 MetadataReference.CreateFromFile(HostExtensionsAssembly.Location),
             };
+
+            if (extraReference != null)
+            {
+                references.Add(extraReference);
+            }
 
             var compilation = CSharpCompilation.Create(
                 Path.GetFileNameWithoutExtension(assemblyPath),
@@ -229,6 +252,29 @@ namespace Fixtures
         {
             return ValidSource(className, id, name, "throw new InvalidOperationException(\"fixture constructor failed\");");
         }
+
+        /// <summary>
+        /// A provider that calls into a library of its own folder. The library is compiled next to the
+        /// extension, which is how a release ships the dependencies of a provider.
+        /// </summary>
+        public static String PrivateDependencySource(String className, Guid id, String name)
+        {
+            return ValidSource(className, id, name, "ProviderHelper.Touch(typeof(" + className + ").Assembly.Location);");
+        }
+
+        private const String DependencySource =
+@"using System;
+
+public static class ProviderHelper
+{
+    public static void Touch(String location)
+    {
+        System.IO.File.AppendAllText(
+            System.IO.Path.Combine(System.IO.Path.GetDirectoryName(location), ""dependency.log""),
+            ""dependency"" + System.Environment.NewLine);
+    }
+}
+";
 
         /// <summary>No public parameterless constructor.</summary>
         public static String NoParameterlessCtorSource(String className, Guid id, String name)

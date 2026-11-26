@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>ServiceManager</RootNamespace>
     <AssemblyName>ServiceManager</AssemblyName>
@@ -14,15 +14,9 @@
     <PostBuildEvent>if exist "$(MSBuildThisFileDirectory)..\ServiceManager.UI\bin\$(Configuration)\extensions" xcopy /y /i /e /q "$(MSBuildThisFileDirectory)..\ServiceManager.UI\bin\$(Configuration)\extensions" "$(TargetDir)extensions\"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceManager.Base\ServiceManager.Base.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 </Project>
