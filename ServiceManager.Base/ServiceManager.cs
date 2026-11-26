@@ -1269,6 +1269,8 @@ namespace ServiceManager.Base
         /// </summary>
         private void Raise(NotificationKind kind, eCallback callback, String text, ServiceItem item = null, String details = null)
         {
+            LogEvent(kind, text);
+
             Events.Publish(new ServiceEvent()
             {
                 Kind = kind,
@@ -1279,6 +1281,48 @@ namespace ServiceManager.Base
                 Details = details,
                 Text = text
             });
+        }
+
+
+        /// <summary>
+        /// Mirrors an event onto the log channel. A Windows service has no console, so the lines saying what
+        /// came up and what went down have to be readable somewhere without a notification provider. The
+        /// wording is the one the providers get, kept on a single row so a reader can go through the file line
+        /// by line. The two console kinds are left out on purpose: they arrive in floods and every service
+        /// has its own capture file for them. The method is visible to the tests because that rule cannot be
+        /// checked through a running process.
+        /// </summary>
+        internal static void LogEvent(NotificationKind kind, String text)
+        {
+            if (kind == NotificationKind.ConsoleOutput || kind == NotificationKind.ConsoleError)
+            {
+                return;
+            }
+
+            var level = eLogLevel.Info;
+
+            if (kind == NotificationKind.ServiceCrashed)
+            {
+                level = eLogLevel.Error;
+            }
+            else if (kind == NotificationKind.DependencyWait)
+            {
+                level = eLogLevel.Warning;
+            }
+
+            SMLog.Write(level, SingleLine(text), null);
+        }
+
+
+        /// <summary>The wording of an event spans several rows, a log line stays one row.</summary>
+        private static String SingleLine(String text)
+        {
+            if (String.IsNullOrEmpty(text))
+            {
+                return "";
+            }
+
+            return text.Replace("\r\n", " | ").Replace('\n', ' ');
         }
 
 

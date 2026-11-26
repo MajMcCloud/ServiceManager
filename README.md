@@ -194,6 +194,13 @@ providers report into a text file instead: one file per day in a `logs` folder n
 line carries its time and a level, and a warning or an error additionally goes into the application event log
 under the source `ServiceManager`. A day file older than fourteen days is dropped once a new day starts.
 
+Alongside those technical messages the log also carries the lifecycle: the instance reports when it starts and
+when it goes down, and every managed application that comes up, stops, crashes or is held back by a dependency
+gets a line of its own. A crash is an error and therefore reaches the event log as well, a dependency that
+holds a service back is a warning, everything else is an information. The lines are the ones the notification
+providers receive, so the log and a Telegram message say the same thing. The console output of the managed
+applications is left out on purpose: it would flood the file and it has its own capture, as described below.
+
 **Manager → Open log** lists those files, newest day first, with warnings in amber and errors in red.
 *Auto refresh* follows the running service, *Open folder* opens the `logs` folder in Explorer.
 

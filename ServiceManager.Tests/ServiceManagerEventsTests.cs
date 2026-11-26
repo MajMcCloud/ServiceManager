@@ -3,9 +3,11 @@ using ServiceManager.Base;
 using ServiceManager.Base.Data;
 using ServiceManager.Base.Events;
 using ServiceManager.Base.Windows;
+using ServiceManager.Extensions;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace ServiceManager.Tests
@@ -22,6 +24,43 @@ namespace ServiceManager.Tests
         private static readonly Guid Child = new Guid("44444444-4444-4444-4444-444444444444");
 
         private static readonly Guid Grandchild = new Guid("55555555-5555-5555-5555-555555555555");
+
+        private String logFolder;
+
+        private String storedPath;
+
+        private bool storedConsole;
+
+        private bool storedEventLog;
+
+
+        [TestInitialize]
+        public void Setup()
+        {
+            storedPath = SMLog.LogPath;
+            storedConsole = SMLog.UseConsole;
+            storedEventLog = SMLog.UseEventLog;
+
+            logFolder = Path.Combine(Path.GetTempPath(), "servicemanager-tests", Guid.NewGuid().ToString("N"));
+
+            SMLog.LogPath = logFolder;
+            SMLog.UseConsole = false;
+            SMLog.UseEventLog = false;
+        }
+
+
+        [TestCleanup]
+        public void Teardown()
+        {
+            SMLog.LogPath = storedPath;
+            SMLog.UseConsole = storedConsole;
+            SMLog.UseEventLog = storedEventLog;
+
+            if (Directory.Exists(logFolder))
+            {
+                Directory.Delete(logFolder, true);
+            }
+        }
 
 
         [TestMethod]
@@ -397,6 +436,110 @@ namespace ServiceManager.Tests
 
             Assert.AreEqual(1, bus.Events.Count, "the instance goes down on its own, the stop levels of the shutdown do the work");
             Assert.AreEqual(Service, bus.Events[0].ServiceId);
+        }
+
+
+        [TestMethod]
+        public void a_service_held_back_for_a_dependency_leaves_a_warning_in_the_log()
+        {
+            var item = new ServiceItem()
+            {
+                ID = Service,
+                Title = "TelegramApi",
+                WindowsDependencies = new List<String>() { "Dhcp" }
+            };
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Analytics = new Analytics();
+            manager.WindowsStatus = new FakeStatus();
+            manager.Events = new RecordingBus();
+
+            manager.StartService(item);
+
+            var lines = File.ReadAllLines(SMLog.GetFiles()[0]);
+
+            Assert.AreEqual(1, lines.Length, "an event is logged once, not once per provider");
+            Assert.IsTrue(lines[0].Contains("] [WARN] Service Manager: TelegramApi | Status: Waiting for Dhcp"), lines[0]);
+        }
+
+
+        [TestMethod]
+        public void a_service_that_ended_on_its_own_leaves_the_crash_in_the_log()
+        {
+            var item = new ServiceItem()
+            {
+                ID = Service,
+                Title = "TelegramApi"
+            };
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(item);
+            manager.Analytics = new Analytics();
+            manager.Events = new RecordingBus();
+
+            manager.PrepareService(item);
+
+            manager.Process_Exited(item, null);
+
+            var lines = File.ReadAllLines(SMLog.GetFiles()[0]);
+
+            Assert.AreEqual(1, lines.Length, "the same line is not written for every provider");
+            Assert.IsTrue(lines[0].Contains("] [ERROR] Service Manager: TelegramApi | Status: Crashed"), lines[0]);
+        }
+
+
+        [TestMethod]
+        public void a_service_the_manager_stopped_leaves_an_information_in_the_log()
+        {
+            var item = new ServiceItem()
+            {
+                ID = Service,
+                Title = "TelegramApi"
+            };
+
+            var manager = new ServiceManager.Base.ServiceManager();
+
+            manager.Config = new ServiceConfig();
+            manager.Config.ServiceList.Add(item);
+            manager.Analytics = new Analytics();
+            manager.Events = new RecordingBus();
+
+            manager.PrepareService(item);
+
+            manager.StopRequests.Mark(item.ID);
+
+            manager.Process_Exited(item, null);
+
+            var lines = File.ReadAllLines(SMLog.GetFiles()[0]);
+
+            Assert.AreEqual(1, lines.Length);
+            Assert.IsTrue(lines[0].Contains("] [INFO] Service Manager: TelegramApi | Status: Stopped"), lines[0]);
+        }
+
+
+        [TestMethod]
+        public void a_console_line_stays_out_of_the_service_log()
+        {
+            ServiceManager.Base.ServiceManager.LogEvent(NotificationKind.ConsoleOutput, "Service Manager: TelegramApi | a line of console output");
+            ServiceManager.Base.ServiceManager.LogEvent(NotificationKind.ConsoleError, "Service Manager: TelegramApi | a line of console errors");
+
+            Assert.AreEqual(0, SMLog.GetFiles().Count, "every service has its own console capture, the log has to stay readable");
+        }
+
+
+        [TestMethod]
+        public void the_manager_itself_leaves_an_information_when_it_starts()
+        {
+            ServiceManager.Base.ServiceManager.LogEvent(NotificationKind.ServerStart, "Service Manager: starting");
+
+            var lines = File.ReadAllLines(SMLog.GetFiles()[0]);
+
+            Assert.AreEqual(1, lines.Length);
+            Assert.IsTrue(lines[0].Contains("] [INFO] Service Manager: starting"), lines[0]);
         }
 
 
