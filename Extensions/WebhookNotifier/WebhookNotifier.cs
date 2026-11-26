@@ -2,9 +2,10 @@ using ServiceManager.Extensions.Interfaces;
 using ServiceManager.Extensions.WebhookNotifier.Forms;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -152,7 +153,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
                 }
                 catch (Exception ex)
                 {
-                    last = ex.Message + " (" + url + ")";
+                    last = Reason(ex) + " (" + url + ")";
                 }
 
                 if (attempt >= attempts)
@@ -164,75 +165,45 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
 
         /// <summary>
-        /// One request, one answer. HttpWebRequest rather than HttpClient: the provider switches the
-        /// certificate check off for this single request only, and a failed status code is answered
-        /// the same way, which is what the notification text is built from.
+        /// One request, one answer. The answer is the status code and the first characters of the body,
+        /// which is what the notification text is built from.
         /// </summary>
         private async Task<KeyValuePair<Int32, String>> Post(String url, String body, String contentType)
         {
-            // WebRequest is obsolete under .NET, but HttpWebRequest is still the request type here
-            // whose certificate callback stops at the request instead of the whole process.
-#pragma warning disable SYSLIB0014
-            var request = (HttpWebRequest)WebRequest.Create(url);
-#pragma warning restore SYSLIB0014
-
-            request.Method = Method();
-            request.ContentType = contentType;
-
             var seconds = __config.TimeoutSeconds <= 0 ? 10 : __config.TimeoutSeconds;
 
-            request.Timeout = seconds * 1000;
-            request.ReadWriteTimeout = seconds * 1000;
+            // The handler is built for this one request: the certificate decision belongs to this
+            // provider, it must neither reach into the whole process nor outlive the settings dialog.
+            var handler = new HttpClientHandler();
 
             if (__config.IgnoreCertificateErrors)
-                request.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+            {
+                handler.ServerCertificateCustomValidationCallback = (message, certificate, chain, errors) => true;
+            }
 
-            ApplyHeaders(request);
-
-            var bytes = Encoding.UTF8.GetBytes(body ?? "");
-
-            request.ContentLength = bytes.Length;
-
-            // Timeout and ReadWriteTimeout bound the synchronous path only. The asynchronous one of
-            // .NET Framework runs on regardless, so a timer aborts the request once the seconds the
-            // user configured are over. Without it a silent endpoint keeps the event waiting forever.
+            // A silent endpoint must not keep the event waiting forever, so the seconds the user
+            // configured bound the request and the answer of the endpoint.
             using (var deadline = new CancellationTokenSource(seconds * 1000))
-            using (deadline.Token.Register(() =>
+            using (var client = new HttpClient(handler, true))
+            using (var request = new HttpRequestMessage(new HttpMethod(Method()), url))
             {
-                try { request.Abort(); }
-                catch { } // an abort of a request that finished in the meantime means nothing
-            }))
-            {
+                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body ?? ""));
+                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+
+                ApplyHeaders(request);
+
                 try
                 {
-                    using (var stream = await request.GetRequestStreamAsync().ConfigureAwait(false))
+                    using (var answer = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false))
                     {
-                        await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                    }
+                        var read = await Read(answer, deadline.Token).ConfigureAwait(false);
 
-                    try
-                    {
-                        using (var answer = (HttpWebResponse)await request.GetResponseAsync().ConfigureAwait(false))
-                        {
-                            return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
-                        }
-                    }
-                    catch (WebException ex)
-                    {
-                        var answer = ex.Response as HttpWebResponse;
-
-                        if (answer == null)
-                            throw; // nothing answered at all: timeout, unknown host, connection refused
-
-                        using (answer)
-                        {
-                            return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, Read(answer));
-                        }
+                        return new KeyValuePair<Int32, String>((Int32)answer.StatusCode, read);
                     }
                 }
                 catch (Exception ex) when (deadline.IsCancellationRequested)
                 {
-                    // The abort of our own timer is the one thing the user wants to hear about by name.
+                    // The expiry of our own timer is the one thing the user wants to hear about by name.
                     throw new TimeoutException("no answer within " + seconds + " seconds", ex);
                 }
             }
@@ -248,73 +219,123 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
 
         /// <summary>
-        /// The headers the user typed. HttpWebRequest keeps a few names for itself, those belong in
-        /// the property made for them instead of the header table.
+        /// The headers the user typed. A name HttpClient keeps for itself is refused, and so is a body
+        /// header on the request line: both answer with one of our own messages rather than leaving a
+        /// HTTP one to the caller.
         /// </summary>
-        private void ApplyHeaders(HttpWebRequest request)
+        private void ApplyHeaders(HttpRequestMessage request)
         {
             foreach (var line in HeaderLines())
             {
                 var separator = line.IndexOf(':');
 
                 if (separator <= 0)
+                {
                     continue;
+                }
 
                 var name = line.Substring(0, separator).Trim();
                 var value = line.Substring(separator + 1).Trim();
 
                 // The content type of the settings is the one the body is sent with.
                 if (String.Equals(name, "content-type", StringComparison.OrdinalIgnoreCase))
+                {
                     continue;
-
-                try
-                {
-                    request.Headers[name] = value;
                 }
-                catch (ArgumentException)
+
+                // A body header belongs to the content of the request, everything else to the request.
+                HttpHeaders headers = name.StartsWith("content-", StringComparison.OrdinalIgnoreCase)
+                    ? request.Content.Headers
+                    : request.Headers;
+
+                if (!headers.TryAddWithoutValidation(name, value))
                 {
-                    switch (name.ToLowerInvariant())
-                    {
-                        case "accept":
-                            request.Accept = value;
-                            break;
-
-                        case "user-agent":
-                            request.UserAgent = value;
-                            break;
-
-                        case "referer":
-                            request.Referer = value;
-                            break;
-
-                        case "connection":
-                            request.Connection = value;
-                            break;
-
-                        default:
-                            throw new InvalidOperationException("The header \"" + name + "\" cannot be sent this way.");
-                    }
+                    throw new InvalidOperationException("The header \"" + name + "\" cannot be sent this way.");
                 }
             }
         }
 
 
-        private static String Read(HttpWebResponse answer)
+        /// <summary>
+        /// The first characters of the answer. A receiver that answers with a whole page must not fill
+        /// the console, and one that sends its headers and then stalls the body runs into the same
+        /// deadline as the request itself.
+        /// </summary>
+        private static async Task<String> Read(HttpResponseMessage answer, CancellationToken deadline)
         {
             try
             {
-                using (var reader = new StreamReader(answer.GetResponseStream(), Encoding.UTF8))
+                using (var stream = await answer.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 {
-                    // A receiver that answers with a whole page must not fill the console.
-                    var buffer = new char[AnswerLimit + 1];
-                    var read = reader.ReadBlock(buffer, 0, buffer.Length);
+                    var bytes = new Byte[AnswerLimit * 3 + 1];
+                    var total = 0;
 
-                    return new String(buffer, 0, read);
+                    while (total < bytes.Length)
+                    {
+                        var read = await stream.ReadAsync(bytes.AsMemory(total, bytes.Length - total), deadline).ConfigureAwait(false);
+
+                        if (read == 0)
+                        {
+                            break;
+                        }
+
+                        total += read;
+                    }
+
+                    return Encoding.UTF8.GetString(bytes.AsSpan(0, total));
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is OperationCanceledException))
             {
                 return "the answer could not be read: " + ex.Message;
+            }
+        }
+
+
+        /// <summary>
+        /// What the user reads when the request never arrived. HttpClient passes the wording of the
+        /// socket layer on, and that one arrives in the language of the machine, so the ways an
+        /// endpoint actually fails are named here instead.
+        /// </summary>
+        private static String Reason(Exception ex)
+        {
+            var request = ex as HttpRequestException;
+
+            if (request == null)
+            {
+                return ex.Message;
+            }
+
+            var socket = request.InnerException as SocketException;
+
+            if (socket == null)
+            {
+                // The HTTP stack explains the rest on its own: an answer that stops, a certificate
+                // that is not trusted.
+                if (request.InnerException == null)
+                {
+                    return request.Message;
+                }
+
+                return request.InnerException.Message;
+            }
+
+            switch (socket.SocketErrorCode)
+            {
+                case SocketError.HostNotFound:
+                case SocketError.HostUnreachable:
+                case SocketError.TryAgain:
+                    return "the endpoint name could not be resolved";
+
+                case SocketError.ConnectionRefused:
+                    return "the endpoint refused the connection";
+
+                case SocketError.NetworkDown:
+                case SocketError.NetworkUnreachable:
+                    return "the endpoint is not reachable from this machine";
+
+                default:
+                    return "the endpoint could not be reached: " + socket.SocketErrorCode;
             }
         }
 
