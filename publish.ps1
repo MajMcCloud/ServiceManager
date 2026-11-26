@@ -16,14 +16,20 @@
 	locked DLL while the UI runs. Temp is created fresh, so it cannot hold foreign files either, and it
 	is removed again once the ZIP is written.
 
+	Two kinds of package come out of the script. The framework dependent one is small but needs the
+	.NET 11 Desktop runtime and the ASP.NET Core runtime on the target machine. Every runtime identifier
+	given with -Runtime adds a self contained package that carries its own runtime, so it runs on a
+	machine without any .NET installation.
+
 	Steps:
 	  1. ask for the version (or use -Version)
-	  2. msbuild /t:Restore + /t:Build /p:Configuration=Release /p:SMVersion=<version> /p:OutDir=Temp
+	  2. dotnet restore + dotnet build -c Release -p:SMVersion=<version> -p:OutDir=Temp
 	  3. assemble publish\ (UI output + extensions\<every provider>)
-	  4. check the version of the finished parts
-	  5. ZIP + RELEASE-NOTES.md (new features, changes, bug fixes)
-	  6. delete Temp
-	  7. print the next steps (committing and tagging is up to the developer)
+	  4. publish one self contained folder per runtime identifier
+	  5. check the version of every package
+	  6. RELEASE-NOTES.md + one ZIP per package
+	  7. delete Temp
+	  8. print the next steps (committing and tagging is up to the developer)
 
 .PARAMETER Version
 	Four part version, e.g. 2.1.0.0. Without the parameter the script asks for it.
@@ -31,8 +37,15 @@
 .PARAMETER Persist
 	Write the version into version.props as well, so Visual Studio and CI build the same number.
 
+.PARAMETER Runtime
+	One or more runtime identifiers, win-x64 by default. Every identifier adds a self contained package
+	that carries its own runtime, so the target machine needs no .NET installation.
+
+.PARAMETER SkipSelfContained
+	Leave the self contained packages out and ship the framework dependent one only.
+
 .PARAMETER SkipPdb
-	Leave the .pdb files out of publish\ and the ZIP.
+	Leave the .pdb files out of publish\ and the ZIPs.
 
 .PARAMETER SkipBuild
 	Reuse the last build from the bin folders of the projects instead of building into Temp.
@@ -45,14 +58,17 @@
 	.\publish.ps1
 	.\publish.ps1 -Version 2.1.0.0 -Persist
 	.\publish.ps1 -SkipPdb
-	.\publish.ps1 -Version 2.1.0.1 -SkipBuild -Strict   # this is how the CI uses the script
+	.\publish.ps1 -Runtime win-x64,win-arm64
+	.\publish.ps1 -Version 2.1.0.1 -Runtime win-x64,win-arm64 -SkipBuild -Strict   # this is how the CI uses the script
 #>
 [CmdletBinding()]
 param(
 	[String]$Version,
+	[String[]]$Runtime = @('win-x64'),
 	[Switch]$Persist,
 	[Switch]$SkipPdb,
 	[Switch]$SkipBuild,
+	[Switch]$SkipSelfContained,
 	[Switch]$Strict
 )
 
@@ -64,6 +80,12 @@ $Publish   = Join-Path $Root 'publish'
 $Temp      = Join-Path $Root 'Temp'
 $Config    = 'Release'
 $PropsFile = Join-Path $Root 'version.props'
+
+# The CI hands the identifiers over in one environment variable, so a single string with commas
+# has to become the list the rest of the script works with.
+$Runtime = @($Runtime | ForEach-Object { $_ -split '[,\s]+' } | Where-Object { $_ })
+
+if (-not $Runtime) { $Runtime = @('win-x64') }
 
 $UiProject      = Join-Path $Root 'ServiceManager.UI'
 $ServiceProject = Join-Path $Root 'ServiceManager.Service'
@@ -97,9 +119,12 @@ $UiRelease      = if ($BuildRoot) { Join-Path $BuildRoot 'ServiceManager.UI' }  
 $ServiceRelease = if ($BuildRoot) { Join-Path $BuildRoot 'ServiceManager.Service' } else { Join-Path $ServiceProject "bin\$Config" }
 
 
-# ClickOnce leftovers and runtime debris have no place in a deployment.
-$ExcludeDirs  = @('app.publish', 'logs')
+# ClickOnce leftovers and runtime debris have no place in a deployment. The extensions get
+# their folder through their own loop, and a RID publish leaves bin\<Config>\<rid> behind,
+# which belongs to the self contained package only.
+$ExcludeDirs  = @('app.publish', 'logs', 'extensions')
 $ExcludeFiles = @('ConfigBase.dll', 'ConfigBase.pdb', 'errors.txt')
+$ExcludeRids  = '(win|linux|osx|browser)-[a-z0-9-]+'
 
 
 # --------------------------------------------------------------------------------------
@@ -112,25 +137,62 @@ function Write-Step([String]$text)
 	Write-Host "== $text" -ForegroundColor Cyan
 }
 
-function Find-MsBuild
+# The loader only looks under <BaseDirectory>\extensions\<folder>, so every package needs the providers.
+function Copy-Extensions([String]$Target)
 {
-	$vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+	$count = 0
 
-	if (Test-Path $vswhere)
+	foreach ($extension in $ExtensionProjects)
 	{
-		$found = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' |
-				 Select-Object -First 1
+		$folder = Join-Path $Target "extensions\$($extension.Folder)"
 
-		if ($found) { return $found }
+		New-Item $folder -ItemType Directory -Force | Out-Null
+
+		Get-ChildItem $extension.Release -File |
+			Where-Object { $_.Extension -ne '.pdb' -or -not $SkipPdb } |
+			ForEach-Object { Copy-Item $_.FullName (Join-Path $folder $_.Name); $count++ }
+
+		Write-Host "  Provider: extensions\$($extension.Folder)"
 	}
 
-	foreach ($candidate in @('C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe',
-							 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe'))
+	return $count
+}
+
+# Returns $true as soon as a part of the package does not carry the version of the release.
+function Test-PackageVersions([String]$Folder)
+{
+	$checked  = @()
+	$mismatch = $false
+
+	$packageFiles = @('ServiceManager.UI.exe', 'ServiceManager.exe', 'ServiceManager.Extensions.dll',
+						'ServiceManager.Base.dll', 'ServiceManager.ConfigBase.dll')
+
+	$packageFiles += $ExtensionProjects | ForEach-Object { "extensions\$($_.Folder)\$($_.Dll)" }
+
+	foreach ($file in $packageFiles)
 	{
-		if (Test-Path $candidate) { return $candidate }
+		$path = Join-Path $Folder $file
+
+		if (-not (Test-Path $path))
+		{
+			Write-Host "  missing in the package: $file" -ForegroundColor Red
+			$mismatch = $true
+			continue
+		}
+
+		$info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($path)
+
+		if ($info.FileVersion -ne $Version) { $mismatch = $true }
+
+		$checked += [PSCustomObject]@{
+			Name    = Split-Path $file -Leaf
+			Version = $info.FileVersion
+		}
 	}
 
-	throw 'MSBuild not found. Start the script from a Developer Command Prompt or install Visual Studio.'
+	$checked | Format-Table -AutoSize | Out-String | Write-Host
+
+	return $mismatch
 }
 
 function Get-DefaultVersion
@@ -231,7 +293,7 @@ Write-Host "  version.props:`t$default"
 
 if ($lastTag) { Write-Host "  last tag:`t$lastTag" }
 
-Write-Host '  Note: the version is a build parameter (/p:SMVersion), not a file change per release.'
+Write-Host '  Note: the version is a build parameter (-p:SMVersion), not a file change per release.'
 
 if (-not $Version)
 {
@@ -277,11 +339,9 @@ else
 
 	New-Item $Temp -ItemType Directory | Out-Null
 
-	$msbuild = Find-MsBuild
+	Write-Step 'Restore'
 
-	Write-Step "Restore ($msbuild)"
-
-	& $msbuild $Solution /t:Restore "/p:Configuration=$Config" "/p:SMVersion=$Version" /v:minimal /nologo
+	& dotnet restore $Solution "/p:SMVersion=$Version" -v minimal --nologo
 
 	if ($LASTEXITCODE -ne 0) { throw "Restore failed (exit $LASTEXITCODE)" }
 
@@ -289,7 +349,7 @@ else
 
 	# OutDir is a global property, so it wins over the OutputPath of every project, and
 	# GenerateProjectSpecificOutputFolder turns it into one folder per project below Temp.
-	& $msbuild $Solution /t:Build "/p:Configuration=$Config" "/p:SMVersion=$Version" "/p:OutDir=$Temp" /p:GenerateProjectSpecificOutputFolder=true /v:minimal /nologo
+	& dotnet build $Solution -c $Config --no-restore "/p:SMVersion=$Version" "/p:OutDir=$Temp" -p:GenerateProjectSpecificOutputFolder=true -v minimal --nologo
 
 	if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE)" }
 }
@@ -319,7 +379,8 @@ Get-ChildItem $UiRelease -Recurse -File |
 		($_.Name -notin $ExcludeFiles) -and
 		($_.Name -notlike '*.application') -and
 		($_.Name -notlike '*.manifest') -and
-		($_.FullName -notmatch '\\(' + ($ExcludeDirs -join '|') + '\\)')
+		($_.FullName -notmatch '\\(' + ($ExcludeDirs -join '|') + '\\)') -and
+		($_.FullName -notmatch '\\(' + $ExcludeRids + '\\)')
 	} |
 	ForEach-Object {
 		$target = $_.FullName.Replace($UiRelease, $Publish)
@@ -330,19 +391,7 @@ Get-ChildItem $UiRelease -Recurse -File |
 		$copied++
 	}
 
-# Every provider belongs in <BaseDirectory>\extensions\<folder>, that is the only place the loader finds it.
-foreach ($extension in $ExtensionProjects)
-{
-	$ExtTarget = Join-Path $Publish "extensions\$($extension.Folder)"
-
-	New-Item $ExtTarget -ItemType Directory -Force | Out-Null
-
-	Get-ChildItem $extension.Release -File |
-		Where-Object { $_.Extension -ne '.pdb' -or -not $SkipPdb } |
-		ForEach-Object { Copy-Item $_.FullName (Join-Path $ExtTarget $_.Name); $copied++ }
-
-	Write-Host "  Provider: extensions\$($extension.Folder)"
-}
+$copied += Copy-Extensions $Publish
 
 Write-Host "  $copied files copied"
 
@@ -351,58 +400,77 @@ if (Test-Path $ServiceRelease)
 	Write-Host "  The service output is already inside publish\ through the UI reference, own folder: $($ServiceRelease.Substring($Root.Length + 1))"
 }
 
+$Packages = @([PSCustomObject]@{ Label = 'framework dependent'; Rid = $null; Folder = $Publish })
+
 
 # --------------------------------------------------------------------------------------
-# 4. Check the version of the parts
+# 4. Self contained packages
 # --------------------------------------------------------------------------------------
 
-Write-Step 'File versions inside the package'
-
-$checked = @()
-$mismatch = $false
-
-$packageFiles = @('ServiceManager.UI.exe', 'ServiceManager.exe', 'ServiceManager.Extensions.dll',
-					'ServiceManager.Base.dll', 'ServiceManager.ConfigBase.dll')
-
-$packageFiles += $ExtensionProjects | ForEach-Object { "extensions\$($_.Folder)\$($_.Dll)" }
-
-foreach ($file in $packageFiles)
+if ($SkipSelfContained)
 {
-	$path = Join-Path $Publish $file
-
-	if (-not (Test-Path $path))
-	{
-		Write-Host "  missing in the package: $file" -ForegroundColor Red
-		$mismatch = $true
-		continue
-	}
-
-	$info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($path)
-
-	if ($info.FileVersion -ne $Version) { $mismatch = $true }
-
-	$checked += [PSCustomObject]@{
-		Name    = Split-Path $file -Leaf
-		Version = $info.FileVersion
-	}
-}
-
-$checked | Format-Table -AutoSize | Out-String | Write-Host
-
-if ($mismatch)
-{
-	if ($Strict) { throw "At least one part does not carry $Version - package discarded." }
-
-	Write-Host "  warning: at least one file does not carry $Version." -ForegroundColor Yellow
+	Write-Step 'Self contained packages skipped'
 }
 else
 {
-	Write-Host "  every part carries $Version" -ForegroundColor Green
+	Write-Step "Publishing self contained ($($Runtime -join ', '))"
+
+	$UiProjectFile = Join-Path $UiProject 'ServiceManager.UI.csproj'
+
+	foreach ($rid in $Runtime)
+	{
+		$selfOut = Join-Path $Temp "self\$rid"
+
+		if (Test-Path $selfOut) { Remove-Item $selfOut -Recurse -Force }
+
+		# A RID publish of the UI project pulls the service in through the project reference and adds
+		# the whole runtime, so the folder runs on a machine without any .NET installation.
+		& dotnet publish $UiProjectFile -c $Config -r $rid --self-contained "/p:SMVersion=$Version" -o $selfOut -v minimal --nologo
+
+		if ($LASTEXITCODE -ne 0) { throw "Self contained publish for $rid failed (exit $LASTEXITCODE)" }
+
+		# The providers sit outside the reference tree of the UI, the loader only finds them under extensions\.
+		$null = Copy-Extensions $selfOut
+
+		if ($SkipPdb)
+		{
+			Get-ChildItem $selfOut -Recurse -Filter '*.pdb' -File | Remove-Item -Force
+		}
+
+		$Packages += [PSCustomObject]@{ Label = $rid; Rid = $rid; Folder = $selfOut }
+	}
 }
 
 
 # --------------------------------------------------------------------------------------
-# 5. Release notes + ZIP
+# 5. Check the version of the parts
+# --------------------------------------------------------------------------------------
+
+Write-Step 'File versions inside the packages'
+
+$mismatchPackages = @()
+
+foreach ($package in $Packages)
+{
+	Write-Host "  package: $($package.Label)" -ForegroundColor White
+
+	if (Test-PackageVersions $package.Folder) { $mismatchPackages += $package.Label }
+}
+
+if ($mismatchPackages)
+{
+	if ($Strict) { throw "At least one part does not carry $Version - package discarded." }
+
+	Write-Host "  warning: a file does not carry $Version in: $($mismatchPackages -join ', ')" -ForegroundColor Yellow
+}
+else
+{
+	Write-Host "  every part of every package carries $Version" -ForegroundColor Green
+}
+
+
+# --------------------------------------------------------------------------------------
+# 6. Release notes and one ZIP per package
 # --------------------------------------------------------------------------------------
 
 Write-Step 'Release notes'
@@ -417,7 +485,7 @@ $groups = Split-ChangeLog $subjects
 $notes = @(
     "## ServiceManager $Version",
     '',
-    "As of: $date - commit $sha - .NET Framework 4.8",
+    "As of: $date - commit $sha - .NET 11",
     ''
 )
 
@@ -438,10 +506,11 @@ if ($subjects.Count -eq 0)
 $notes += @(
     '### Deployment',
     '',
-    '1. Unpack the ZIP into a single folder, e.g. C:\Program Files\ServiceManager.',
-    '2. Start ServiceManager.UI.exe as an administrator.',
-    '3. Install the service: the UI dialog uses <start path>\ServiceManager.exe, both programs have to stay in the same folder.',
-    '4. Every provider keeps its settings in extensions\<folder>\settings.cfg.',
+    '1. Pick a package: the one without a runtime identifier needs the .NET 11 Desktop runtime and the ASP.NET Core runtime, the ones with a runtime identifier carry their own runtime and need no installation.',
+    '2. Unpack the ZIP into a single folder, e.g. C:\Program Files\ServiceManager.',
+    '3. Start ServiceManager.UI.exe as an administrator.',
+    '4. Install the service: the UI dialog uses <start path>\ServiceManager.exe, both programs have to stay in the same folder.',
+    '5. Every provider keeps its settings in extensions\<folder>\settings.cfg.',
     '',
     '### Tag',
     '',
@@ -458,19 +527,27 @@ $notesFile = Join-Path $Publish 'RELEASE-NOTES.md'
 
 Write-Host '  written: publish\RELEASE-NOTES.md'
 
-$zip = Join-Path $Root "ServiceManager-$Version.zip"
+$zipNames = @()
 
-if (Test-Path $zip) { Remove-Item $zip -Force }
+foreach ($package in $Packages)
+{
+	$name = if ($package.Rid) { "ServiceManager-$Version-$($package.Rid).zip" } else { "ServiceManager-$Version.zip" }
+	$zip  = Join-Path $Root $name
 
-Compress-Archive -Path (Join-Path $Publish '*') -DestinationPath $zip -CompressionLevel Optimal
+	if (Test-Path $zip) { Remove-Item $zip -Force }
 
-$size = [Math]::Round((Get-Item $zip).Length / 1MB, 2)
+	Compress-Archive -Path (Join-Path $package.Folder '*') -DestinationPath $zip -CompressionLevel Optimal
 
-Write-Host "  package: $([IO.Path]::GetFileName($zip)) ($size MB)"
+	$size = [Math]::Round((Get-Item $zip).Length / 1MB, 2)
+
+	Write-Host "  package: $name ($size MB)"
+
+	$zipNames += $name
+}
 
 
 # --------------------------------------------------------------------------------------
-# 6. Remove Temp
+# 7. Remove Temp
 # --------------------------------------------------------------------------------------
 
 Write-Step 'Cleaning up'
@@ -483,7 +560,7 @@ if (Test-Path $Temp)
 
 
 # --------------------------------------------------------------------------------------
-# 7. Next steps
+# 8. Next steps
 # --------------------------------------------------------------------------------------
 
 Write-Step 'Next steps'
@@ -499,7 +576,7 @@ $persistHint
 	   Tag:          v$Version
 	   Title:        what the release brings, e.g. "Multiple notification providers"
 	   Description:  the content of publish\RELEASE-NOTES.md
-	   Asset:        ServiceManager-$Version.zip
+	   Assets:       $($zipNames -join ', ')
 "@
 
 Write-Host ''
