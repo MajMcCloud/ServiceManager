@@ -85,6 +85,7 @@ namespace ServiceManager.UI.Forms
             // 
             this.tsmiLog_Refresh.ForeColor = System.Drawing.Color.Black;
             this.tsmiLog_Refresh.Name = "tsmiLog_Refresh";
+            this.tsmiLog_Refresh.ShortcutKeys = System.Windows.Forms.Keys.F5;
             this.tsmiLog_Refresh.Size = new System.Drawing.Size(150, 22);
             this.tsmiLog_Refresh.Text = "Reload";
             this.tsmiLog_Refresh.Click += new System.EventHandler(this.tsmiLog_Refresh_Click);

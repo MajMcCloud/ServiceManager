@@ -202,7 +202,8 @@ providers receive, so the log and a Telegram message say the same thing. The con
 applications is left out on purpose: it would flood the file and it has its own capture, as described below.
 
 **Manager → Open log** lists those files, newest day first, with warnings in amber and errors in red.
-*Auto refresh* follows the running service, *Open folder* opens the `logs` folder in Explorer.
+*Reload* (F5) reads the folder and the open day again, *Auto refresh* follows the running service every two
+seconds, *Open folder* opens the `logs` folder in Explorer.
 
 The console output of a managed application is captured separately and stored under `logs\<id>\`.
 See [Service Settings - Logging](#service-settings---logging).
