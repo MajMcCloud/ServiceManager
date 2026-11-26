@@ -4,6 +4,7 @@ using ServiceManager.Base.Data.Settings;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace ServiceManager.Base.Wcf
 {
@@ -41,14 +42,16 @@ namespace ServiceManager.Base.Wcf
             this.AllowAdministrators = AllowAdministrators;
         }
 
-        public override bool CheckAccess(OperationContext operationContext, ref Message request)
+        public override ValueTask<(bool, Message)> CheckAccessAsync(OperationContext operationContext, Message request)
         {
             if (operationContext == null || operationContext.ServiceSecurityContext == null)
             {
-                return false;
+                return new ValueTask<(bool, Message)>((false, request));
             }
 
-            return IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, this.AllowAdministrators);
+            bool allowed = IsAllowed(operationContext.ServiceSecurityContext.WindowsIdentity, this.Users, this.AllowAdministrators);
+
+            return new ValueTask<(bool, Message)>((allowed, request));
         }
 
         /// <summary>

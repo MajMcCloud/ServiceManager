@@ -156,7 +156,9 @@ namespace ServiceManager.Tests
 
             var request = Message.CreateMessage(MessageVersion.Soap12, "urn:servicemanager:Init");
 
-            Assert.IsFalse(manager.CheckAccess(null, ref request));
+            var (allowed, _) = manager.CheckAccessAsync(null, request).Result;
+
+            Assert.IsFalse(allowed);
         }
 
         [TestMethod]

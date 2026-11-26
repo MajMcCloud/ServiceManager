@@ -2,6 +2,7 @@ using CoreWCF;
 using CoreWCF.Channels;
 using System;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace ServiceManager.Base.Wcf
 {
@@ -11,14 +12,16 @@ namespace ServiceManager.Base.Wcf
     /// </summary>
     public class AdministratorAuthorizationManager : ServiceAuthorizationManager
     {
-        public override bool CheckAccess(OperationContext operationContext, ref Message request)
+        public override ValueTask<(bool, Message)> CheckAccessAsync(OperationContext operationContext, Message request)
         {
             if (operationContext == null || operationContext.ServiceSecurityContext == null)
             {
-                return false;
+                return new ValueTask<(bool, Message)>((false, request));
             }
 
-            return IsAdministrator(operationContext.ServiceSecurityContext.WindowsIdentity);
+            bool allowed = IsAdministrator(operationContext.ServiceSecurityContext.WindowsIdentity);
+
+            return new ValueTask<(bool, Message)>((allowed, request));
         }
 
         /// <summary>

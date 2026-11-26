@@ -164,13 +164,17 @@ namespace ServiceManager.Extensions.WebhookNotifier
 
 
         /// <summary>
-        /// One request, one answer. HttpWebRequest rather than HttpClient: .NET Framework only offers
-        /// the certificate callback per request here, while the one of ServicePointManager is process
-        /// wide and would also switch off the checks of every other provider.
+        /// One request, one answer. HttpWebRequest rather than HttpClient: the provider switches the
+        /// certificate check off for this single request only, and a failed status code is answered
+        /// the same way, which is what the notification text is built from.
         /// </summary>
         private async Task<KeyValuePair<Int32, String>> Post(String url, String body, String contentType)
         {
+            // WebRequest is obsolete under .NET, but HttpWebRequest is still the request type here
+            // whose certificate callback stops at the request instead of the whole process.
+#pragma warning disable SYSLIB0014
             var request = (HttpWebRequest)WebRequest.Create(url);
+#pragma warning restore SYSLIB0014
 
             request.Method = Method();
             request.ContentType = contentType;

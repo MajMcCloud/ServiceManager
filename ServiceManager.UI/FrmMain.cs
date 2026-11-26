@@ -1129,7 +1129,7 @@ namespace ServiceManager.UI
 
                 tmRefresh_Tick(null, null);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
 
                 if (MessageBox.Show("Service can not be stopped. Kill process ?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)

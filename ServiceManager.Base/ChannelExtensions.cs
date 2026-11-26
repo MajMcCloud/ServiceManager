@@ -28,7 +28,7 @@ namespace ServiceManager.Base
 
                 t.Wait();
             }
-            catch(CommunicationObjectAbortedException ex)
+            catch(CommunicationObjectAbortedException)
             {
                 channel.Failed = true;
             }
