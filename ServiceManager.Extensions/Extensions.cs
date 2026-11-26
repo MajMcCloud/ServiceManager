@@ -60,7 +60,7 @@ namespace ServiceManager.Extensions
 
                     if (lst.Any(a => a.Id == extension.Id))
                     {
-                        Console.WriteLine($"Extension \"{extension.Name}\" skipped: the Id {extension.Id} is already registered");
+                        SMLog.Warning($"Extension \"{extension.Name}\" skipped: the Id {extension.Id} is already registered");
                         continue;
                     }
 
@@ -109,7 +109,7 @@ namespace ServiceManager.Extensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Extension \"{file}\" could not be read: {ex.Message}");
+                SMLog.Error($"Extension \"{file}\" could not be read", ex);
                 return null;
             }
 
@@ -130,7 +130,7 @@ namespace ServiceManager.Extensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Extension \"{file}\" could not be loaded: {ex.Message}");
+                SMLog.Error($"Extension \"{file}\" could not be loaded", ex);
                 return null;
             }
 
@@ -142,14 +142,14 @@ namespace ServiceManager.Extensions
 
                 if (type.GetConstructor(Type.EmptyTypes) == null)
                 {
-                    Console.WriteLine($"Extension \"{file}\" skipped: {type.FullName} has no public parameterless constructor");
+                    SMLog.Warning($"Extension \"{file}\" skipped: {type.FullName} has no public parameterless constructor");
                     return null;
                 }
 
                 var instance = Activator.CreateInstance(type) as INotificationExtension;
                 if (instance == null)
                 {
-                    Console.WriteLine($"Extension \"{file}\" skipped: {type.FullName} implements the INotificationExtension of another ServiceManager.Extensions.dll");
+                    SMLog.Warning($"Extension \"{file}\" skipped: {type.FullName} implements the INotificationExtension of another ServiceManager.Extensions.dll");
                     return null;
                 }
 
@@ -165,7 +165,7 @@ namespace ServiceManager.Extensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Extension \"{file}\" skipped: {ex.Message}");
+                SMLog.Error($"Extension \"{file}\" skipped", ex);
                 return null;
             }
         }
@@ -287,9 +287,9 @@ namespace ServiceManager.Extensions
 
                     task.GetAwaiter().GetResult();
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    SMLog.Error($"Notification \"{pluginId}\" failed", ex);
                 }
 
             });
@@ -341,7 +341,7 @@ namespace ServiceManager.Extensions
                 {
                     var name = extension != null ? extension.Name : id.ToString();
 
-                    Console.WriteLine($"Notification \"{name}\" failed: {ex.Message}");
+                    SMLog.Error($"Notification \"{name}\" failed", ex);
                 }
             }
         }

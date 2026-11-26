@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ServiceManager.Base.Data;
+using ServiceManager.Extensions;
 
 namespace ServiceManager.Base.Windows
 {
@@ -437,7 +438,7 @@ namespace ServiceManager.Base.Windows
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("ServiceManager: the output of the process was lost: " + ex.Message);
+                    SMLog.Warning("ServiceManager: the output of the process was lost", ex);
                 }
             });
         }

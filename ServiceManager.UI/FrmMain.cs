@@ -1282,6 +1282,12 @@ namespace ServiceManager.UI
             frm.ShowDialog();
         }
 
+        private void rmiManager_OpenLog_Click(object sender, EventArgs e)
+        {
+            var frm = new FrmServiceLog();
+            frm.ShowDialog();
+        }
+
         private void rmiManager_Close_Click(object sender, EventArgs e)
         {
             this.Close();

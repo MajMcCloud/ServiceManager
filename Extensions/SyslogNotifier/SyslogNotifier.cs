@@ -53,7 +53,7 @@ namespace ServiceManager.Extensions.SyslogNotifier
             var error = await __sender.Deliver(message).ConfigureAwait(false);
 
             if (error != null)
-                Console.WriteLine("SyslogNotifier: " + error);
+                SMLog.Warning("SyslogNotifier: " + error);
         }
 
 

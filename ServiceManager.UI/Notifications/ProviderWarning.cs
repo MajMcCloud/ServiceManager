@@ -28,7 +28,7 @@ namespace ServiceManager.UI.Notifications
             catch (Exception ex)
             {
                 // A provider that cannot answer its own settings is not a reason to lose the dialog.
-                Console.WriteLine("ProviderWarning: " + ex.Message);
+                SMLog.Warning("ProviderWarning: the settings check of a provider failed", ex);
 
                 return new String[0];
             }

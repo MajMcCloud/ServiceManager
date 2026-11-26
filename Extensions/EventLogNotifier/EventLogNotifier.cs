@@ -74,7 +74,7 @@ namespace ServiceManager.Extensions.EventLogNotifier
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"EventLogNotifier could not write to \"{__config.EventLog}\": {ex.Message}");
+                    SMLog.Warning($"EventLogNotifier could not write to \"{__config.EventLog}\"", ex);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace ServiceManager.Extensions.EventLogNotifier
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"EventLogNotifier could not show a balloon tip: {ex.Message}");
+                    SMLog.Warning("EventLogNotifier could not show a balloon tip", ex);
                 }
             }
 

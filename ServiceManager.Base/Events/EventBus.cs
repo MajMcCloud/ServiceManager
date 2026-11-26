@@ -1,3 +1,4 @@
+using ServiceManager.Extensions;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -161,7 +162,7 @@ namespace ServiceManager.Base.Events
             //One line for the whole run, a flood is not worth one line per event.
             if (total == 1)
             {
-                Console.WriteLine("ServiceManager: " + LogHighWaterMark + " log lines are waiting, further log lines are dropped.");
+                SMLog.Warning("ServiceManager: " + LogHighWaterMark + " log lines are waiting, further log lines are dropped.");
             }
         }
 
@@ -224,7 +225,7 @@ namespace ServiceManager.Base.Events
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("ServiceManager: an event subscriber failed: " + ex.Message);
+                    SMLog.Error("ServiceManager: an event subscriber failed", ex);
                 }
             }
         }

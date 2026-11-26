@@ -1,3 +1,4 @@
+using ServiceManager.Extensions;
 using System;
 using System.Security.Principal;
 
@@ -37,7 +38,7 @@ namespace ServiceManager.Base.Windows
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ServiceManager: the own account could not be read: " + ex.Message);
+                SMLog.Warning("ServiceManager: the own account could not be read", ex);
 
                 return false;
             }

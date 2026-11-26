@@ -53,7 +53,7 @@ namespace ServiceManager.Extensions.ScriptNotifier
             var error = await __runner.Deliver(message).ConfigureAwait(false);
 
             if (error != null)
-                Console.WriteLine("ScriptNotifier: " + error);
+                SMLog.Warning("ScriptNotifier: " + error);
         }
 
 

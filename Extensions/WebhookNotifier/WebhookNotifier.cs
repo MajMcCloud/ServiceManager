@@ -72,7 +72,7 @@ namespace ServiceManager.Extensions.WebhookNotifier
             var error = await Deliver(message).ConfigureAwait(false);
 
             if (error != null)
-                Console.WriteLine("WebhookNotifier: " + error);
+                SMLog.Warning("WebhookNotifier: " + error);
         }
 
 

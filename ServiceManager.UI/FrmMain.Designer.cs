@@ -46,6 +46,7 @@
             this.lsvServices = new System.Windows.Forms.ListView();
             this.rmiManager = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiManager_OpenConfig = new System.Windows.Forms.ToolStripMenuItem();
+            this.rmiManager_OpenLog = new System.Windows.Forms.ToolStripMenuItem();
             this.radMenuSeparatorItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.rmiManager_Close = new System.Windows.Forms.ToolStripMenuItem();
             this.rmiTesting = new System.Windows.Forms.ToolStripMenuItem();
@@ -203,6 +204,7 @@
             // 
             this.rmiManager.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.rmiManager_OpenConfig,
+            this.rmiManager_OpenLog,
             this.radMenuSeparatorItem1,
             this.rmiManager_Close});
             this.rmiManager.Name = "rmiManager";
@@ -214,6 +216,12 @@
             this.rmiManager_OpenConfig.Name = "rmiManager_OpenConfig";
             this.rmiManager_OpenConfig.Text = "Open config";
             this.rmiManager_OpenConfig.Click += new System.EventHandler(this.rmiManager_OpenConfig_Click);
+            // 
+            // rmiManager_OpenLog
+            // 
+            this.rmiManager_OpenLog.Name = "rmiManager_OpenLog";
+            this.rmiManager_OpenLog.Text = "Open log";
+            this.rmiManager_OpenLog.Click += new System.EventHandler(this.rmiManager_OpenLog_Click);
             // 
             // radMenuSeparatorItem1
             // 
@@ -494,6 +502,7 @@
         private System.Windows.Forms.ToolStripMenuItem rmiService;
         private System.Windows.Forms.ToolStripMenuItem rmiInstances;
         private System.Windows.Forms.ToolStripMenuItem rmiManager_OpenConfig;
+        private System.Windows.Forms.ToolStripMenuItem rmiManager_OpenLog;
         private System.Windows.Forms.ToolStripSeparator radMenuSeparatorItem1;
         private System.Windows.Forms.ToolStripMenuItem rmiManager_Close;
         private System.Windows.Forms.ToolStripMenuItem rmiTesting_Start;

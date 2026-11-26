@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceManager.Base.Data.Settings;
 using ServiceManager.Base.Wcf;
+using ServiceManager.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -425,7 +426,7 @@ namespace ServiceManager.Base
 
         private void Host_Opened(object sender, EventArgs e)
         {
-            Console.WriteLine("Server connected.");
+            SMLog.Info("ServiceManager: the endpoint accepted a client.");
         }
 
         private void M_ClientCallbacks_ServerShutdownStarted(object sender, EventArgs e)
@@ -437,7 +438,7 @@ namespace ServiceManager.Base
         {
             OnFaulted(e);
 
-            Console.WriteLine("Server faulted.");
+            SMLog.Warning("ServiceManager: the endpoint faulted.");
 
             if (Reconnect)
             {
@@ -470,7 +471,7 @@ namespace ServiceManager.Base
         {
             OnFaulted(e);
 
-            Console.WriteLine("Client faulted.");
+            SMLog.Warning("ServiceManager: the client channel faulted.");
 
             //if (Reconnect)
             //{

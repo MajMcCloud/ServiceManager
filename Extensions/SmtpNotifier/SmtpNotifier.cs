@@ -53,7 +53,7 @@ namespace ServiceManager.Extensions.SmtpNotifier
             var error = await __sender.Deliver(message).ConfigureAwait(false);
 
             if (error != null)
-                Console.WriteLine("SmtpNotifier: " + error);
+                SMLog.Warning("SmtpNotifier: " + error);
         }
 
 

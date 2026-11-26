@@ -1,6 +1,7 @@
 ﻿using ServiceManager.Base.Data;
 using ServiceManager.Base.Events;
 using ServiceManager.Base.Windows;
+using ServiceManager.Extensions;
 using ServiceManager.Extensions.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -348,7 +349,7 @@ namespace ServiceManager.Base
 
             if (account.Error != null)
             {
-                Console.WriteLine("ServiceManager: " + item.Title + " could not be started: " + account.Error);
+                SMLog.Warning("ServiceManager: " + item.Title + " could not be started: " + account.Error);
 
                 StartFailed(item, sa, account.ErrorLine());
 
@@ -372,7 +373,7 @@ namespace ServiceManager.Base
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(WindowsStartFailure.ConsoleLine(item.Title, account, ex));
+                    SMLog.Warning(WindowsStartFailure.ConsoleLine(item.Title, account, ex), ex);
 
                     StartFailed(item, sa, WindowsStartFailure.ErrorLine(account, ex));
 
@@ -442,7 +443,7 @@ namespace ServiceManager.Base
             {
                 //The operating system knows why the process is not running. Without that reason a wrong
                 //password, an account that may not log on and a missing file all look the same
-                Console.WriteLine(WindowsStartFailure.ConsoleLine(item.Title, account, ex));
+                SMLog.Warning(WindowsStartFailure.ConsoleLine(item.Title, account, ex), ex);
 
                 if (session != null)
                 {
@@ -639,7 +640,7 @@ namespace ServiceManager.Base
         }
 
         /// <summary>
-        /// What a refused step of an end costs the run. The reason goes to the console, the output of the service
+        /// What a refused step of an end costs the run. The reason goes to the log, the output of the service
         /// and the live log, so a process that was reached and refused is not mistaken for one that was never
         /// reached at all.
         /// </summary>
@@ -647,7 +648,7 @@ namespace ServiceManager.Base
         {
             var reason = WindowsStartFailure.Reason(ex);
 
-            Console.WriteLine("ServiceManager: " + item.Title + " could not be ended: " + reason);
+            SMLog.Warning("ServiceManager: " + item.Title + " could not be ended: " + reason, ex);
 
             if (sa == null)
             {
