@@ -12,14 +12,19 @@ also name the Windows accounts that may connect. See [Network Security](#network
 
 ## Build
 
-Targets the .NET Framework 4.8 (the last version of the classic .NET Framework). The reference assemblies are restored from NuGet, so no targeting pack has to be installed. No third party UI controls, so a plain clone builds out of the box:
+Targets .NET 11 (`net11.0-windows`). The SDK restores everything a build needs, no third party UI controls are used, so a plain clone builds out of the box:
 
 ```
-msbuild ServiceManager.sln /t:Restore /p:Configuration=Release
-msbuild ServiceManager.sln /t:Rebuild /p:Configuration=Release
+dotnet restore ServiceManager.sln
+dotnet build ServiceManager.sln -c Release
 ```
 
-which uploads the `ServiceManager.Service\bin\Release` and `ServiceManager.UI\bin\Release` folders as build artifacts.
+Running the program needs the .NET 11 Desktop runtime and the ASP.NET Core runtime. A package with a runtime
+identifier in its name carries its own runtime and needs no installation, `publish.ps1 -Runtime win-x64,win-arm64`
+builds one per architecture.
+
+The CI builds the release and uploads the `ServiceManager-<version>.zip` together with one
+`ServiceManager-<version>-<runtime>.zip` per architecture as build artifacts.
 
 - [Main Window](#mainwindow)
 - [Service List Columns](#service-list-columns)

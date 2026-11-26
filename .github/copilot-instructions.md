@@ -6,12 +6,12 @@ Guidance for Copilot when working on this repository. It applies to the whole pr
 
 ServiceManager is a Windows service that watches services and processes and raises events
 (start, stop, crash, high memory, no response). Events can be forwarded to notification
-providers. Built on .NET Framework 4.8, a WinForms UI, a Windows service, and extensions
+providers. Built on .NET 11, a WinForms UI, a Windows service hosted by CoreWCF, and extensions
 that are loaded at runtime from the `extensions` folder.
 
-Build with MSBuild (not `dotnet build`: the projects are `packages.config` style, the
-restore target is `msbuild /t:Restore`). Tests run through VSTest, either in Visual Studio
-or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\ServiceManager.Tests.dll`.
+Build with `dotnet build ServiceManager.sln`, the projects are SDK style so the restore comes along
+with it. Tests run through `dotnet test ServiceManager.Tests`, or through VSTest in Visual Studio
+against `ServiceManager.Tests\bin\Debug\net11.0-windows\ServiceManager.Tests.dll`.
 
 ## Language
 
@@ -45,7 +45,9 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   name). The assembly name is set explicitly when it differs from the project name, as
   `TelegramBotNotifier.dll` shows.
 * New extension projects follow the structure of the existing ones: `Notifier.cs`,
-  `Config\Config.cs`, `Forms\`, `Properties\`, `app.config`, `packages.config`.
+  `Config\Config.cs`, `Forms\`, `Properties\`, and an SDK style project named
+  `ServiceManager.Extensions.<Name>.csproj` that carries the NuGet packages as
+  `PackageReference` entries.
 * Anything that lists providers is sorted alphabetically, ignoring case: the menu, the table
   and the sections of the README, the provider dropdown and the active provider list in the
   settings form.
@@ -93,7 +95,7 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
 
 * Never create a release on your own - not the tag, not the push of the tag, not the GitHub
   release. Ask first and wait for a clear yes.
-* `publish.ps1` builds the package and writes `publish\RELEASE-NOTES.md`. The version is a
+* `publish.ps1` builds the packages and writes `publish\RELEASE-NOTES.md`. The version is a
   build parameter, `version.props` stays one step ahead of the last tag.
 * The notes are English and grouped in three sections, empty ones are left out: "New features",
   "Changes" and "Bug fixes and corrections".
@@ -103,7 +105,7 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   documentation-only work in separate commits, that is what keeps the notes readable.
 * The release title names what the release brings ("Multiple notification providers") instead of
   repeating the version number.
-* `publish\` and the ZIP are ignored, so a release adds no commit of its own.
+* `publish\` and the ZIP files are ignored, so a release adds no commit of its own.
 * Once the tag exists, `version.props` moves one step ahead of it again. That is a commit of its
   own: "Set the default build version to 2.1.1.2".
 * Publishing from this machine works without `gh`, which is not installed: the GitHub REST API
@@ -112,7 +114,8 @@ or with `vstest.console.exe` against `ServiceManager.Tests\bin\Debug\net481\Serv
   developer for a token. The release is `POST /repos/MajMcCloud/ServiceManager/releases`, the ZIP
   is uploaded to `uploads.github.com`. Do not claim that the release cannot be created from here.
 * The description of the release is the content of `publish\RELEASE-NOTES.md` without its "Tag"
-  section, the asset is `ServiceManager-<version>.zip` from the project root.
+  section. The assets are `ServiceManager-<version>.zip` and one
+  `ServiceManager-<version>-<runtime>.zip` per architecture, all from the project root.
 * Pushing the tag starts the CI, which builds the package with the version from the tag and keeps
   it as an artefact. The workflow never creates the release itself.
 
