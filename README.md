@@ -187,6 +187,19 @@ Dependencies can delay ServiceManager at boot. Stopping a dependency may also re
 ServiceManager and its managed applications. Older settings files retain the previous defaults:
 Automatic, Local System and the three standard network dependencies.
 
+## Service Log
+
+A Windows service has no console, so ServiceManager writes what the service, the extension loader and the
+providers report into a text file instead: one file per day in a `logs` folder next to the executable. Every
+line carries its time and a level, and a warning or an error additionally goes into the application event log
+under the source `ServiceManager`. A day file older than fourteen days is dropped once a new day starts.
+
+**Manager → Open log** lists those files, newest day first, with warnings in amber and errors in red.
+*Auto refresh* follows the running service, *Open folder* opens the `logs` folder in Explorer.
+
+The console output of a managed application is captured separately and stored under `logs\<id>\`.
+See [Service Settings - Logging](#service-settings---logging).
+
 ## Notifications
 
 Notifications stay off until at least one provider is listed. They are configured in one place only:
