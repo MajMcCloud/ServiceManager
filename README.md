@@ -1,5 +1,10 @@
 # ServiceManager
-[![CI](https://github.com/MajMcCloud/ServiceManager/actions/workflows/ci.yml/badge.svg)](https://github.com/MajMcCloud/ServiceManager/actions/workflows/ci.yml)
+
+  <p align="center">
+    <a href="https://github.com/MajMcCloud/ServiceManager/releases/latest"><img src="https://img.shields.io/github/v/tag/MajMcCloud/ServiceManager?label=release" alt="release"/></a>
+    <a href="https://github.com/MajMcCloud/ServiceManager/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MajMcCloud/ServiceManager/ci.yml?branch=main" alt="build"/></a>
+    <a href="https://github.com/MajMcCloud/ServiceManager/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MajMcCloud/ServiceManager" alt="license"/></a>
+  </p>
 
 A tool for managing mostly console applications like Cronjobs.
 
