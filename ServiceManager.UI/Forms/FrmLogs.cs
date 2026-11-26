@@ -28,6 +28,7 @@ namespace ServiceManager.UI.Forms
         static extern int SendMessage(IntPtr hWnd, int wMsg,
                                        int wParam, int lParam);
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Guid serviceId { get; set; }
 
         public bool LiveLogs = false;
@@ -35,6 +36,7 @@ namespace ServiceManager.UI.Forms
         public int SelectionCursor = 0;
 
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Channel Connection { get; set; }
 
         public FrmLogs()

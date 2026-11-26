@@ -12,8 +12,10 @@ namespace ServiceManager.UI.Forms
 {
     public partial class FrmConnectTo : Form
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public String IPOrHost { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Port { get; set; }
 
         public FrmConnectTo()

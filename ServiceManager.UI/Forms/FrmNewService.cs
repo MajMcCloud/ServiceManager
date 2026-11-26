@@ -17,6 +17,7 @@ namespace ServiceManager.UI.Forms
     public partial class FrmNewService : Form
     {
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ServiceItem Item { get; set; }
 
         /// <summary>The service names the user picked, in the order the picker returned them.</summary>

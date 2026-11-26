@@ -24,6 +24,7 @@ namespace ServiceManager.UI
 {
     public partial class FrmManage : Form
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public String ConfigFile { get; set; }
 
         /// <summary>The tabs of this window, in the order they sit on the control.</summary>
@@ -37,6 +38,7 @@ namespace ServiceManager.UI
         }
 
         /// <summary>The tab the window opens on. Null leaves the first one selected.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public eTab? OpenTab { get; set; }
 
         /// <summary>The providers of the settings file, edited before they are saved.</summary>

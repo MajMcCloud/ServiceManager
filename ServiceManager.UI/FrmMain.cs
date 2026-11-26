@@ -12,6 +12,7 @@ using ServiceManager.UI.Installer;
 using ServiceManager.UI.Progress;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration.Install;
 using System.Data;
 using System.Diagnostics;
@@ -29,13 +30,18 @@ namespace ServiceManager.UI
 {
     public partial class FrmMain : Form
     {
+        // The window state is filled at runtime, the designer has nothing to write out for it.
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Base.ServiceManager Manager { get; set; }
 
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int WatchingProcessID { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Channel WatchConnection { get; set; }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public List<ServiceItem> Services { get; set; }
 
         /// <summary>Reads the rights of this process, asked whenever a menu opens.</summary>
