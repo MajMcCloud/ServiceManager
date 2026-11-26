@@ -13,7 +13,6 @@ using ServiceManager.UI.Progress;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration.Install;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -23,7 +22,6 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Verifide.ServiceUtils;
 using static ServiceManager.Base.Data.ServiceAnalytics;
 
 namespace ServiceManager.UI
@@ -911,70 +909,56 @@ namespace ServiceManager.UI
         {
             try
             {
-                InstallContext install = new InstallContext();
-                ServiceProcessInstaller spi = new ServiceProcessInstaller();
-                ServiceInstallerEx svi = new ServiceInstallerEx();
-
+                ServiceInstallerCompat installer = new ServiceInstallerCompat();
 
                 String name = Application.StartupPath + "\\ServiceManager.exe";
 
-                String path = String.Format("/assemblypath=\"{0}\"", name);
-                String[] cmdline = { path };
-
-                install = new InstallContext("", cmdline);
-
-                install.Parameters["assemblypath"] += " -s";
+                installer.BinaryPath = "\"" + name + "\" -s";
+                installer.ServiceName = Program.ServiceName;
+                installer.DisplayName = Program.ServiceTitle;
+                installer.Description = "Runs and protecting specific applications.";
 
                 var windows = ServiceConfig.load().WindowsSettings;
 
-                spi.Account = ToServiceAccount(windows.Account);
+                installer.Account = ToServiceAccount(windows.Account);
 
                 if (windows.Account == WindowsService.eAccount.User)
                 {
-                    spi.Username = windows.GetAccountName();
-                    if (spi.Username == null)
+                    installer.UserName = windows.GetAccountName();
+                    if (installer.UserName == null)
                     {
                         throw new ArgumentException("The service account needs a user name.");
                     }
 
-                    spi.Password = SecretStorage.Unprotect(windows.Password);
-                    String rightMessage = new WindowsServiceConfigWriter().GrantLogOnAsServiceRight(spi.Username);
+                    installer.Password = SecretStorage.Unprotect(windows.Password);
+                    String rightMessage = new WindowsServiceConfigWriter().GrantLogOnAsServiceRight(installer.UserName);
                     if (rightMessage != null)
                     {
                         throw new InvalidOperationException(rightMessage);
                     }
                 }
 
-                svi.StartType = ToServiceStartMode(windows.StartMode);
+                installer.StartType = ToServiceStartMode(windows.StartMode);
+                installer.ServicesDependedOn = windows.GetDependencies();
 
-                svi.ServiceName = Program.ServiceName;
-                svi.DisplayName = Program.ServiceTitle;
-                svi.Description = "Runs and protecting specific applications.";
-                svi.Context = install;
+                installer.FailCountResetTime = 60 * 60 * 24;
+                installer.FailRebootMsg = "Whitney Houston! We have a problem";
+                installer.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
+                installer.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
+                installer.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
 
-                svi.DelayedAutoStart = windows.StartMode == WindowsService.eStartMode.AutomaticDelayed;
-                svi.Parent = spi;
-
-                svi.ServicesDependedOn = windows.GetDependencies();
-
-                svi.FailCountResetTime = 60 * 60 * 24;
-                svi.FailRebootMsg = "Whitney Houston! We have a problem";
-                svi.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
-                svi.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
-                svi.FailureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
-
-                //svi.StartOnInstall = true;
+                //installer.StartOnInstall = true;
 
                 runWithProgress("Service installation", progress =>
                 {
                     progress.Report(ProgressReport.Running("Installing the service..."));
 
-                    System.Collections.Specialized.ListDictionary state = new System.Collections.Specialized.ListDictionary();
-                    svi.Install(state);
+                    ServiceInstallResult result = installer.Install();
 
-                    progress.Report(ProgressReport.Running("Applying the service settings..."));
-
-                    svi.UpdateServiceConfig(null, null);
+                    if (!result.Success)
+                    {
+                        throw new InvalidOperationException(result.Message);
+                    }
                 });
 
                 tmRefresh_Tick(null, null);
@@ -998,16 +982,19 @@ namespace ServiceManager.UI
         {
             try
             {
-                ServiceInstaller ServiceInstallerObj = new ServiceInstaller();
-                InstallContext Context = new InstallContext("", null);
-                ServiceInstallerObj.Context = Context;
-                ServiceInstallerObj.ServiceName = Program.ServiceName;
+                ServiceInstallerCompat installer = new ServiceInstallerCompat();
+                installer.ServiceName = Program.ServiceName;
 
                 runWithProgress("Service removal", progress =>
                 {
                     progress.Report(ProgressReport.Running("Removing the service..."));
 
-                    ServiceInstallerObj.Uninstall(null);
+                    ServiceInstallResult result = installer.Uninstall();
+
+                    if (!result.Success)
+                    {
+                        throw new InvalidOperationException(result.Message);
+                    }
                 });
 
                 tmRefresh_Tick(null, null);
@@ -1233,25 +1220,25 @@ namespace ServiceManager.UI
             frm.ShowDialog();
         }
 
-        private static ServiceAccount ToServiceAccount(WindowsService.eAccount account)
+        private static ServiceInstallerCompat.eAccountType ToServiceAccount(WindowsService.eAccount account)
         {
             switch (account)
             {
                 case WindowsService.eAccount.User:
 
-                    return ServiceAccount.User;
+                    return ServiceInstallerCompat.eAccountType.User;
 
                 case WindowsService.eAccount.LocalService:
 
-                    return ServiceAccount.LocalService;
+                    return ServiceInstallerCompat.eAccountType.LocalService;
 
                 case WindowsService.eAccount.NetworkService:
 
-                    return ServiceAccount.NetworkService;
+                    return ServiceInstallerCompat.eAccountType.NetworkService;
 
                 case WindowsService.eAccount.LocalSystem:
 
-                    return ServiceAccount.LocalSystem;
+                    return ServiceInstallerCompat.eAccountType.LocalSystem;
 
                 default:
 
@@ -1259,22 +1246,25 @@ namespace ServiceManager.UI
             }
         }
 
-        private static ServiceStartMode ToServiceStartMode(WindowsService.eStartMode startMode)
+        private static ServiceInstallerCompat.eStartType ToServiceStartMode(WindowsService.eStartMode startMode)
         {
             switch (startMode)
             {
                 case WindowsService.eStartMode.Automatic:
+
+                    return ServiceInstallerCompat.eStartType.Automatic;
+
                 case WindowsService.eStartMode.AutomaticDelayed:
 
-                    return ServiceStartMode.Automatic;
+                    return ServiceInstallerCompat.eStartType.AutomaticDelayed;
 
                 case WindowsService.eStartMode.Manual:
 
-                    return ServiceStartMode.Manual;
+                    return ServiceInstallerCompat.eStartType.Manual;
 
                 case WindowsService.eStartMode.Disabled:
 
-                    return ServiceStartMode.Disabled;
+                    return ServiceInstallerCompat.eStartType.Disabled;
 
                 default:
 
